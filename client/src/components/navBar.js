@@ -1,16 +1,21 @@
 import React from "react";
+import { Link, useMatch, useResolvedPath } from "react-router-dom"
 
-const Navbar = () => {
+export default function Navbar() {
   return (
-<nav className="navbar">
-  <div className="navbar-title">App Name</div>
-  <div className="navbar-buttons">
-    <button className="navbar-button">Scenarios</button>
-    <button className="navbar-button">Simulation</button>
-    <button className="navbar-button">Profile</button>
-  </div>
-</nav>
-
+    <nav className="navbar">
+      <Link to="/" className="navbar-title">App Name</Link>
+      <div className="navbar-buttons">
+        <NavLink to="/profile">Profile</NavLink>
+      </div>
+    </nav>
   );
-};
-export default Navbar;
+}
+
+function NavLink({ to, children, ...props }) {
+  const active = useMatch({path: useResolvedPath(to).pathname})
+
+  return (<div className={active ? "active" : ""}>
+    <Link className="navbar-button" to={to} {...props}>{children}</Link>
+  </div>)
+}
