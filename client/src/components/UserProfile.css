@@ -1,0 +1,94 @@
+/* UserProfile.css */
+
+.user-profile-container {
+    background-color: #5c7a99;
+    padding: 2rem;
+    min-height: 100vh;
+    font-family: sans-serif;
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .user-info-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  
+  .user-avatar {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .user-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1rem;
+    width: 100%;
+  }
+  
+  .user-fields input {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .change-photo {
+    margin-top: 0.5rem;
+    color: #555;
+    font-size: 0.9rem;
+  }
+  
+  .sharing-entry {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .sharing-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .sharing-entry select {
+    margin-left: auto;
+    padding: 0.3rem;
+    border-radius: 5px;
+  }
+  
+  .invite-member {
+    margin-top: 1rem;
+    color: #0073e6;
+    cursor: pointer;
+  }
+  
+  .yaml-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .yaml-actions {
+    display: flex;
+    gap: 0.8rem;
+    cursor: pointer;
+  }
+  
+  .tax-fields {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  
+  .tax-fields select {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 5px;
+  }
+  
