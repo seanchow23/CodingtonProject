@@ -1,48 +1,107 @@
 import React from "react";
 import Navbar from "./navBar";
+import ScenarioList from "./scenario_list.js"
+import Scenario from "./scenario.js";
+import { Route, Routes } from "react-router-dom"
+
+const e1 = {
+    _id: 1001,
+    name: 'Annual Budget Review',
+    description: 'A review of the yearly expenses and adjustments.',
+    start_year: 2025,
+    duration: 2,  // Duration in hours
+    amount: 5000,  // Amount for the expense
+    change: 100,  // Change in the expense from previous year
+    inflation: true,  // Whether inflation is a factor
+    discretionary: false,  // Whether it's discretionary or non-discretionary
+    type: "expense"
+  };
+
+  const e2 = {
+    _id: 1002,
+    name: 'Gambling',
+    description: '',
+    start_year: 2025,
+    duration: 20,  // Duration in hours
+    amount: 1000,  // Amount for the expense
+    change: 0,  // Change in the expense from previous year
+    inflation: false,  // Whether inflation is a factor
+    discretionary: true,  // Whether it's discretionary or non-discretionary
+    type: "expense"
+  };
+
+  const e3 = {
+    _id: 1003,
+    name: 'Food',
+    description: 'I need to eat',
+    start_year: 2025,
+    duration: 70,  // Duration in hours
+    amount: 20000,  // Amount for the expense
+    change: 200,  // Change in the expense from previous year
+    inflation: true,  // Whether inflation is a factor
+    discretionary: true,  // Whether it's discretionary or non-discretionary
+    type: "expense"
+  };
+
+  const i1 = {
+    _id: 2001,
+    name: 'Income',
+    description: '',
+    start_year: 2025,
+    duration: 20,  // Duration in hours
+    amount: 50000,  // Amount for the expense
+    change: 1000,  // Change in the expense from previous year
+    inflation: true,  // Whether inflation is a factor
+    ss: false,  // Whether it's discretionary or non-discretionary
+    type: "income"
+  };
+
+  const i2 = {
+    _id: 2002,
+    name: 'Lottery Ticket',
+    description: '',
+    start_year: 2025,
+    duration: 1,  // Duration in hours
+    amount: 1000,  // Amount for the expense
+    change: 0,  // Change in the expense from previous year
+    inflation: false,  // Whether inflation is a factor
+    ss: false,  // Whether it's discretionary or non-discretionary
+    type: "income"
+  };
+
+  const i3 = {
+    _id: 2003,
+    name: 'SNAP',
+    description: 'government money',
+    start_year: 2025,
+    duration: 5,  // Duration in hours
+    amount: 1000,  // Amount for the expense
+    change: 50,  // Change in the expense from previous year
+    inflation: true,  // Whether inflation is a factor
+    ss: true,  // Whether it's discretionary or non-discretionary
+    type: "income"
+  };
+
+  
 
 const dummyScenarios = [
-    { id: 1, name: "Scenario Alpha" },
-    { id: 2, name: "Scenario Beta" },
-    { id: 3, name: "Scenario Gamma" },
-  ];
+    { _id: 1, name: "Scenario Alpha", events: [e1, e2, e3, i1, i2, i3] },
+    { _id: 2, name: "Scenario Beta", events: [e1] },
+    { _id: 3, name: "Scenario Gamma", events: [e1] },
+];
 
-const Home = () => {
-
-    const handleScenarioClick = (id) => {
-        //to be implemented
-    };
-
-    const handleCreateScenario = () => {
-        alert("Create Scenario button clicked");
-        // You can navigate to a create page or open a modal
-    };
-
+function Home() {
     return (
         <div className="home-container">
-        <Navbar />
-
-        <main className="home-main">
-            <div className="home-header">
-            <h1 className="home-title">Scenarios</h1>
-            <button className="create-button" onClick={handleCreateScenario}>
-                + Create Scenario
-            </button>
-            </div>
-
-            <div className="scenario-list">
-            {dummyScenarios.map((scenario) => (
-                <div
-                key={scenario.id}
-                className="scenario-card"
-                onClick={() => handleScenarioClick(scenario.id)}
-                >
-                <h2 className="scenario-name">{scenario.name}</h2>
-                </div>
-            ))}
-            </div>
-        </main>
+            <Navbar />
+            <main className="home-main">
+                <Routes>
+                    <Route path="/" element={<ScenarioList scenarios={dummyScenarios} />} />
+                    <Route path="/scenario/:id" element={<Scenario />} />
+                </Routes>
+            </main>
         </div>
     );
 };
-export default Home;
+
+export default Home
