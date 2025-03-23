@@ -108,20 +108,23 @@ body {
   .scenario-form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
     margin-top: 24px;
-    max-width: 400px;
+    max-width: 500px;
   }
   
   .form-label {
+    display: flex;
+    flex-direction: column;
     font-weight: 600;
     color: #1f2937;
   }
   
   .form-input {
-    padding: 8px 12px;
+    padding: 8px 10px;
+    font-size: 1rem;
     border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 1rem;
     margin-top: 4px;
   }
+  
