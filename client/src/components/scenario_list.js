@@ -8,7 +8,7 @@ const ScenarioList = ({ scenarios }) => {
     return (<div className="scenario-list">
         <div className="home-header">
             <h1 className="home-title">Scenarios</h1>
-            <button className="create-button">+ Create Scenario</button>
+            <button className="create-button"  onClick={() => navigate("/scenario/create")}>+ Create Scenario</button>
         </div>
         {scenarios.map(scenario => (
             <div key={scenario._id} className="scenario-card" onClick={() => handleScenarioClick(scenario)}>
