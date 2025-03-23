@@ -5,10 +5,19 @@ function Login() {
 
   useEffect(() => {
     fetch('http://localhost:5000/auth/user', {
-      credentials: 'include'
+      credentials: 'include',
     })
-      .then(res => res.json())
-      .then(data => setUser(data));
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to fetch user');
+        const text = await res.text();
+        if (!text) return null;
+        return JSON.parse(text);
+      })
+      .then((data) => setUser(data))
+      .catch((err) => {
+        console.error('Error fetching user:', err);
+        setUser(null); // ensure UI still shows login button
+      });
   }, []);
 
   const login = () => {
