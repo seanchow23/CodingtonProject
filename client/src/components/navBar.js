@@ -6,7 +6,8 @@ export default function Navbar() {
     <nav className="navbar">
       <Link to="/" className="navbar-title">App Name</Link>
       <div className="navbar-buttons">
-        <NavLink to="/profile">Profile</NavLink>
+        <NavLink to="/user_profile">Profile</NavLink>
+        <NavLink to="/login">Login</NavLink>
       </div>
     </nav>
   );

@@ -1,6 +1,6 @@
 // UserProfile.js
 import React from 'react';
-import './stylesheets/UserProfile.css';
+import '../stylesheets/user_profile.css';
 import { FaDownload, FaTrash } from 'react-icons/fa';
 
 export default function UserProfile() {
