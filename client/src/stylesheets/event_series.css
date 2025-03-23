@@ -44,3 +44,106 @@
     word-wrap: break-word; /* Allow long words to break and wrap */
     max-width: 100%; /* Ensure it takes the full width of its container */
 }
+
+#add_event {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Title and form label styles */
+#add_event h2 {
+    text-align: center;
+    color: #333;
+}
+
+label {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Style for all form fields */
+input[type="text"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+textarea {
+    height: 120px;
+    resize: vertical;
+}
+
+/* Checkbox and radio button styling */
+input[type="checkbox"],
+input[type="radio"] {
+    margin-right: 10px;
+    margin-top: 5px;
+}
+
+/* Section for each event type */
+div {
+    margin-bottom: 20px;
+}
+
+/* Submit button styling */
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Ensuring labels and inputs align well */
+input[type="radio"] {
+    display: inline-block;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-left: 30px;
+    margin-bottom: 30px;
+}
+
+input[type="radio"]:checked {
+    background-color: #007bff;
+}
+
+/* Styling input fields when focused */
+input:focus,
+textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Add padding between sections */
+form > div {
+    margin-bottom: 20px;
+}
+
+/* Styling the error message (optional) */
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
