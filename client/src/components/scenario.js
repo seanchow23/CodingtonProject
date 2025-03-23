@@ -5,6 +5,7 @@ import Invest from "./event_series/income";
 import Rebalance from "./event_series/rebalance";
 import { useLocation, useNavigate } from "react-router-dom";
 
+
 const Scenario = () => {
     const location = useLocation()
     const navigate = useNavigate();
@@ -14,7 +15,9 @@ const Scenario = () => {
 
     return (
         <div className="scenario">
-            <h1>{scenario.name} <button>Edit</button></h1>
+            <h1>{scenario.name} <button  className="edit-button" onClick={() => navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } })}>
+                Edit </button>
+            </h1>
             <div className="scenario_event_series">
                 <div className="income_event_series">
                     <h2>Income Events</h2>
