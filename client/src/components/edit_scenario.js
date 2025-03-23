@@ -44,7 +44,6 @@ const EditScenario = () => {
 
   return (
     <div className="home-container">
-      <Navbar />
       <main className="home-main">
         <h1 className="home-title">Edit Scenario</h1>
         <form className="scenario-form" onSubmit={handleSubmit}>
