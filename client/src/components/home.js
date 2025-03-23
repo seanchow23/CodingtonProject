@@ -1,3 +1,4 @@
+
 import React from "react";
 import Navbar from "./navBar";
 import ScenarioList from "./scenario_list.js"
@@ -105,3 +106,4 @@ function Home() {
 };
 
 export default Home
+
