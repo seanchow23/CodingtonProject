@@ -7,6 +7,8 @@ import { Route, Routes } from "react-router-dom"
 import Login from "./login.js"
 import UserProfile from "./user_profile.js"
 import CreateEvent from "./event_series/create_event.js";
+import CreateScenario from "./create_scenario";
+
 
 const e1 = {
     _id: 1001,
@@ -104,6 +106,7 @@ function Home() {
                     <Route path="/scenario/:id" element={<Scenario />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/user_profile" element={<UserProfile />} />
+                    <Route path="/scenario/create" element={<CreateScenario />} />
                     <Route path="/scenario/create_event/:id" element={<CreateEvent />} />
                 </Routes>
             </main>

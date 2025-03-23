@@ -11,6 +11,7 @@ const Income = ({ event }) => {
             <p>Expected Annual Change: {event.change}</p>
             {event.inflation && <p>Inflation Adjusted</p>}
             {event.ss && <p>Social Security Income</p>}
+            <button>Edit</button>
         </div>
     );
 };

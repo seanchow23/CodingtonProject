@@ -102,3 +102,26 @@ body {
     font-weight: 600;
     color: #1f2937;
   }
+
+
+
+  .scenario-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 24px;
+    max-width: 400px;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  .form-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-top: 4px;
+  }
