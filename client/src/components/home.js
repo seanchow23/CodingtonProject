@@ -4,6 +4,8 @@ import Navbar from "./navBar";
 import ScenarioList from "./scenario_list.js"
 import Scenario from "./scenario.js";
 import { Route, Routes } from "react-router-dom"
+import Login from "./login.js"
+import UserProfile from "./user_profile.js"
 
 const e1 = {
     _id: 1001,
@@ -99,6 +101,8 @@ function Home() {
                 <Routes>
                     <Route path="/" element={<ScenarioList scenarios={dummyScenarios} />} />
                     <Route path="/scenario/:id" element={<Scenario />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/user_profile" element={<UserProfile />} />
                 </Routes>
             </main>
         </div>
