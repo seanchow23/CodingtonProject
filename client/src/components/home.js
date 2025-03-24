@@ -6,6 +6,8 @@ import Scenario from "./scenario.js";
 import { Route, Routes } from "react-router-dom"
 import Login from "./login.js"
 import UserProfile from "./user_profile.js"
+import TaxInfo from "./taxinfo.js"; // adjust path if needed
+
 
 const e1 = {
     _id: 1001,
@@ -103,6 +105,8 @@ function Home() {
                     <Route path="/scenario/:id" element={<Scenario />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/user_profile" element={<UserProfile />} />
+                    <Route path="/tax-info" element={<TaxInfo />} />
+
                 </Routes>
             </main>
         </div>
