@@ -1,7 +1,6 @@
 import React from 'react';
 
 const Expense = ({ event }) => {
-    console.log(event)
     return (
         <div className="event_series">
             <h2 id={event._id}>{event.name}</h2>

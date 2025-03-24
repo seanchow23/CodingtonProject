@@ -23,6 +23,7 @@ export default function CreateEvent() {
     });
 
     const [error, setError] = useState("");
+    const [events, setEvents] = useState(scenario.events);
     
     const handleRadioChange = (e) => {setFormData({ ...formData, eventType: e.target.value });};
     
@@ -38,7 +39,19 @@ export default function CreateEvent() {
             setError(`The ${check} field cannot have a negative value.`);
             return;
         }
-        navigate(-1);
+        const newEvent = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            name: formData.name,
+            description: formData.description,
+            start_year: formData.startYear,
+            duration: formData.duration,
+            amount: formData.amount,
+            change: formData.change,
+            inflation: formData.inflation,
+            ss: formData.ss,
+            type: formData.eventType
+        };
+        setEvents((prevEvents) => {navigate(`/scenario/${scenario._id}`, { state: { scenario: { ...scenario, events: [...prevEvents, newEvent] }}});});
     };
     
     return (
