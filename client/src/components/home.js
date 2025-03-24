@@ -12,6 +12,8 @@ import CreateEvent from "./event_series/create_event.js";
 import CreateScenario from "./create_scenario";
 import CreateInvestments from "./create_investments.js";
 import EditScenario from "./edit_scenario";
+import EditInvestments from "./edit_investments.js";
+import EditEvent from "./edit_event.js";
 
 const e1 = {
     _id: 1001,
@@ -107,6 +109,8 @@ function Home() {
             <Route path="/scenario/create_investment/:id" element={<CreateInvestments scenarios={scenarios}/>} />
             <Route path="/scenario/create_event/:id" element={<CreateEvent scenarios={scenarios}/>} />
             <Route path="/scenario/edit/:id" element={<EditScenario scenarios={scenarios}/>} />
+            <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios}/>} />
+            <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
             <Route path="/tax-info" element={<TaxInfo />} />
           </Routes>
         </main>
