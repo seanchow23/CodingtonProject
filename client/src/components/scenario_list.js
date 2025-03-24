@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 const ScenarioList = ({ scenarios }) => {
     const navigate = useNavigate();
     const handleScenarioClick = (scenario) => {navigate(`/scenario/${scenario._id}`, { state: { scenario } });};
+    const handleCreateScenarioClick = (scenario) => {navigate(`/scenario/create`);};
 
     return (<div className="scenario-list">
         <div className="home-header">
             <h1 className="home-title">Scenarios</h1>
-            <button className="create-button"  onClick={() => navigate("/scenario/create")}>+ Create Scenario</button>
+            <button className="create-button"  onClick={handleCreateScenarioClick}>+ Create Scenario</button>
         </div>
         {scenarios.map(scenario => (
             <div key={scenario._id} className="scenario-card" onClick={() => handleScenarioClick(scenario)}>

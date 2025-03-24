@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
+import InputField from "../input_field";
 
 export default function CreateEvent({ scenarios }) {
     const location = useLocation()
@@ -85,7 +86,6 @@ export default function CreateEvent({ scenarios }) {
                 {error && <div className="error">{error}</div>}
             </form>
         </div>
-        
     )
 }
 
@@ -117,14 +117,5 @@ function AddInvestEvent({ formData, onChange }) {
             <InputField id="allocation" type="number" value={formData.allocation} onChange={onChange}>Allocation (Percentage)</InputField>
             <InputField id="max" type="number" value={formData.max} onChange={onChange}>Maximum Cash</InputField>
         </div>
-    );
-}
-
-function InputField({ id, type, value, checked, onChange, children }) {
-    return (
-      <div>
-        <label htmlFor={id}>{children}*</label>
-        <input type={type} id={id} name={id} value={value} checked={checked} onChange={onChange} required={type !== 'checkbox'} />
-      </div>
     );
 }

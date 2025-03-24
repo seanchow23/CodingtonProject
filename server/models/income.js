@@ -13,4 +13,4 @@ IncomeSchema.virtual('url').get(function () {
     return this._id;
 });
 
-module.exports = Event.discriminator('IncomeEvent', IncomeSchema);
+module.exports = Event.discriminator('income', IncomeSchema);
