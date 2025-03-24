@@ -90,29 +90,35 @@ const e1 = {
 
   
 
-const dummyScenarios = [
+const scenarios = [
     { _id: 1, name: "Scenario Alpha", events: [e1, e2, e3, i1, i2, i3] },
     { _id: 2, name: "Scenario Beta", events: [e1] },
     { _id: 3, name: "Scenario Gamma", events: [e1] },
 ];
 
 function Home() {
-    return (
-        <div className="home-container">
-            <Navbar />
-            <main className="home-main">
-                <Routes>
-                    <Route path="/" element={<ScenarioList scenarios={dummyScenarios} />} />
-                    <Route path="/scenario/:id" element={<Scenario />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/user_profile" element={<UserProfile />} />
-                    <Route path="/scenario/create" element={<CreateScenario />} />
-                    <Route path="/scenario/create_event/:id" element={<CreateEvent />} />
-                    <Route path="/scenario/edit/:id" element={<EditScenario />} />
-                </Routes>
-            </main>
-        </div>
-    );
+  const scenarios = [
+    { _id: 1, name: "Scenario Alpha", events: [e1, e2, e3, i1, i2, i3] },
+    { _id: 2, name: "Scenario Beta", events: [e1] },
+    { _id: 3, name: "Scenario Gamma", events: [e1] },
+  ];
+
+  return (
+    <div className="home-container">
+      <Navbar />
+        <main className="home-main">
+          <Routes>
+            <Route path="/" element={<ScenarioList scenarios={scenarios} />} />
+            <Route path="/scenario/:id" element={<Scenario />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/user_profile" element={<UserProfile />} />
+            <Route path="/scenario/create" element={<CreateScenario />} />
+            <Route path="/scenario/create_event/:id" element={<CreateEvent scenarios={scenarios}/>} />
+            <Route path="/scenario/edit/:id" element={<EditScenario />} />
+          </Routes>
+        </main>
+    </div>
+  );
 };
 
 export default Home

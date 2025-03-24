@@ -8,7 +8,7 @@ const CreateScenario = () => {
     dob: "",
     spouse_dob: "",
     life_expectancy: "",
-    spouse_expectancy: 0,
+    spouse_expectancy: "",
     goal: "",
     inflation: "",
     optimizer: false,
@@ -68,6 +68,18 @@ const CreateScenario = () => {
             />
           </label>
 
+          <label className="form-label">
+            Life Expectancy:
+            <input
+              className="form-input"
+              type="number"
+              name="life_expectancy"
+              value={formData.life_expectancy}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
           {formData.married && (
             <label className="form-label">
               Spouse Date of Birth:
@@ -81,29 +93,18 @@ const CreateScenario = () => {
             </label>
           )}
 
-          <label className="form-label">
-            Life Expectancy:
-            <input
-              className="form-input"
-              type="number"
-              name="life_expectancy"
-              value={formData.life_expectancy}
-              onChange={handleChange}
-              required
-            />
-          </label>
-
-          <label className="form-label">
-            Spouse Life Expectancy:
-            <input
-              className="form-input"
-              type="number"
-              name="spouse_expectancy"
-              value={formData.spouse_expectancy}
-              onChange={handleChange}
-              disabled={!formData.married}
-            />
-          </label>
+          {formData.married && (
+            <label className="form-label">
+              Spouse Life Expectancy:
+              <input
+                className="form-input"
+                type="number"
+                name="spouse_expectancy"
+                value={formData.spouse_expectancy}
+                onChange={handleChange}
+              />
+            </label>
+          )}
 
           <label className="form-label">
             Goal:
