@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 
 export default function CreateScenario({ scenarios }) {
@@ -33,7 +33,7 @@ export default function CreateScenario({ scenarios }) {
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
     };
 
-    const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value }); console.log(e.target.value)};
+    const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
 
     const addScenario = (newScenario) => {
         scenarios.push(newScenario);

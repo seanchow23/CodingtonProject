@@ -15,9 +15,7 @@ const Scenario = () => {
 
     return (
         <div className="scenario">
-            <h1>{scenario.name} <button  className="edit-button" onClick={() => navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } })}>
-                Edit </button>
-            </h1>
+            <h1>{scenario.name} <button className="edit-button" onClick={() => navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } })}>Edit</button></h1>
             <div className="scenario_event_series">
                 <div className="income_event_series">
                     <h2>Income Events</h2>
