@@ -1,8 +1,6 @@
 import React from "react";
 import { Link, useMatch, useResolvedPath } from "react-router-dom"
 
-
-
 export default function Navbar() {
   return (
     <nav className="navbar">
@@ -10,15 +8,11 @@ export default function Navbar() {
       <div className="navbar-buttons">
         <NavLink to="/user_profile">Profile</NavLink>
         <NavLink to="/login">Login</NavLink>
-        <NavLink to="/tax-info"><button>Tax Info</button>
-</NavLink>
-
+        <NavLink to="/tax-info">Tax Info</NavLink>
       </div>
     </nav>
   );
 }
-
-
 
 function NavLink({ to, children, ...props }) {
   const active = useMatch({path: useResolvedPath(to).pathname})
