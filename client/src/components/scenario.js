@@ -1,17 +1,23 @@
-import React, { use } from "react";
+import React, { useState } from "react";
 import Income from "./event_series/income";
 import Expense from "./event_series/expense";
 import Invest from "./event_series/income";
 import Rebalance from "./event_series/rebalance";
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom";
+
 
 const Scenario = () => {
     const location = useLocation()
-    const {scenario} = location.state || { events: [] };
+    const navigate = useNavigate();
+    const {scenario} = location.state;
+
+    const createEvent = () => { navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
 
     return (
         <div className="scenario">
-            <h1>{scenario.name}</h1>
+            <h1>{scenario.name} <button  className="edit-button" onClick={() => navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } })}>
+                Edit </button>
+            </h1>
             <div className="scenario_event_series">
                 <div className="income_event_series">
                     <h2>Income Events</h2>
@@ -46,7 +52,7 @@ const Scenario = () => {
                     </ul>
                 </div>
             </div>
-            <button>Add Event Series</button>
+            <button onClick={createEvent}>Add Event Series</button>
         </div>
     );
 }

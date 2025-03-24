@@ -9,6 +9,7 @@ const Invest = ({ event }) => {
             <p>Duration: {event.duration}</p>
             <p>Allocation: {event.allocation}</p>
             <p>Maximum: {event.max}</p>
+            <button>Edit</button>
         </div>
     );
 };
