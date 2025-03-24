@@ -20,7 +20,7 @@ const scenarioSchema = new mongoose.Schema({
     rothOptimizer: { type: Boolean, default: false },
     sharingSettings: { type: String },
     financialGoal: { type: Number, required: true },
-    stateOfResidence: { type: String, required: true },
+    state: { type: String, required: true },
 });
 
 module.exports = mongoose.model('Scenario', scenarioSchema);
