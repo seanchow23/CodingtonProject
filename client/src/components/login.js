@@ -1,22 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function Login() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/auth/user', {
-      credentials: 'include',
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error('Failed to fetch user');
-        const text = await res.text();
-        if (!text) return null;
-        return JSON.parse(text);
+    axios.get('http://localhost:5000/auth/user', { withCredentials: true })
+      .then((res) => {
+        setUser(res.data);
       })
-      .then((data) => setUser(data))
       .catch((err) => {
         console.error('Error fetching user:', err);
-        setUser(null); // ensure UI still shows login button
+        setUser(null);
       });
   }, []);
 
