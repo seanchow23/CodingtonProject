@@ -104,7 +104,7 @@ function Home() {
             <Route path="/login" element={<Login />} />
             <Route path="/user_profile" element={<UserProfile />} />
             <Route path="/scenario/create" element={<CreateScenario scenarios={scenarios}/>} />
-            <Route path="/scenario/create_investments/:id" element={<CreateInvestments scenarios={scenarios}/>} />
+            <Route path="/scenario/create_investment/:id" element={<CreateInvestments scenarios={scenarios}/>} />
             <Route path="/scenario/create_event/:id" element={<CreateEvent scenarios={scenarios}/>} />
             <Route path="/scenario/edit/:id" element={<EditScenario scenarios={scenarios}/>} />
             <Route path="/tax-info" element={<TaxInfo />} />
