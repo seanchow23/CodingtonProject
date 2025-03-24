@@ -10,6 +10,7 @@ import TaxInfo from "./taxinfo.js"; // adjust path if needed
 
 import CreateEvent from "./event_series/create_event.js";
 import CreateScenario from "./create_scenario";
+import CreateInvestments from "./create_investments.js";
 import EditScenario from "./edit_scenario";
 
 const e1 = {
@@ -90,20 +91,8 @@ const e1 = {
     type: "income"
   };
 
-  
-
-const scenarios = [
-    { _id: 1, name: "Scenario Alpha", events: [e1, e2, e3, i1, i2, i3] },
-    { _id: 2, name: "Scenario Beta", events: [e1] },
-    { _id: 3, name: "Scenario Gamma", events: [e1] },
-];
-
 function Home() {
-  const scenarios = [
-    { _id: 1, name: "Scenario Alpha", events: [e1, e2, e3, i1, i2, i3] },
-    { _id: 2, name: "Scenario Beta", events: [e1] },
-    { _id: 3, name: "Scenario Gamma", events: [e1] },
-  ];
+  const scenarios = [];
 
   return (
     <div className="home-container">
@@ -115,6 +104,7 @@ function Home() {
             <Route path="/login" element={<Login />} />
             <Route path="/user_profile" element={<UserProfile />} />
             <Route path="/scenario/create" element={<CreateScenario scenarios={scenarios}/>} />
+            <Route path="/scenario/create_investments/:id" element={<CreateInvestments scenarios={scenarios}/>} />
             <Route path="/scenario/create_event/:id" element={<CreateEvent scenarios={scenarios}/>} />
             <Route path="/scenario/edit/:id" element={<EditScenario scenarios={scenarios}/>} />
             <Route path="/tax-info" element={<TaxInfo />} />

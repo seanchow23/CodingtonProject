@@ -21,7 +21,7 @@ export default function CreateScenario({ scenarios }) {
         rmd: [],
         rothStrategy: [],
         rothOptimizer: false,
-        sharingSettings: "",
+        sharing: "",
         financialGoal: "",
         state: "",
     });
@@ -64,7 +64,7 @@ export default function CreateScenario({ scenarios }) {
             rmd: [],
             rothStrategy: [],
             rothOptimizer: formData.rothOptimizer,
-            sharingSettings: formData.sharingSettings,
+            sharing: formData.sharing,
             financialGoal: formData.financialGoal,
             state: formData.state,
         };

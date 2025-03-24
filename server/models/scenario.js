@@ -18,7 +18,7 @@ const scenarioSchema = new mongoose.Schema({
     rmd: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
     rothStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
     rothOptimizer: { type: Boolean, default: false },
-    sharingSettings: { type: String },
+    sharing: { type: String },
     financialGoal: { type: Number, required: true },
     state: { type: String, required: true },
 });
