@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 
 export default function CreateScenario({ scenarios }) {
@@ -21,7 +21,7 @@ export default function CreateScenario({ scenarios }) {
         rmd: [],
         rothStrategy: [],
         rothOptimizer: false,
-        sharingSettings: "",
+        sharing: "",
         financialGoal: "",
         state: "",
     });
@@ -33,7 +33,7 @@ export default function CreateScenario({ scenarios }) {
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
     };
 
-    const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value }); console.log(e.target.value)};
+    const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
 
     const addScenario = (newScenario) => {
         scenarios.push(newScenario);
@@ -64,7 +64,7 @@ export default function CreateScenario({ scenarios }) {
             rmd: [],
             rothStrategy: [],
             rothOptimizer: formData.rothOptimizer,
-            sharingSettings: formData.sharingSettings,
+            sharing: formData.sharing,
             financialGoal: formData.financialGoal,
             state: formData.state,
         };

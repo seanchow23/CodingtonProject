@@ -3,6 +3,7 @@ import Income from "./event_series/income";
 import Expense from "./event_series/expense";
 import Invest from "./event_series/income";
 import Rebalance from "./event_series/rebalance";
+import Investment from "./investment";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
@@ -11,16 +12,35 @@ const Scenario = () => {
     const navigate = useNavigate();
     const {scenario} = location.state;
 
-    const createEvent = () => { navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
+    const createEvent = () => {navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
+    const editScenario = () => {navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } }); }
+    const createInvestment = () => {navigate(`/scenario/create_investment/${scenario._id}`, { state: { scenario } });};
 
     return (
         <div className="scenario">
-            <h1>{scenario.name} <button  className="edit-button" onClick={() => navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } })}>
-                Edit </button>
-            </h1>
+            <h1>{scenario.name}<button className="edit-button" onClick={editScenario}>Edit</button></h1>
+            <h2>Scenario Details</h2>
+            <p>Marital Status: {scenario.married == "true" ? "Married" : "Single"}</p>
+            <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.lifeExpectancyUser}</p>
+            {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.lifeExpectancySpouse}</p>}
+            <p>Inflation: {scenario.inflation}%</p>
+            <p>Annual Contribution Limit: ${scenario.annualLimit}</p>
+            <p>Roth Optimizer: {scenario.rothOptimizer === true ? "Active" : "Inactive"}</p>
+            {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}
+            <p>Financial Goal: ${scenario.financialGoal}</p>
+            <p>State: {scenario.state}</p>
+            <h2>Investments</h2>
+            <div className="scenario_investments">
+                <ul className="list_event_series">
+                    {scenario.investments.map(investment => (
+                        <Investment key={investment._id} investment={investment}/>
+                    ))}
+                </ul>       
+            </div>
+            <h2>Event Series</h2>
             <div className="scenario_event_series">
                 <div className="income_event_series">
-                    <h2>Income Events</h2>
+                    <h3>Income Events</h3>
                     <ul className="list_event_series">
                         {scenario.events.filter(event => event.type === 'income').map(event => (
                             <Income key={event._id} event={event}/>
@@ -28,7 +48,7 @@ const Scenario = () => {
                     </ul>
                 </div>
                 <div className="expense_event_series">
-                    <h2>Expense Events</h2>
+                    <h3>Expense Events</h3>
                     <ul className="list_event_series">
                         {scenario.events.filter(event => event.type === 'expense').map(event => (
                             <Expense key={event._id} event={event}/>
@@ -36,7 +56,7 @@ const Scenario = () => {
                     </ul>
                 </div>
                 <div className="invest_event_series">
-                    <h2>Invest Events</h2>
+                    <h3>Invest Events</h3>
                     <ul className="list_event_series">
                         {scenario.events.filter(event => event.type === 'invest').map(event => (
                             <Invest key={event._id} event={event}/>
@@ -44,7 +64,7 @@ const Scenario = () => {
                     </ul>
                 </div>
                 <div className="rebalance_event_series">
-                    <h2>Rebalance</h2>
+                    <h3>Rebalance</h3>
                     <ul className="list_event_series">
                         {scenario.events.filter(event => event.type === 'rebalance').map(event => (
                             <Rebalance key={event._id} event={event}/>
@@ -52,7 +72,37 @@ const Scenario = () => {
                     </ul>
                 </div>
             </div>
-            <button onClick={createEvent}>Add Event Series</button>
+            <h2>Strategies</h2>
+            <div className="scenario_strategies">
+                <h3>Spending Strategy</h3>
+                <ul className="list_event_series">
+                    {scenario.events.filter(event => event.type === 'expense').filter(event => event.discretionary === true).map(event => (
+                        <Expense key={event._id} event={event}/>
+                    ))}
+                </ul>
+                <h3>Withdrawal Strategy</h3>
+                <ul className="list_event_series">
+                    {scenario.investments.map(investment => (
+                        <Investment key={investment._id} investment={investment}/>
+                    ))}
+                </ul>  
+                <h3>Roth Optimizer Strategy</h3>
+                <ul className="list_event_series">
+                    {scenario.investments.filter(investment => investment.taxStatus === 'pre-tax retirement').map(investment => (
+                        <Investment key={investment._id} investment={investment}/>
+                    ))}
+                </ul>
+                <h3>RMD</h3>
+                <ul className="list_event_series">
+                    {scenario.investments.filter(investment => investment.taxStatus === 'pre-tax retirement').map(investment => (
+                        <Investment key={investment._id} investment={investment}/>
+                    ))}
+                </ul>
+            </div>
+            <div className="button_div">
+                <button onClick={createInvestment}>Add Investment</button>
+                <button onClick={createEvent}>Add Event Series</button>
+            </div>
         </div>
     );
 }

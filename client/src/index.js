@@ -5,14 +5,13 @@ import './index.css';
 import Home from './components/home'
 import reportWebVitals from './reportWebVitals';
 import './stylesheets/styles.css';
-import './stylesheets/event_series.css';
+import './stylesheets/scenario.css';
 import { BrowserRouter } from "react-router-dom"
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-
     <BrowserRouter>
       <Home/>
     </BrowserRouter>
