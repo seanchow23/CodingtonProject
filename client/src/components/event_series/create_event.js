@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 
-export default function CreateEvent() {
+export default function CreateEvent({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
 
@@ -49,9 +49,16 @@ export default function CreateEvent() {
             change: formData.change,
             inflation: formData.inflation,
             ss: formData.ss,
-            type: formData.eventType
+            type: formData.eventType,
+            discretionary: formData.discretionary,
+            allocation: formData.allocation,
+            max: formData.max
         };
-        setEvents((prevEvents) => {navigate(`/scenario/${scenario._id}`, { state: { scenario: { ...scenario, events: [...prevEvents, newEvent] }}});});
+        setEvents((prevEvents) => {
+            const newEvents = [...prevEvents, newEvent]
+            scenarios.find(s => s._id === scenario._id).events = newEvents;
+            navigate(`/scenario/${scenario._id}`, { state: { scenario: { ...scenario, events: newEvents }}});
+        });
     };
     
     return (
@@ -117,7 +124,7 @@ function InputField({ id, type, value, checked, onChange, children }) {
     return (
       <div>
         <label htmlFor={id}>{children}*</label>
-        <input type={type} id={id} name={id} value={value} checked={checked} onChange={onChange} required />
+        <input type={type} id={id} name={id} value={value} checked={checked} onChange={onChange} required={type !== 'checkbox'} />
       </div>
     );
 }
