@@ -2,21 +2,22 @@ import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 
-export default function CreateInvestments({ scenarios }) {
+export default function EditInvestments({ scenarios }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const {scenario} = location.state
+    const {investment} = location.state
+    const investmentType = investment.investmentType
 
     const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        expectedAnnualReturn: "",
-        expenseRatio: "",
-        expectedAnnualIncome: "",
-        taxability: "",
-        value: "",
-        taxStatus: ""
+        name: investmentType.name,
+        description: investmentType.description,
+        expectedAnnualReturn: investmentType.expectedAnnualReturn,
+        expenseRatio: investmentType.expenseRatio,
+        expectedAnnualIncome: investmentType.expectedAnnualIncome,
+        taxability: investmentType.taxability,
+        value: investment.value,
+        taxStatus: investment.taxStatus
     });
     
     const [error, setError] = useState("");
@@ -26,12 +27,6 @@ export default function CreateInvestments({ scenarios }) {
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
     };
 
-    const addInvestment = (newInvestment) => {
-        const currentScenario = scenarios.find(s => s._id === scenario._id);
-        currentScenario.investments.push(newInvestment);
-        navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
-    }
-
     const submit = (e) => {
         e.preventDefault();
         const check = Object.keys(formData).find((key) => formData[key] < 0);
@@ -39,22 +34,18 @@ export default function CreateInvestments({ scenarios }) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
         }
-        const newInvestmentType = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            name: formData.name,
-            description: formData.description,
-            expectedAnnualReturn: formData.expectedAnnualReturn,
-            expenseRatio: formData.expenseRatio,
-            expectedAnnualIncome: formData.expectedAnnualIncome,
-            taxability: formData.taxability,
-        }
-        const newInvestment = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            investmentType: newInvestmentType,
-            value: formData.value,
-            taxStatus: formData.taxStatus
-        };
-        addInvestment(newInvestment);
+        const target = scenarios.find(s => s.investments.find(i => i._id === investment._id));
+        const target_investment = target.investments.find(i => i._id === investment._id);
+        const target_investmentType = target_investment.investmentType;
+        target_investmentType.name = formData.name;
+        target_investmentType.description = formData.description;
+        target_investmentType.expectedAnnualReturn = formData.expectedAnnualReturn;
+        target_investmentType.expenseRatio = formData.expenseRatio;
+        target_investmentType.expectedAnnualIncome = formData.expectedAnnualIncome;
+        target_investmentType.taxability = formData.taxability;
+        target_investment.value = formData.value;
+        target_investment.taxStatus = formData.taxStatus;
+        navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
 
     return (

@@ -30,11 +30,6 @@ export default function EditScenario({ scenarios }) {
 
     const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
 
-    const addScenario = (newScenario) => {
-        scenarios.push(newScenario);
-        navigate('/');
-    };
-
     const submit = (e) => {
         e.preventDefault();
         const check = Object.keys(formData).find((key) => formData[key] < 0);
