@@ -1,43 +1,34 @@
 import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
-import InputField from "../input_field";
+import InputField from "./input_field";
 
-export default function CreateEvent({ scenarios }) {
+export default function EditEvent({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
 
-    const {scenario} = location.state
+    const {event} = location.state
 
     const [formData, setFormData] = useState({
-        type: "",
-        name: "",
-        description: "",
-        startYear: new Date().getFullYear(),
-        duration: 1,
-        amount: "",
-        change: "",
-        inflation: false,
-        ss: false,
-        discretionary: false,
-        allocation: "",
-        max: ""
+        type: event.type,
+        name: event.name,
+        description: event.description,
+        startYear: event.startYear,
+        duration: event.duration,
+        amount: event.amount,
+        change: event.change,
+        inflation: event.inflation,
+        ss: event.ss,
+        discretionary: event.discretionary,
+        allocation: event.allocation,
+        max: event.max
     });
 
     const [error, setError] = useState("");
-    
-    const handleRadioChange = (e) => {setFormData({ ...formData, type: e.target.value });};
     
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
     };
-
-    const addEvent = (newEvent) => {
-        const currentScenario = scenarios.find(s => s._id === scenario._id);
-        currentScenario.events.push(newEvent);
-        if (newEvent.type === "expense" && newEvent.discretionary === true) {currentScenario.spendingStrategy.push(newEvent);}
-        navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
-    }
 
     const submit = (e) => {
         e.preventDefault();
@@ -46,32 +37,26 @@ export default function CreateEvent({ scenarios }) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
         }
-        const newEvent = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            name: formData.name,
-            description: formData.description,
-            startYear: formData.startYear,
-            duration: formData.duration,
-            amount: formData.amount,
-            change: formData.change,
-            inflation: formData.inflation,
-            ss: formData.ss,
-            type: formData.type,
-            discretionary: formData.discretionary,
-            allocation: formData.allocation,
-            max: formData.max
-        };
-        addEvent(newEvent);
+        const target = scenarios.find(s => s.events.find(e => e._id === event._id));
+        const target_event = target.events.find(e => e._id === event._id);
+        target_event.type = formData.type;
+        target_event.name = formData.name;
+        target_event.description = formData.description;
+        target_event.startYear = formData.startYear;
+        target_event.duration = formData.duration;
+        target_event.amount = formData.amount;
+        target_event.change = formData.change;
+        target_event.inflation = formData.inflation;
+        target_event.ss = formData.ss;
+        target_event.discretionary = formData.discretionary;
+        target_event.allocation = formData.allocation;
+        target_event.max = formData.max;
+        navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
     
     return (
         <div id = "add_event">
             <form onSubmit={submit}>
-                <label htmlFor="type">Select Event Type*</label>
-                <input type="radio" name="type" value="income" onChange={handleRadioChange} required/> Income
-                <input type="radio" name="type" value="expense" onChange={handleRadioChange} required/> Expense
-                <input type="radio" name="type" value="invest" onChange={handleRadioChange} required/> Invest
-
                 <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Event Name</InputField>
 
                 <label htmlFor="description">Description</label>

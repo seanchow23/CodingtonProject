@@ -1,6 +1,10 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 
 const Invest = ({ event }) => {
+    const navigate = useNavigate();
+    const editEvent = () => {navigate(`/scenario/edit_event/${event._id}`, { state: { event } });};
+
     return (
         <div className="event_series">
             <h2 id={event._id}>{event.name}</h2>
@@ -9,7 +13,7 @@ const Invest = ({ event }) => {
             <p>Duration: {event.duration}</p>
             <p>Allocation: {event.allocation}</p>
             <p>Maximum: {event.max}</p>
-            <button>Edit</button>
+            <button className="edit-button" onClick={editEvent}>Edit</button>
         </div>
     );
 };

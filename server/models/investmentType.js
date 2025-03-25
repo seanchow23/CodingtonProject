@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+/* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
 
 const investmentTypeSchema = new mongoose.Schema({
     name: { type: String, required: true },
