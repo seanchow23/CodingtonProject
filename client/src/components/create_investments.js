@@ -29,6 +29,11 @@ export default function CreateInvestments({ scenarios }) {
     const addInvestment = (newInvestment) => {
         const currentScenario = scenarios.find(s => s._id === scenario._id);
         currentScenario.investments.push(newInvestment);
+        currentScenario.withdrawalStrategy.push(newInvestment);
+        if (newInvestment.taxStatus === 'pre-tax retirement') {
+            currentScenario.rmd.push(newInvestment);
+            currentScenario.rothStrategy.push(newInvestment);
+        }
         navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
     }
 

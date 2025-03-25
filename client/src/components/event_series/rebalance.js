@@ -13,7 +13,7 @@ const Rebalance = ({ event }) => {
             <p>Duration: {event.duration}</p>
             <p>Allocation: {event.allocation}</p>
             <p>Change: {event.change}</p>
-            <button onClick={editEvent}>Edit</button>
+            <button className="edit-button" onClick={editEvent}>Edit</button>
         </div>
     );
 };

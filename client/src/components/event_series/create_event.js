@@ -35,6 +35,7 @@ export default function CreateEvent({ scenarios }) {
     const addEvent = (newEvent) => {
         const currentScenario = scenarios.find(s => s._id === scenario._id);
         currentScenario.events.push(newEvent);
+        if (newEvent.type === "expense" && newEvent.discretionary === true) {currentScenario.spendingStrategy.push(newEvent);}
         navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
     }
 

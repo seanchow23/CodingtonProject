@@ -10,7 +10,7 @@ const Investment = ({ investment }) => {
             <h2 id={investment._id}>{investment.investmentType.name}</h2>
             <p>Value: {investment.value}</p>
             <p>Tax Status: {investment.taxStatus}</p>
-            <button onClick={editInvestment}>Edit</button>
+            <button className="edit-button" s onClick={editInvestment}>Edit</button>
         </div>
     );
 };

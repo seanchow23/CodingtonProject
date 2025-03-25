@@ -13,7 +13,7 @@ const Invest = ({ event }) => {
             <p>Duration: {event.duration}</p>
             <p>Allocation: {event.allocation}</p>
             <p>Maximum: {event.max}</p>
-            <button onClick={editEvent}>Edit</button>
+            <button className="edit-button" onClick={editEvent}>Edit</button>
         </div>
     );
 };

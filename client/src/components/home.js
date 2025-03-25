@@ -101,8 +101,8 @@ function Home() {
       <Navbar />
         <main className="home-main">
           <Routes>
-            <Route path="/" element={<ScenarioList scenarios={scenarios} />} />
-            <Route path="/scenario/:id" element={<Scenario />} />
+            <Route path="/" element={<ScenarioList scenarios={scenarios}/>} />
+            <Route path="/scenario/:id" element={<Scenario scenarios={scenarios}/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/user_profile" element={<UserProfile />} />
             <Route path="/scenario/create" element={<CreateScenario scenarios={scenarios}/>} />
