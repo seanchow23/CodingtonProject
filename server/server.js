@@ -47,7 +47,7 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
-// Tax API Route
+// Tax API Route we utlized chat gpt to help understand how to fetch the scraped data from our JSON files and display on our react front end
 app.get('/api/tax/federal', (req, res) => {
   const fs = require('fs');
   const path = require('path');
@@ -76,18 +76,9 @@ app.get('/api/tax/deductions', (req, res) => {
 });
 
 
-app.get('/api/tax/capital-gains', (req, res) => {
-  const file = path.join(__dirname, 'data/capital_gains.json');
-  try {
-    const data = fs.readFileSync(file, 'utf8');
-    res.json(JSON.parse(data));
-  } catch (err) {
-    console.error('❌ Error reading capital gains data:', err.message);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
-// 🔥 Only one listen!
+
+// listen on port 5000
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

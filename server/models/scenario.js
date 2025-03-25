@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 var Event = require('./event.js');
 var Investment = require('./investment.js');
+/* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
 
 const scenarioSchema = new mongoose.Schema({
     name: { type: String, required: true },

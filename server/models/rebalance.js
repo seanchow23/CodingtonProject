@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Event = require('./event.js');
+/* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
 
 // Rebalance Schema
 var RebalanceSchema = new mongoose.Schema({

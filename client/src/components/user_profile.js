@@ -2,7 +2,7 @@
 import React from 'react';
 import '../stylesheets/user_profile.css';
 import { FaDownload, FaTrash } from 'react-icons/fa';
-
+// we generated the following code using chatgpt. We fed our wireframe for figma and prompted gpt "how can we make a similar html layout"
 export default function UserProfile() {
   return (
     <div className="user-profile-container">
