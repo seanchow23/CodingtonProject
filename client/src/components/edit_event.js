@@ -39,7 +39,6 @@ export default function EditEvent({ scenarios }) {
         }
         const target = scenarios.find(s => s.events.find(e => e._id === event._id));
         const target_event = target.events.find(e => e._id === event._id);
-        target_event.type = formData.type;
         target_event.name = formData.name;
         target_event.description = formData.description;
         target_event.startYear = formData.startYear;
