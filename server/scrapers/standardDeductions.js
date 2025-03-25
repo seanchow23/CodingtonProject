@@ -49,9 +49,9 @@ async function scrapeStandardDeductions() {
     }
 
     fs.writeFileSync(outputPath, JSON.stringify(deductions, null, 2));
-    console.log(`✅ Saved standard deductions to ${outputPath}`);
+    console.log(`Saved standard deductions to ${outputPath}`);
   } catch (err) {
-    console.error('❌ Failed to scrape standard deductions:', err.message);
+    console.error('Failed to scrape standard deductions:', err.message);
   }
 }
 

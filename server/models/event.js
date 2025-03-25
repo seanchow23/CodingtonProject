@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-
+/* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
 // Base Event Schema
 var EventSchema = new mongoose.Schema({
     name: { type: String, required: true },

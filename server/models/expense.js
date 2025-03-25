@@ -1,6 +1,8 @@
 var mongoose = require('mongoose');
 var Event = require('./event.js');
 
+/* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
+
 // Expense Schema
 var ExpenseSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
