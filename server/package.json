@@ -10,7 +10,9 @@
     "mongoose": "^8.12.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "react-script": "^2.0.5",
+    "react-scripts": "^5.0.1"
   },
   "name": "server",
   "version": "1.0.0",
