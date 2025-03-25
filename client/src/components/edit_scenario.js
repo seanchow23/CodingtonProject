@@ -1,97 +1,170 @@
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import InputField from "./input_field";
+import React, { useState, useEffect } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import Navbar from "./navBar";
 
-export default function EditScenario({ scenarios }) {
-    const location = useLocation()
-    const navigate = useNavigate();
-    
-    const {scenario} = location.state
+const EditScenario = () => {
+  const { id } = useParams();
+  const { state } = useLocation();
+  const [formData, setFormData] = useState({
+    name: "",
+    married: false,
+    dob: "",
+    spouse_dob: "",
+    life_expectancy: "",
+    spouse_expectancy: 0,
+    goal: "",
+    inflation: "",
+    optimizer: false,
+    initial_limit: ""
+  });
 
-    const [formData, setFormData] = useState({
-        name: scenario.name,
-        married: scenario.married,
-        birthYearUser: scenario.birthYearUser,
-        birthYearSpouse: scenario.birthYearSpouse,
-        lifeExpectancyUser: scenario.lifeExpectancyUser,
-        lifeExpectancySpouse: scenario.lifeExpectancySpouse,
-        inflation: scenario.inflation,
-        annualLimit: scenario.annualLimit,
-        financialGoal: scenario.financialGoal,
-        state: scenario.state
-    });
-    
-    const [error, setError] = useState("");
+  useEffect(() => {
+    if (state?.scenario) {
+      setFormData(state.scenario);
+    } else {
+      // Fetch logic can go here if needed
+      console.warn("No scenario data provided.");
+    }
+  }, [state]);
 
-    const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({...formData, [name]: type === "checkbox" ? checked : value});
-    };
+  const handleChange = (e) => {
+    const { name, type, value, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-    const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Updated scenario:", formData);
+    alert("Scenario updated!");
+    // Optional: Redirect or save to backend
+  };
 
-    const submit = (e) => {
-        e.preventDefault();
-        const check = Object.keys(formData).find((key) => formData[key] < 0);
-        if (check) {
-            setError(`The ${check} field cannot have a negative value.`);
-            return;
-        }
-        const target = scenarios.find(s => s._id === scenario._id)
-        target.name = formData.name;
-        target.married = formData.married;
-        target.birthYearUser = formData.birthYearUser;
-        target.birthYearSpouse = formData.birthYearSpouse;
-        target.lifeExpectancyUser = formData.lifeExpectancyUser;
-        target.lifeExpectancySpouse = formData.lifeExpectancySpouse;
-        target.inflation = formData.inflation;
-        target.annualLimit = formData.annualLimit;
-        target.financialGoal = formData.financialGoal;
-        target.state = formData.state;
-        navigate(`/scenario/${target._id}`, { state: { scenario: target }});
-    };
+  return (
+    <div className="home-container">
+      <main className="home-main">
+        <h1 className="home-title">Edit Scenario</h1>
+        <form className="scenario-form" onSubmit={handleSubmit}>
+          <label className="form-label">
+            Name:
+            <input
+              className="form-input"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-    const states = [
-        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
-        "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-        "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
-        "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
-        "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
-        "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-        "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
-        "Wisconsin", "Wyoming",
-    ];
+          <label className="form-label">
+            Married:
+            <input
+              type="checkbox"
+              name="married"
+              checked={formData.married}
+              onChange={handleChange}
+            />
+          </label>
 
-    return (
-        <div id = "add_event">
-            <form onSubmit={submit}>
-                <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Scenario Name</InputField>
-                
-                <label htmlFor="married">Marital Status*</label>
-                <input type="radio" name="married" value={false} onChange={handleRadioChange} required/> Single
-                <input type="radio" name="married" value={true} onChange={handleRadioChange} required/> Married
+          <label className="form-label">
+            Date of Birth:
+            <input
+              type="date"
+              className="form-input"
+              name="dob"
+              value={formData.dob}
+              onChange={handleChange}
+            />
+          </label>
 
-                <InputField id="birthYearUser" type="number" value={formData.birthYearUser} onChange={handleInputChange}>Birth Year</InputField>
-                <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy</InputField>
+          {formData.married && (
+            <label className="form-label">
+              Spouse Date of Birth:
+              <input
+                type="date"
+                className="form-input"
+                name="spouse_dob"
+                value={formData.spouse_dob}
+                onChange={handleChange}
+              />
+            </label>
+          )}
 
-                {formData.married === "true" && <InputField id="birthYearSpouse" type="number" value={formData.birthYearSpouse} onChange={handleInputChange}>Spouse Birth Year</InputField>}
-                {formData.married === "true" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse} onChange={handleInputChange}>Spouse Life Expectancy</InputField>}
+          <label className="form-label">
+            Life Expectancy:
+            <input
+              type="number"
+              className="form-input"
+              name="life_expectancy"
+              value={formData.life_expectancy}
+              onChange={handleChange}
+            />
+          </label>
 
-                <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation</InputField>
-                <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit</InputField>
+          {formData.married && (
+            <label className="form-label">
+              Spouse Life Expectancy:
+              <input
+                type="number"
+                className="form-input"
+                name="spouse_expectancy"
+                value={formData.spouse_expectancy}
+                onChange={handleChange}
+              />
+            </label>
+          )}
 
-                <InputField id="rothOptimizer" type="checkbox" checked={formData.rothOptimizer} onChange={handleInputChange}>Roth Optimizer</InputField>
-                <InputField id="financialGoal" type="number" value={formData.financialGoal} onChange={handleInputChange}>Financial Goal</InputField>
+          <label className="form-label">
+            Goal:
+            <input
+              type="number"
+              className="form-input"
+              name="goal"
+              value={formData.goal}
+              onChange={handleChange}
+            />
+          </label>
 
-                <label htmlFor="state">State of Residence</label>
-                <select id="state" name="state" value={formData.state} onChange={handleInputChange} required>
-                    <option value="">--Select a State--</option>
-                    {states.map((state, index) => (<option key={index} value={state}>{state}</option>))}
-                </select>
+          <label className="form-label">
+            Inflation Rate (%):
+            <input
+              type="number"
+              step="0.01"
+              className="form-input"
+              name="inflation"
+              value={formData.inflation}
+              onChange={handleChange}
+            />
+          </label>
 
-                <button type="submit">Submit</button>
-                {error && <div className="error">{error}</div>}
-            </form>
-        </div>      
-    )
-}
+          <label className="form-label">
+            Use Optimizer:
+            <input
+              type="checkbox"
+              name="optimizer"
+              checked={formData.optimizer}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label className="form-label">
+            Initial Spending Limit:
+            <input
+              type="number"
+              className="form-input"
+              name="initial_limit"
+              value={formData.initial_limit}
+              onChange={handleChange}
+            />
+          </label>
+
+          <button type="submit" className="create-button">Save Changes</button>
+        </form>
+      </main>
+    </div>
+  );
+};
+
+export default EditScenario;
