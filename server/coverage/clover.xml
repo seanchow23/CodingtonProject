@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1742857195088" clover="3.2.0">
-  <project timestamp="1742857195088" name="All files">
+<coverage generated="1742870126171" clover="3.2.0">
+  <project timestamp="1742870126171" name="All files">
     <metrics statements="47" coveredstatements="40" conditionals="4" coveredconditionals="3" methods="10" coveredmethods="6" elements="61" coveredelements="49" complexity="0" loc="47" ncloc="47" packages="1" files="2" classes="2"/>
     <file name="app.js" path="C:\Users\abass\.vscode\CSE416\CodingtonProject\server\app.js">
       <metrics statements="39" coveredstatements="35" conditionals="4" coveredconditionals="3" methods="7" coveredmethods="6"/>
