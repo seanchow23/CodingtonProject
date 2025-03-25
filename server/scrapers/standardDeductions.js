@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function scrapeStandardDeductions() {
-  const url = 'https://www.irs.gov/publications/p17'; // Pub 17 main page
+  const url = 'https://www.irs.gov/publications/p17'; // url for publication 17 main page
 
   try {
     const { data: html } = await axios.get(url);
@@ -12,7 +12,7 @@ async function scrapeStandardDeductions() {
 
     const deductions = [];
 
-    // Look for a table related to standard deductions
+    // look for a table related to standard deductions
     $('table').each((i, table) => {
       const heading = $(table).prev('h3,h2,h4').text().toLowerCase();
       if (heading.includes('standard deduction')) {

@@ -4,11 +4,12 @@ const fs = require('fs');
 const path = require('path');
 
 async function scrapeTaxBrackets() {
+  // fetch data from irs webpage
   const url = 'https://www.irs.gov/filing/federal-income-tax-rates-and-brackets';
   const { data: html } = await axios.get(url);
   const $ = cheerio.load(html);
   const results = [];
-
+   //display table data
   $('table tbody tr').each((i, row) => {
     const cells = $(row).find('td').map((i, el) => $(el).text().trim()).get();
     if (cells.length >= 3) {
