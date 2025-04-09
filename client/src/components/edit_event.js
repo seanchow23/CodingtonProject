@@ -78,9 +78,9 @@ export default function EditEvent({ scenarios }) {
 function AddIncomeEvent({ formData, onChange }) {
     return (
         <div>
-            <InputField id="amount" type="number" value={formData.amount} onChange={onChange}>Inital Amount</InputField>
-            <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Increase</InputField>
-            <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation</InputField>
+            <InputField id="amount" type="number" value={formData.amount} onChange={onChange}>Inital Amount ($)</InputField>
+            <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Increase ($)</InputField>
+            <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation (%)</InputField>
             <InputField id="ss" type="checkbox" checked={formData.ss} onChange={onChange}>Social Security</InputField>
         </div>
     );
@@ -89,9 +89,9 @@ function AddIncomeEvent({ formData, onChange }) {
 function AddExpenseEvent({ formData, onChange }) {
     return (
         <div>
-            <InputField id="amount" type="number" value={formData.amount} onChange={onChange}>Inital Amount</InputField>
-            <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Decrease</InputField>
-            <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation</InputField>
+            <InputField id="amount" type="number" value={formData.amount} onChange={onChange}>Inital Amount ($)</InputField>
+            <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Decrease ($)</InputField>
+            <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation (%)</InputField>
             <InputField id="discretionary" type="checkbox" checked={formData.discretionary} onChange={onChange}>Discretionary</InputField>
         </div>
     );
