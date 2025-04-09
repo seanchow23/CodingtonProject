@@ -14,6 +14,7 @@ import CreateInvestments from "./create_investments.js";
 import EditScenario from "./edit_scenario";
 import EditInvestments from "./edit_investments.js";
 import EditEvent from "./edit_event.js";
+import Simulation from "./simulation.js";
 
 function Home() {
   const scenarios = [];
@@ -23,8 +24,8 @@ function Home() {
       <Navbar />
         <main className="home-main">
           <Routes>
-            <Route path="/" element={<ScenarioList scenarios={scenarios}/>} />
-            <Route path="/scenario/:id" element={<Scenario scenarios={scenarios}/>} />
+            <Route path="/" element={<ScenarioList scenarios={scenarios} simulate={false}/>} />
+            <Route path="/scenario/:id" element={<Scenario/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/user_profile" element={<UserProfile />} />
             <Route path="/scenario/create" element={<CreateScenario scenarios={scenarios}/>} />
@@ -33,6 +34,7 @@ function Home() {
             <Route path="/scenario/edit/:id" element={<EditScenario scenarios={scenarios}/>} />
             <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios}/>} />
             <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
+            <Route path="/simulation/:id" element={<Simulation />} />
             <Route path="/tax-info" element={<TaxInfo />} />
           </Routes>
         </main>
