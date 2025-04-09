@@ -6,7 +6,7 @@ import Scenario from "./scenario.js";
 import { Route, Routes } from "react-router-dom"
 import Login from "./login.js"
 import UserProfile from "./user_profile.js"
-import TaxInfo from "./taxinfo.js"; // adjust path if needed
+import TaxInfo from "./taxinfo.js";
 
 import CreateEvent from "./event_series/create_event.js";
 import CreateScenario from "./create_scenario";
