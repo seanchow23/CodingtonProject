@@ -7,7 +7,7 @@ import Investment from "./investment";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
-export default function Scenario({ scenarios }) {
+export default function Scenario() {
     const location = useLocation()
     const navigate = useNavigate();
     const {scenario} = location.state;
@@ -15,6 +15,7 @@ export default function Scenario({ scenarios }) {
     const createEvent = () => {navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
     const editScenario = () => {navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } }); }
     const createInvestment = () => {navigate(`/scenario/create_investment/${scenario._id}`, { state: { scenario } });};
+    const runSimulation = () => {navigate(`/simulation/${scenario._id}`, { state: { scenario } });};
 
     return (
         <div className="scenario">
@@ -104,6 +105,7 @@ export default function Scenario({ scenarios }) {
             <div className="button_div">
                 <button className="edit-button" onClick={createInvestment}>Add Investment</button>
                 <button className="edit-button" onClick={createEvent}>Add Event Series</button>
+                <button className="edit-button" onClick={runSimulation}>Run Simulation</button>
             </div>
         </div>
     );

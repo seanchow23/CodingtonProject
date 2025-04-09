@@ -35,7 +35,9 @@ export default function CreateScenario({ scenarios }) {
 
     const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
 
-    const addScenario = (newScenario) => {
+    const addScenario = (newScenario, newInvestment) => {
+        newScenario.investments = [newInvestment];
+        newScenario.withdrawalStrategy = [newInvestment];
         scenarios.push(newScenario);
         navigate('/');
     };
@@ -46,7 +48,7 @@ export default function CreateScenario({ scenarios }) {
         if (check) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
-        }
+        };
         const newScenario = {
             _id: Math.floor(Math.random() * 1000) + 1000,
             name: formData.name,
@@ -68,7 +70,22 @@ export default function CreateScenario({ scenarios }) {
             financialGoal: formData.financialGoal,
             state: formData.state,
         };
-        addScenario(newScenario)
+        const newInvestmentType = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            name: "Cash",
+            description: "",
+            expectedAnnualReturn: 0,
+            expenseRatio: 0,
+            expectedAnnualIncome: 0,
+            taxability: false,
+        };
+        const newInvestment = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            investmentType: newInvestmentType,
+            value: 0,
+            taxStatus: "non-retirement"
+        };
+        addScenario(newScenario, newInvestment)
     };
 
     const states = [
@@ -97,7 +114,7 @@ export default function CreateScenario({ scenarios }) {
                 {formData.married === "true" && <InputField id="birthYearSpouse" type="number" value={formData.birthYearSpouse} onChange={handleInputChange}>Spouse Birth Year</InputField>}
                 {formData.married === "true" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse} onChange={handleInputChange}>Spouse Life Expectancy</InputField>}
 
-                <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation</InputField>
+                <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation (%)</InputField>
                 <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit</InputField>
 
                 <InputField id="rothOptimizer" type="checkbox" checked={formData.rothOptimizer} onChange={handleInputChange}>Roth Optimizer</InputField>
