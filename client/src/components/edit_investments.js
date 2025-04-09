@@ -17,7 +17,6 @@ export default function EditInvestments({ scenarios }) {
         expectedAnnualIncome: investmentType.expectedAnnualIncome,
         taxability: investmentType.taxability,
         value: investment.value,
-        taxStatus: investment.taxStatus
     });
     
     const [error, setError] = useState("");
@@ -44,7 +43,6 @@ export default function EditInvestments({ scenarios }) {
         target_investmentType.expectedAnnualIncome = formData.expectedAnnualIncome;
         target_investmentType.taxability = formData.taxability;
         target_investment.value = formData.value;
-        target_investment.taxStatus = formData.taxStatus;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
 
@@ -61,14 +59,6 @@ export default function EditInvestments({ scenarios }) {
                 <InputField id="expenseRatio" type="number" value={formData.expenseRatio} onChange={handleInputChange}>Expense Ratio (%)</InputField>
                 <InputField id="value" type="number" value={formData.value} onChange={handleInputChange}>Value ($)</InputField>
                 <InputField id="taxability" type="checkbox" checked={formData.taxability} onChange={handleInputChange}>Taxability</InputField>
-
-                <label htmlFor="taxStatus">Account Type</label>
-                <select id="taxStatus" name="taxStatus" value={formData.taxStatus} onChange={handleInputChange} required>
-                    <option value="">--Select Account Type--</option>
-                    <option value="non-retirement">non-retirement</option>
-                    <option value="pre-tax retirement">pre-tax retirement</option>
-                    <option value="after-tax retirement">after-tax retirement</option>
-                </select>
 
                 <button type="submit">Submit</button>
                 {error && <div className="error">{error}</div>}
