@@ -69,8 +69,8 @@ export default function CreateEvent({ scenarios }) {
             <form onSubmit={submit}>
                 <label htmlFor="type">Select Event Type*</label>
                 <input type="radio" name="type" value="income" onChange={handleRadioChange} required/> Income
-                <input type="radio" name="type" value="expense" onChange={handleRadioChange} required/> Expense
-                <input type="radio" name="type" value="invest" onChange={handleRadioChange} required/> Invest
+                <input type="radio" name="type" value="expense" onChange={handleRadioChange} /> Expense
+                <input type="radio" name="type" value="invest" onChange={handleRadioChange} /> Invest
 
                 <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Event Name</InputField>
 
