@@ -10,9 +10,9 @@ const Expense = ({ event }) => {
             <h2 id={event._id}>{event.name}</h2>
             {event.description && <p>Description: {event.description}</p>}
             <p>Start Year: {event.start_year}</p>
-            <p>Duration: {event.duration}</p>
-            <p>Initial Amount: {event.amount}</p>
-            <p>Expected Annual Change: {event.change}</p>
+            <p>Duration: {event.duration} {event.duration === 1 ? 'Year' : 'Years'}</p>
+            <p>Initial Amount: ${event.amount}</p>
+            <p>Expected Annual Change: ${event.change}</p>
             {event.inflation && <p>Inflation Adjusted</p>}
             {event.discretionary && <p>Discretionary Expense</p>}
             <button className="edit-button" onClick={editEvent}>Edit</button>

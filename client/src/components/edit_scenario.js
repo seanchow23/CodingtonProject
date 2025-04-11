@@ -69,7 +69,7 @@ export default function EditScenario({ scenarios }) {
                 
                 <label htmlFor="married">Marital Status*</label>
                 <input type="radio" name="married" value={false} onChange={handleRadioChange} required/> Single
-                <input type="radio" name="married" value={true} onChange={handleRadioChange} required/> Married
+                <input type="radio" name="married" value={true} onChange={handleRadioChange} /> Married
 
                 <InputField id="birthYearUser" type="number" value={formData.birthYearUser} onChange={handleInputChange}>Birth Year</InputField>
                 <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy (Years)</InputField>
