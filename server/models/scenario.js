@@ -11,6 +11,7 @@ const scenarioSchema = new mongoose.Schema({
     lifeExpectancyUser: { type: Number, required: true },
     lifeExpectancySpouse: { type: Number },
     investments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
+    investmentTypes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
     inflation: { type: Number, required: true },
     annualLimit: { type: Number, required: true },
