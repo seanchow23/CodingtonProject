@@ -10,7 +10,7 @@ export default function Simulation() {
     const simulated_scenarios = [scenario];
     var prev_scenario = scenario;
     var next_scenario = null;
-    var year = 2025;
+    var year = new Date().getFullYear();
     var tax = 0;
 
     do {

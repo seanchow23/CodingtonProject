@@ -29,7 +29,14 @@ export default function CreateInvestments({ scenarios }) {
         if (newInvestment.taxStatus === 'pre-tax retirement') {
             currentScenario.rmd.push(newInvestment);
             currentScenario.rothStrategy.push(newInvestment);
-        };
+        } else {
+            const newAllocation = {
+                _id: Math.floor(Math.random() * 1000) + 1000,
+                investment: newInvestment,
+                percentage: 0
+            }
+            currentScenario.events.filter(event => event.type === 'invest').map(event => event.allocations.push(newAllocation))
+        }
         navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
     }
 
@@ -46,7 +53,6 @@ export default function CreateInvestments({ scenarios }) {
             value: formData.value,
             taxStatus: formData.taxStatus
         };
-        console.log(newInvestment)
         addInvestment(newInvestment);
     };
 

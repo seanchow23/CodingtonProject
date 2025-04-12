@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Income from "./event_series/income";
 import Expense from "./event_series/expense";
-import Invest from "./event_series/income";
+import Invest from "./event_series/invest";
 import Rebalance from "./event_series/rebalance";
 import Investment from "./investment";
 import InvestmentType from "./investment_type";
