@@ -56,6 +56,21 @@ export default function CreateScenario({ scenarios }) {
             value: 0,
             taxStatus: "non-retirement"
         };
+        const newAllocation = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            investment: newInvestment,
+            percentage: 100
+        }
+        const newInvestEvent  = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            type: "invest",
+            name: "Default Invest Event",
+            description: "",
+            startYear: new Date().getFullYear(),
+            duration: 1,
+            allocations: [newAllocation],
+            max: 0
+        }
         const newScenario = {
             _id: Math.floor(Math.random() * 1000) + 1000,
             name: formData.name,
@@ -66,7 +81,7 @@ export default function CreateScenario({ scenarios }) {
             lifeExpectancySpouse: formData.lifeExpectancySpouse,
             investments: [newInvestment],
             investmentTypes: [newInvestmentType],
-            events: [],
+            events: [newInvestEvent],
             inflation: formData.inflation,
             annualLimit: formData.annualLimit,
             spendingStrategy: [],
