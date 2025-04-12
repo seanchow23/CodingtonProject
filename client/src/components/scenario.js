@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import Income from "./event_series/income";
 import Expense from "./event_series/expense";
-import Invest from "./event_series/income";
+import Invest from "./event_series/invest";
 import Rebalance from "./event_series/rebalance";
 import Investment from "./investment";
+import InvestmentType from "./investment_type";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
@@ -15,6 +16,7 @@ export default function Scenario() {
     const createEvent = () => {navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
     const editScenario = () => {navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } }); }
     const createInvestment = () => {navigate(`/scenario/create_investment/${scenario._id}`, { state: { scenario } });};
+    const createInvestmentType = () => {navigate(`/scenario/create_investment_type/${scenario._id}`, { state: { scenario } });};
     const runSimulation = () => {navigate(`/simulation/${scenario._id}`, { state: { scenario } });};
 
     return (
@@ -31,6 +33,14 @@ export default function Scenario() {
                 {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}
                 <p>Financial Goal: ${scenario.financialGoal}</p>
                 <p>State: {scenario.state}</p>
+            </div>
+            <h2>Investment Types</h2>
+            <div className="scenario_investments">
+                <ul className="list_event_series">
+                    {scenario.investmentTypes.map(investmentType => (
+                        <InvestmentType key={investmentType._id} investmentType={investmentType}/>
+                    ))}
+                </ul>       
             </div>
             <h2>Investments</h2>
             <div className="scenario_investments">
@@ -103,6 +113,7 @@ export default function Scenario() {
                 </ul>
             </div>
             <div className="button_div">
+                <button className="edit-button" onClick={createInvestmentType}>Add Investment Type</button>
                 <button className="edit-button" onClick={createInvestment}>Add Investment</button>
                 <button className="edit-button" onClick={createEvent}>Add Event Series</button>
                 <button className="edit-button" onClick={runSimulation}>Run Simulation</button>

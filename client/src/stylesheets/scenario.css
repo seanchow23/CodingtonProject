@@ -36,6 +36,13 @@
     max-width: 100%; /* Ensure it takes the full width of its container */
 }
 
+.event_series ul {
+    margin-bottom: 10px; /* Space between paragraphs */
+    white-space: normal; /* Allow text to wrap to the next line */
+    word-wrap: break-word; /* Allow long words to break and wrap */
+    max-width: 100%; /* Ensure it takes the full width of its container */
+}
+
 label {
     font-size: 16px;
     color: #333;
@@ -60,13 +67,6 @@ select {
 textarea {
     height: 120px;
     resize: vertical;
-}
-
-/* Checkbox and radio button styling */
-input[type="checkbox"],
-input[type="radio"] {
-    margin-right: 10px;
-    margin-top: 5px;
 }
 
 /* Section for each event type */
@@ -101,10 +101,6 @@ input[type="radio"] {
     margin-bottom: 30px;
 }
 
-input[type="radio"]:checked {
-    background-color: #007bff;
-}
-
 /* Styling input fields when focused */
 input:focus,
 textarea:focus {
@@ -133,6 +129,7 @@ form > div {
     border: none;
     font-weight: 500;
     cursor: pointer;
+    margin-top: auto;
 }
 
 .button_div {

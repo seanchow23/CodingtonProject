@@ -12,14 +12,8 @@ export default function CreateScenario({ scenarios }) {
         birthYearSpouse: 2000,
         lifeExpectancyUser: "",
         lifeExpectancySpouse: "",
-        investments: [],
-        events: [],
         inflation: "",
         annualLimit: "",
-        spendingStrategy: [],
-        withdrawalStrategy: [],
-        rmd: [],
-        rothStrategy: [],
         rothOptimizer: false,
         sharing: "",
         financialGoal: "",
@@ -35,9 +29,7 @@ export default function CreateScenario({ scenarios }) {
 
     const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
 
-    const addScenario = (newScenario, newInvestment) => {
-        newScenario.investments = [newInvestment];
-        newScenario.withdrawalStrategy = [newInvestment];
+    const addScenario = (newScenario) => {
         scenarios.push(newScenario);
         navigate('/');
     };
@@ -48,27 +40,6 @@ export default function CreateScenario({ scenarios }) {
         if (check) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
-        };
-        const newScenario = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            name: formData.name,
-            married: formData.married,
-            birthYearUser: formData.birthYearUser,
-            birthYearSpouse: formData.birthYearSpouse,
-            lifeExpectancyUser: formData.lifeExpectancyUser,
-            lifeExpectancySpouse: formData.lifeExpectancySpouse,
-            investments: [],
-            events: [],
-            inflation: formData.inflation,
-            annualLimit: formData.annualLimit,
-            spendingStrategy: [],
-            withdrawalStrategy: [],
-            rmd: [],
-            rothStrategy: [],
-            rothOptimizer: formData.rothOptimizer,
-            sharing: formData.sharing,
-            financialGoal: formData.financialGoal,
-            state: formData.state,
         };
         const newInvestmentType = {
             _id: Math.floor(Math.random() * 1000) + 1000,
@@ -85,7 +56,44 @@ export default function CreateScenario({ scenarios }) {
             value: 0,
             taxStatus: "non-retirement"
         };
-        addScenario(newScenario, newInvestment)
+        const newAllocation = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            investment: newInvestment,
+            percentage: 100
+        }
+        const newInvestEvent  = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            type: "invest",
+            name: "Default Invest Event",
+            description: "",
+            startYear: new Date().getFullYear(),
+            duration: 1,
+            allocations: [newAllocation],
+            max: 0
+        }
+        const newScenario = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            name: formData.name,
+            married: formData.married,
+            birthYearUser: formData.birthYearUser,
+            birthYearSpouse: formData.birthYearSpouse,
+            lifeExpectancyUser: formData.lifeExpectancyUser,
+            lifeExpectancySpouse: formData.lifeExpectancySpouse,
+            investments: [newInvestment],
+            investmentTypes: [newInvestmentType],
+            events: [newInvestEvent],
+            inflation: formData.inflation,
+            annualLimit: formData.annualLimit,
+            spendingStrategy: [],
+            withdrawalStrategy: [newInvestment],
+            rmd: [],
+            rothStrategy: [],
+            rothOptimizer: formData.rothOptimizer,
+            sharing: formData.sharing,
+            financialGoal: formData.financialGoal,
+            state: formData.state,
+        };
+        addScenario(newScenario)
     };
 
     const states = [
@@ -106,7 +114,7 @@ export default function CreateScenario({ scenarios }) {
                 
                 <label htmlFor="married">Marital Status*</label>
                 <input type="radio" name="married" value={false} onChange={handleRadioChange} required/> Single
-                <input type="radio" name="married" value={true} onChange={handleRadioChange} required/> Married
+                <input type="radio" name="married" value={true} onChange={handleRadioChange} /> Married
 
                 <InputField id="birthYearUser" type="number" value={formData.birthYearUser} onChange={handleInputChange}>Birth Year</InputField>
                 <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy (Years)</InputField>
