@@ -11,8 +11,9 @@ const Invest = ({ event }) => {
             {event.description && <p>Description: {event.description}</p>}
             <p>Start Year: {event.start_year}</p>
             <p>Duration: {event.duration}</p>
-            <p>Allocation: {event.allocation}</p>
             <p>Maximum: {event.max}</p>
+            <p>Allocations:</p>
+            {event.allocations.map(((alloc) => (<ul key={alloc._id}>{alloc.investment.investmentType.name}: {alloc.percentage}%</ul>)))}
             <button className="edit-button" onClick={editEvent}>Edit</button>
         </div>
     );

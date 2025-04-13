@@ -7,14 +7,10 @@ export default function CreateInvestments({ scenarios }) {
     const navigate = useNavigate();
 
     const {scenario} = location.state
+    const investmentTypes = scenario.investmentTypes
 
     const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        expectedAnnualReturn: "",
-        expenseRatio: "",
-        expectedAnnualIncome: "",
-        taxability: "",
+        investmentType: "",
         value: "",
         taxStatus: ""
     });
@@ -33,6 +29,13 @@ export default function CreateInvestments({ scenarios }) {
         if (newInvestment.taxStatus === 'pre-tax retirement') {
             currentScenario.rmd.push(newInvestment);
             currentScenario.rothStrategy.push(newInvestment);
+        } else {
+            const newAllocation = {
+                _id: Math.floor(Math.random() * 1000) + 1000,
+                investment: newInvestment,
+                percentage: 0
+            }
+            currentScenario.events.filter(event => event.type === 'invest').map(event => event.allocations.push(newAllocation))
         }
         navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
     }
@@ -43,19 +46,10 @@ export default function CreateInvestments({ scenarios }) {
         if (check) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
-        }
-        const newInvestmentType = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            name: formData.name,
-            description: formData.description,
-            expectedAnnualReturn: formData.expectedAnnualReturn,
-            expenseRatio: formData.expenseRatio,
-            expectedAnnualIncome: formData.expectedAnnualIncome,
-            taxability: formData.taxability,
-        }
+        };
         const newInvestment = {
             _id: Math.floor(Math.random() * 1000) + 1000,
-            investmentType: newInvestmentType,
+            investmentType: investmentTypes[formData.investmentType],
             value: formData.value,
             taxStatus: formData.taxStatus
         };
@@ -65,16 +59,13 @@ export default function CreateInvestments({ scenarios }) {
     return (
         <div id = "add_event">
             <form onSubmit={submit}>
-                <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Investment Name</InputField>
+                <label htmlFor="investmentType">Select Investment Type*</label>
+                <select id="investmentType" name="investmentType" value={formData.investmentType} onChange={handleInputChange} required>
+                    <option value="">--Select Investment Type--</option>
+                    {investmentTypes.map((investmentType, index) => (<option key={index} value={index}>{investmentType.name}</option>))}
+                </select>
 
-                <label htmlFor="description">Description</label>
-                <textarea type="text" id="description" name="description" value={formData.description} onChange={handleInputChange}></textarea>
-
-                <InputField id="expectedAnnualReturn" type="number" value={formData.expectedAnnualReturn} onChange={handleInputChange}>Expected Annual Return (%)</InputField>
-                <InputField id="expectedAnnualIncome" type="number" value={formData.expectedAnnualIncome} onChange={handleInputChange}>Expected Annual Income ($)</InputField>
-                <InputField id="expenseRatio" type="number" value={formData.expenseRatio} onChange={handleInputChange}>Expense Ratio (%)</InputField>
                 <InputField id="value" type="number" value={formData.value} onChange={handleInputChange}>Value ($)</InputField>
-                <InputField id="taxability" type="checkbox" checked={formData.taxability} onChange={handleInputChange}>Taxability</InputField>
 
                 <label htmlFor="taxStatus">Account Type</label>
                 <select id="taxStatus" name="taxStatus" value={formData.taxStatus} onChange={handleInputChange} required>

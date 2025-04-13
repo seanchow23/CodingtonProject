@@ -12,14 +12,8 @@ export default function CreateScenario({ scenarios }) {
         birthYearSpouse: 2000,
         lifeExpectancyUser: "",
         lifeExpectancySpouse: "",
-        investments: [],
-        events: [],
         inflation: "",
         annualLimit: "",
-        spendingStrategy: [],
-        withdrawalStrategy: [],
-        rmd: [],
-        rothStrategy: [],
         rothOptimizer: false,
         sharing: "",
         financialGoal: "",
@@ -46,6 +40,36 @@ export default function CreateScenario({ scenarios }) {
         if (check) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
+        };
+        const newInvestmentType = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            name: "Cash",
+            description: "",
+            expectedAnnualReturn: 0,
+            expenseRatio: 0,
+            expectedAnnualIncome: 0,
+            taxability: false,
+        };
+        const newInvestment = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            investmentType: newInvestmentType,
+            value: 0,
+            taxStatus: "non-retirement"
+        };
+        const newAllocation = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            investment: newInvestment,
+            percentage: 100
+        }
+        const newInvestEvent  = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            type: "invest",
+            name: "Default Invest Event",
+            description: "",
+            startYear: new Date().getFullYear(),
+            duration: 1,
+            allocations: [newAllocation],
+            max: 0
         }
         const newScenario = {
             _id: Math.floor(Math.random() * 1000) + 1000,
@@ -55,12 +79,13 @@ export default function CreateScenario({ scenarios }) {
             birthYearSpouse: formData.birthYearSpouse,
             lifeExpectancyUser: formData.lifeExpectancyUser,
             lifeExpectancySpouse: formData.lifeExpectancySpouse,
-            investments: [],
-            events: [],
+            investments: [newInvestment],
+            investmentTypes: [newInvestmentType],
+            events: [newInvestEvent],
             inflation: formData.inflation,
             annualLimit: formData.annualLimit,
             spendingStrategy: [],
-            withdrawalStrategy: [],
+            withdrawalStrategy: [newInvestment],
             rmd: [],
             rothStrategy: [],
             rothOptimizer: formData.rothOptimizer,
@@ -89,19 +114,19 @@ export default function CreateScenario({ scenarios }) {
                 
                 <label htmlFor="married">Marital Status*</label>
                 <input type="radio" name="married" value={false} onChange={handleRadioChange} required/> Single
-                <input type="radio" name="married" value={true} onChange={handleRadioChange} required/> Married
+                <input type="radio" name="married" value={true} onChange={handleRadioChange} /> Married
 
                 <InputField id="birthYearUser" type="number" value={formData.birthYearUser} onChange={handleInputChange}>Birth Year</InputField>
-                <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy</InputField>
+                <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy (Years)</InputField>
 
                 {formData.married === "true" && <InputField id="birthYearSpouse" type="number" value={formData.birthYearSpouse} onChange={handleInputChange}>Spouse Birth Year</InputField>}
-                {formData.married === "true" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse} onChange={handleInputChange}>Spouse Life Expectancy</InputField>}
+                {formData.married === "true" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse} onChange={handleInputChange}>Spouse Life Expectancy (Years)</InputField>}
 
-                <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation</InputField>
-                <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit</InputField>
+                <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation (%)</InputField>
+                <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit ($)</InputField>
 
                 <InputField id="rothOptimizer" type="checkbox" checked={formData.rothOptimizer} onChange={handleInputChange}>Roth Optimizer</InputField>
-                <InputField id="financialGoal" type="number" value={formData.financialGoal} onChange={handleInputChange}>Financial Goal</InputField>
+                <InputField id="financialGoal" type="number" value={formData.financialGoal} onChange={handleInputChange}>Financial Goal ($)</InputField>
 
                 <label htmlFor="state">State of Residence</label>
                 <select id="state" name="state" value={formData.state} onChange={handleInputChange} required>
