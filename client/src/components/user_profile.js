@@ -1,9 +1,34 @@
 // UserProfile.js
-import React from 'react';
+import React, { useState } from 'react';
+
 import '../stylesheets/user_profile.css';
 import { FaDownload, FaTrash } from 'react-icons/fa';
 // we generated the following code using chatgpt. We fed our wireframe for figma and prompted gpt "how can we make a similar html layout"
 export default function UserProfile() {
+  const [message, setMessage] = useState('');
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('yamlFile', file);
+
+    try {
+      const res = await fetch('http://localhost:5001/api/tax/upload-state-yaml', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      setMessage(data.message || "Upload successful");
+    } catch (err) {
+      console.error("Upload failed", err);
+      setMessage("Upload failed");
+    }
+  };
+
+
+
   return (
     <div className="user-profile-container">
       <section className="card user-info">
@@ -17,6 +42,8 @@ export default function UserProfile() {
             <input placeholder="Phone" />
           </div>
         </div>
+
+       
         <p className="change-photo">Change Photo</p>
       </section>
 
@@ -36,16 +63,12 @@ export default function UserProfile() {
         <p className="invite-member">+ Invite New Member</p>
       </section>
 
-      <section className="card yaml-files">
-        <h2>Saved YAML Files</h2>
-        <div className="yaml-entry">
-          <p>retirement_plan_2025.yaml</p>
-          <div className="yaml-actions">
-            <FaDownload />
-            <FaTrash />
-          </div>
-        </div>
+      <section className="card yaml-upload">
+        <h2>Upload State Tax YAML File</h2>
+        <input type="file" accept=".yaml,.yml" onChange={handleFileUpload} />
+        {message && <p>{message}</p>}
       </section>
+
 
       <section className="card tax-settings">
         <h2>Tax Settings</h2>
@@ -72,3 +95,5 @@ export default function UserProfile() {
     </div>
   );
 }
+
+
