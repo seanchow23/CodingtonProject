@@ -17,7 +17,7 @@ import EditInvestmentTypes from "./edit_investment_types.js";
 import EditInvestments from "./edit_investments.js";
 import EditEvent from "./edit_event.js";
 import Simulation from "./simulation.js";
-
+import ChartTest from "./chart_test.js"
 function Home() {
   const scenarios = [];
 
@@ -40,6 +40,7 @@ function Home() {
             <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
             <Route path="/simulation/:id" element={<Simulation />} />
             <Route path="/tax-info" element={<TaxInfo />} />
+            <Route path="/chart-test" element={<ChartTest />} />
           </Routes>
         </main>
     </div>
