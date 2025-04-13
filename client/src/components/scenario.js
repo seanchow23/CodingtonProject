@@ -7,7 +7,7 @@ import Investment from "./investment";
 import { useLocation, useNavigate } from "react-router-dom";
 
 
-const Scenario = () => {
+export default function Scenario({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
     const {scenario} = location.state;
@@ -20,15 +20,17 @@ const Scenario = () => {
         <div className="scenario">
             <h1>{scenario.name}<button className="edit-button" onClick={editScenario}>Edit</button></h1>
             <h2>Scenario Details</h2>
-            <p>Marital Status: {scenario.married == "true" ? "Married" : "Single"}</p>
-            <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.lifeExpectancyUser}</p>
-            {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.lifeExpectancySpouse}</p>}
-            <p>Inflation: {scenario.inflation}%</p>
-            <p>Annual Contribution Limit: ${scenario.annualLimit}</p>
-            <p>Roth Optimizer: {scenario.rothOptimizer === true ? "Active" : "Inactive"}</p>
-            {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}
-            <p>Financial Goal: ${scenario.financialGoal}</p>
-            <p>State: {scenario.state}</p>
+            <div className="details_div">
+                <p>Marital Status: {scenario.married == "true" ? "Married" : "Single"}</p>
+                <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.lifeExpectancyUser}</p>
+                {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.lifeExpectancySpouse}</p>}
+                <p>Inflation: {scenario.inflation}%</p>
+                <p>Annual Contribution Limit: ${scenario.annualLimit}</p>
+                <p>Roth Optimizer: {scenario.rothOptimizer === true ? "Active" : "Inactive"}</p>
+                {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}
+                <p>Financial Goal: ${scenario.financialGoal}</p>
+                <p>State: {scenario.state}</p>
+            </div>
             <h2>Investments</h2>
             <div className="scenario_investments">
                 <ul className="list_event_series">
@@ -76,35 +78,33 @@ const Scenario = () => {
             <div className="scenario_strategies">
                 <h3>Spending Strategy</h3>
                 <ul className="list_event_series">
-                    {scenario.events.filter(event => event.type === 'expense').filter(event => event.discretionary === true).map(event => (
+                    {scenario.spendingStrategy.map(event => (
                         <Expense key={event._id} event={event}/>
                     ))}
                 </ul>
                 <h3>Withdrawal Strategy</h3>
                 <ul className="list_event_series">
-                    {scenario.investments.map(investment => (
+                    {scenario.withdrawalStrategy.map(investment => (
                         <Investment key={investment._id} investment={investment}/>
                     ))}
                 </ul>  
                 <h3>Roth Optimizer Strategy</h3>
                 <ul className="list_event_series">
-                    {scenario.investments.filter(investment => investment.taxStatus === 'pre-tax retirement').map(investment => (
+                    {scenario.rmd.map(investment => (
                         <Investment key={investment._id} investment={investment}/>
                     ))}
                 </ul>
                 <h3>RMD</h3>
                 <ul className="list_event_series">
-                    {scenario.investments.filter(investment => investment.taxStatus === 'pre-tax retirement').map(investment => (
+                    {scenario.rothStrategy.map(investment => (
                         <Investment key={investment._id} investment={investment}/>
                     ))}
                 </ul>
             </div>
             <div className="button_div">
-                <button onClick={createInvestment}>Add Investment</button>
-                <button onClick={createEvent}>Add Event Series</button>
+                <button className="edit-button" onClick={createInvestment}>Add Investment</button>
+                <button className="edit-button" onClick={createEvent}>Add Event Series</button>
             </div>
         </div>
     );
 }
-
-export default Scenario

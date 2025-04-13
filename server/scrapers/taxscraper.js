@@ -23,13 +23,13 @@ async function scrapeTaxBrackets() {
   const outputDir = path.join(__dirname, '../data');
   const outputPath = path.join(outputDir, 'federal_tax_brackets.json');
 
-  // ✅ Ensure the directory exists
+  // ensure the directory exists
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2));
-  console.log(`✅ Saved ${results.length} tax brackets to ${outputPath}`);
+  console.log(`Saved ${results.length} tax brackets to ${outputPath}`);
 }
 
 scrapeTaxBrackets().catch(console.error);
