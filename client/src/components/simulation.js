@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import ScenarioList from "./scenario_list";
+import Investment from "./investment";
 
-export default function Simulation({ scenarios }) {
-    const location = useLocation();
-    const navigate = useNavigate();
-    const {scenario} = location.state;
-    const [scenario_list, setScenarioList] = useState([structuredClone(scenario)]);
+export default function simulation({ scenario }) {
+    const scenario_list = [structuredClone(scenario)];
+    const output = [[], [], [[], [], []]];
 
-    useEffect(() => {
+    //useEffect(() => {
     var year = 2025;
 
     // Get Taxes (need to connect to the scraper)
@@ -315,7 +311,7 @@ export default function Simulation({ scenarios }) {
         var after_scale_factor = 1 / (after_percentage / 100);
         var other_scale_factor = 1 / (other_percentage / 100);
 
-        if (CashInvestment.value > InvestEvent.max) {
+        if (CashInvestment.value > InvestEvent.max && allocations.length > 0) {
             const excess = CashInvestment.value - InvestEvent.max;
             var after_excess = excess * (after_percentage / 100);
             if (after_excess > scenario.annualLimit) { after_excess = scenario.annualLimit; }
@@ -378,7 +374,6 @@ export default function Simulation({ scenarios }) {
         for (const allocation of non_retirement_assets) {
             const expected_value = non_retirement_value * other_scale_factor * allocation.percentage / 100;
             const difference = expected_value - allocation.investment.value;
-            console.log(non_retirement_value, other_scale_factor, allocation.percentage, expected_value, difference)
             if (difference != 0) {
                 if (difference > 0) {
                     allocation.investment.value += difference;
@@ -429,15 +424,19 @@ export default function Simulation({ scenarios }) {
         prev_curYearGains = curYearGains;
         prev_curYearEarlyWithdrawals = curYearEarlyWithdrawals;
 
+        // Add to Output
+        const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);
+        output[0].push(Number(scenario.financialGoal) <= total_asset);
+        output[1].push(total_asset);
+        output[2][0].push(IncomeEvents);
+        output[2][1].push(ExpenseEvents);
+        output[2][2].push(Investments);
+
         const copy = structuredClone(scenario);
         copy._id = Math.floor(Math.random() * 1000) + 1000;
-        setScenarioList(prevList => [...prevList, copy]);
+        scenario_list.push(copy);
     }
-    }, [scenario]);
+    //}, [scenario]);
 
-    return (
-        <div>
-           <ScenarioList scenarios={scenario_list} simulate={true}/>
-        </div>
-    );
+    return output;
 }
