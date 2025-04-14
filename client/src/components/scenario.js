@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Income from "./event_series/income";
 import Expense from "./event_series/expense";
 import Invest from "./event_series/invest";
@@ -99,18 +99,8 @@ export default function Scenario() {
                         <Investment key={investment._id} investment={investment}/>
                     ))}
                 </ul>  
-                <h3>Roth Optimizer Strategy</h3>
-                <ul className="list_event_series">
-                    {scenario.rmd.map(investment => (
-                        <Investment key={investment._id} investment={investment}/>
-                    ))}
-                </ul>
-                <h3>RMD</h3>
-                <ul className="list_event_series">
-                    {scenario.rothStrategy.map(investment => (
-                        <Investment key={investment._id} investment={investment}/>
-                    ))}
-                </ul>
+                {scenario.rothOptimizer && <h3>Roth Optimizer Strategy</h3>}
+                {scenario.rothOptimizer && <p>Start Year: {scenario.rothStrategy[0]} - End Year: {scenario.rothStrategy[1]}</p>}
             </div>
             <div className="button_div">
                 <button className="edit-button" onClick={createInvestmentType}>Add Investment Type</button>

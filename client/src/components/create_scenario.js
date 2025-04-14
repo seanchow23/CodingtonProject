@@ -54,6 +54,7 @@ export default function CreateScenario({ scenarios }) {
             _id: Math.floor(Math.random() * 1000) + 1000,
             investmentType: newInvestmentType,
             value: 0,
+            baseValue: 0,
             taxStatus: "non-retirement"
         };
         const newAllocation = {
@@ -87,7 +88,7 @@ export default function CreateScenario({ scenarios }) {
             spendingStrategy: [],
             withdrawalStrategy: [newInvestment],
             rmd: [],
-            rothStrategy: [],
+            rothStrategy: [new Date().getFullYear(), new Date().getFullYear() + Number(formData.lifeExpectancyUser)],
             rothOptimizer: formData.rothOptimizer,
             sharing: formData.sharing,
             financialGoal: formData.financialGoal,
