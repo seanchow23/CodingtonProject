@@ -120,7 +120,7 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 
-function generateSimulations({ numSimulations = 30, numYears = 10 }) {
+/*function generateSimulations({ numSimulations = 30, numYears = 10 }) {
   const investmentTypes = ['401(k)', 'Roth IRA', 'Brokerage'];
   const incomeTypes = ['Salary', 'Freelance', 'Rental'];
   const expenseTypes = ['Housing', 'Food', 'Entertainment', 'Transport', 'Tax'];
@@ -153,21 +153,21 @@ function generateSimulations({ numSimulations = 30, numYears = 10 }) {
 
     simulations.push(sim);
   }
-
+  console.log(simulations)
   return { simulations };
-}
+}*/
 
 function buildAveragedSeries(simulations, categoryKey, valueKey, labelKey, years) {
   const totalsByType = {};
 
   simulations.forEach(sim => {
     sim.forEach((yearData, yearIndex) => {
-      yearData[categoryKey].forEach(item => {
-        const name = item[labelKey];
-        if (!totalsByType[name]) {
-          totalsByType[name] = Array(years.length).fill(0);
+      yearData.categoryKey.forEach(item => {
+        const name = item.labelKey;
+        if (!totalsByType.name) {
+          totalsByType.name = Array(years.length).fill(0);
         }
-        totalsByType[name][yearIndex] += item[valueKey];
+        totalsByType.name[yearIndex] += item.valueKey;
       });
     });
   });
@@ -180,17 +180,18 @@ function buildAveragedSeries(simulations, categoryKey, valueKey, labelKey, years
   return averagesByType;
 }
 
-export default function UnifiedStackedFinanceChart() {
+export default function UnifiedStackedFinanceChart({data}) {
   const startYear = 2025;
   const numYears = 10;
   const years = Array.from({ length: numYears }, (_, i) => startYear + i);
 
-  const { simulations } = generateSimulations({ numSimulations: 50, numYears });
+  const simulations = data;
+  console.log(simulations);
 
   // Get all individual named components, averaged
-  const investments = buildAveragedSeries(simulations, 'investments', 'value', 'name', years);
-  const income = buildAveragedSeries(simulations, 'income', 'amount', 'name', years);
-  const expenses = buildAveragedSeries(simulations, 'expenses', 'amount', 'name', years);
+  const investments = buildAveragedSeries(simulations, 2, 'value', 'name', years);
+  const income = buildAveragedSeries(simulations, 0, 'amount', 'name', years);
+  const expenses = buildAveragedSeries(simulations, 1, 'amount', 'name', years);
 
   // Merge everything into one flat list of traces
   const traces = [
