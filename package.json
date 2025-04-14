@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "dotenv": "^16.5.0",
+    "js-yaml": "^4.1.0",
+    "mongoose": "^8.13.2"
   }
 }
