@@ -1,5 +1,5 @@
-import React from 'react';
-import Plot from 'react-plotly.js';
+// import React from 'react';
+// import Plot from 'react-plotly.js';
 
 /*function generateSimulations({ numSimulations = 30, numYears = 10 }) {
   const investmentTypes = ['401(k)', 'Roth IRA', 'Brokerage'];
@@ -38,29 +38,8 @@ import Plot from 'react-plotly.js';
   return { simulations };
 }*/
 
-function buildAveragedSeries(simulations, categoryKey, valueKey, labelKey, years) {
-  const totalsByType = {};
-
-  simulations.forEach(sim => {
-    sim.forEach((yearData, yearIndex) => {
-      yearData[categoryKey].forEach(item => {
-        const name = item[labelKey];
-        if (!totalsByType[name]) {
-          totalsByType[name] = Array(years.length).fill(0);
-        }
-        totalsByType[name][yearIndex] += item[valueKey];
-      });
-    });
-  });
-
-  const averagesByType = {};
-  for (const [name, totals] of Object.entries(totalsByType)) {
-    averagesByType[name] = totals.map(total => total / simulations.length);
-  }
-  console.log(averagesByType);
-  return averagesByType;
-}
-
+import React from 'react';
+import Plot from 'react-plotly.js';
 
 export default function UnifiedStackedFinanceChart({ data }) {
   const startYear = 2025;
@@ -80,6 +59,8 @@ export default function UnifiedStackedFinanceChart({ data }) {
         const events = categoryData[yearIndex] || [];
 
         for (const event of events) {
+          if (typeof event.duration === 'number' && event.duration === 0) continue;
+
           const name = valueExtractor.name(event);
           const value = valueExtractor.value(event);
 
