@@ -52,16 +52,16 @@ export default function EditEvent({ scenarios }) {
         target_event.name = formData.name;
         target_event.description = formData.description;
         target_event.startYear = formData.startYear;
-        target_event.duration = formData.duration;
+        target_event.duration = Number(formData.duration);
         if (formData.type != "invest") {
-            target_event.amount = formData.amount;
-            target_event.change = formData.change;
-            target_event.inflation = formData.inflation;
+            target_event.amount = Number(formData.amount);
+            target_event.change = Number(formData.change);
+            target_event.inflation = Number(formData.inflation);
             if (formData.type == "income") { target_event.ss = formData.ss; }
             else { target_event.discretionary = formData.discretionary; }
         } else {
             target_event.allocations = formData.allocations;
-            target_event.max = formData.max;
+            target_event.max = Number(formData.max);
         }
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };

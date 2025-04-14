@@ -61,15 +61,15 @@ export default function CreateEvent({ scenarios }) {
             name: formData.name,
             description: formData.description,
             startYear: formData.startYear,
-            duration: formData.duration,
-            amount: formData.amount,
-            change: formData.change,
-            inflation: formData.inflation,
+            duration: Number(formData.duration),
+            amount: Number(formData.amount),
+            change: Number(formData.change),
+            inflation: Number(formData.inflation),
             ss: formData.ss,
             type: formData.type,
             discretionary: formData.discretionary,
             allocations: formData.allocations,
-            max: formData.max
+            max: Number(formData.max)
         };
         addEvent(newEvent);
     };
