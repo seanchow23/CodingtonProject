@@ -1,3 +1,43 @@
+// import React from 'react';
+// import Plot from 'react-plotly.js';
+
+/*function generateSimulations({ numSimulations = 30, numYears = 10 }) {
+  const investmentTypes = ['401(k)', 'Roth IRA', 'Brokerage'];
+  const incomeTypes = ['Salary', 'Freelance', 'Rental'];
+  const expenseTypes = ['Housing', 'Food', 'Entertainment', 'Transport', 'Tax'];
+
+  const simulations = [];
+
+  for (let s = 0; s < numSimulations; s++) {
+    const sim = [];
+
+    for (let y = 0; y < numYears; y++) {
+      const investments = investmentTypes.map(name => ({
+        name,
+        value: Math.round(5000 + Math.random() * 20000),
+      }));
+
+      const income = incomeTypes.map(name => ({
+        name,
+        amount: Math.round(10000 + Math.random() * 20000),
+      }));
+
+      const expenses = expenseTypes.map(name => ({
+        name,
+        amount: Math.round(
+          name === 'Tax' ? 3000 + Math.random() * 2000 : 2000 + Math.random() * 8000
+        ),
+      }));
+
+      sim.push({ investments, income, expenses });
+    }
+
+    simulations.push(sim);
+  }
+  console.log(simulations)
+  return { simulations };
+}*/
+
 import React from 'react';
 import Plot from 'react-plotly.js';
 
@@ -19,6 +59,8 @@ export default function UnifiedStackedFinanceChart({ data }) {
         const events = categoryData[yearIndex] || [];
 
         for (const event of events) {
+          if (typeof event.duration === 'number' && event.duration === 0) continue;
+
           const name = valueExtractor.name(event);
           const value = valueExtractor.value(event);
 
