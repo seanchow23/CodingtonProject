@@ -17,6 +17,7 @@ export default function EditScenario({ scenarios }) {
         lifeExpectancySpouse: scenario.lifeExpectancySpouse,
         inflation: scenario.inflation,
         annualLimit: scenario.annualLimit,
+        rothOptimizer: scenario.rothOptimizer,
         financialGoal: scenario.financialGoal,
         state: scenario.state
     });
@@ -46,6 +47,7 @@ export default function EditScenario({ scenarios }) {
         target.lifeExpectancySpouse = formData.lifeExpectancySpouse;
         target.inflation = formData.inflation;
         target.annualLimit = formData.annualLimit;
+        target.rothOptimizer = formData.rothOptimizer,
         target.financialGoal = formData.financialGoal;
         target.state = formData.state;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});

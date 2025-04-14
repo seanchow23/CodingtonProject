@@ -30,6 +30,7 @@ export default function EditInvestments({ scenarios }) {
         const target = scenarios.find(s => s.investments.find(i => i._id === investment._id));
         const target_investment = target.investments.find(i => i._id === investment._id);
         target_investment.value = formData.value;
+        target_investment.baseValue = formData.value;
         target_investment.taxStatus = formData.taxStatus;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };

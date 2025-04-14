@@ -25,9 +25,9 @@ export default function TaxInfo() {
       <table border="1" cellPadding="8" style={{ marginBottom: "2rem" }}>
         <thead>
           <tr>
-            <th>Filing Status</th>
-            <th>Income Range</th>
-            <th>Tax Rate</th>
+            <th>Tax Percentage</th>
+            <th>Income Range (Min)</th>
+            <th>Income Range (Max)</th>
           </tr>
         </thead>
         <tbody>

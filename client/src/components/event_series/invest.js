@@ -9,7 +9,7 @@ const Invest = ({ event }) => {
         <div className="event_series">
             <h2 id={event._id}>{event.name}</h2>
             {event.description && <p>Description: {event.description}</p>}
-            <p>Start Year: {event.start_year}</p>
+            <p>Start Year: {event.startYear}</p>
             <p>Duration: {event.duration}</p>
             <p>Maximum: {event.max}</p>
             <p>Allocations:</p>
