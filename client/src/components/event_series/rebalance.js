@@ -11,8 +11,8 @@ const Rebalance = ({ event }) => {
             {event.description && <p>Description: {event.description}</p>}
             <p>Start Year: {event.startYear}</p>
             <p>Duration: {event.duration}</p>
-            <p>Change: {event.change}</p>
-            <p>Allocation: {event.allocation}</p>
+            <p>Allocations:</p>
+            {event.allocations.map(((alloc) => (<ul key={alloc._id}>{alloc.investment.investmentType.name}: ${alloc.percentage}</ul>)))}
             <button className="edit-button" onClick={editEvent}>Edit</button>
         </div>
     );

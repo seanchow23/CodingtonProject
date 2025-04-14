@@ -1,15 +1,9 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import Plot from 'react-plotly.js';
 
-export default function Line_Chart() {
+export default function Line_Chart({ data }) {
   const startYear = 2025;
-  const simulations = [
-    [true, true, false, true, true],
-    [true, false, false, true, false],
-    [true, true, true, true, true],
-    [false, true, true, false, true],
-    [true, true, false, false, true],
-  ];
+  const simulations = data;
 
   const numYears = simulations[0].length;
   const years = Array.from({ length: numYears }, (_, i) => startYear + i);
