@@ -176,7 +176,7 @@ function buildAveragedSeries(simulations, categoryKey, valueKey, labelKey, years
   for (const [name, totals] of Object.entries(totalsByType)) {
     averagesByType[name] = totals.map(total => total / simulations.length);
   }
-
+  console.log(averagesByType);
   return averagesByType;
 }
 
