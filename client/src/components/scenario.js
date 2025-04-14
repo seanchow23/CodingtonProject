@@ -100,7 +100,7 @@ export default function Scenario() {
                     ))}
                 </ul>  
                 {scenario.rothOptimizer && <h3>Roth Optimizer Strategy</h3>}
-                {scenario.rothOptimizer && <p>Start Year: {scenario.rothStrategy[0]} - End Year: {scenario.rothStrategy[1]}</p>}
+                {scenario.rothOptimizer && <p>Start Year: {scenario.rothYears[0]} - End Year: {scenario.rothYears[1]}</p>}
             </div>
             <div className="button_div">
                 <button className="edit-button" onClick={createInvestmentType}>Add Investment Type</button>

@@ -43,12 +43,12 @@ export default function EditScenario({ scenarios }) {
         target.married = formData.married;
         target.birthYearUser = formData.birthYearUser;
         target.birthYearSpouse = formData.birthYearSpouse;
-        target.lifeExpectancyUser = formData.lifeExpectancyUser;
-        target.lifeExpectancySpouse = formData.lifeExpectancySpouse;
-        target.inflation = formData.inflation;
-        target.annualLimit = formData.annualLimit;
+        target.lifeExpectancyUser = Number(formData.lifeExpectancyUser);
+        target.lifeExpectancySpouse = Number(formData.lifeExpectancySpouse);
+        target.inflation = Number(formData.inflation);
+        target.annualLimit = Number(formData.annualLimit);
         target.rothOptimizer = formData.rothOptimizer,
-        target.financialGoal = formData.financialGoal;
+        target.financialGoal = Number(formData.financialGoal);
         target.state = formData.state;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };

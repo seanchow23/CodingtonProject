@@ -35,9 +35,9 @@ export default function EditInvestmentTypes({ scenarios }) {
         const target_investmentType = target.investmentTypes.find(i => i._id === investmentType._id);
         target_investmentType.name = formData.name;
         target_investmentType.description = formData.description;
-        target_investmentType.expectedAnnualReturn = formData.expectedAnnualReturn;
-        target_investmentType.expenseRatio = formData.expenseRatio;
-        target_investmentType.expectedAnnualIncome = formData.expectedAnnualIncome;
+        target_investmentType.expectedAnnualReturn = Number(formData.expectedAnnualReturn);
+        target_investmentType.expenseRatio = Number(formData.expenseRatio);
+        target_investmentType.expectedAnnualIncome = Number(formData.expectedAnnualIncome);
         target_investmentType.taxability = formData.taxability;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };

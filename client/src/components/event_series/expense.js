@@ -11,8 +11,8 @@ const Expense = ({ event }) => {
             {event.description && <p>Description: {event.description}</p>}
             <p>Start Year: {event.startYear}</p>
             <p>Duration: {event.duration} {event.duration === 1 ? 'Year' : 'Years'}</p>
-            <p>Initial Amount: ${event.amount.toFixed(2)}</p>
-            <p>Expected Annual Change: ${event.change.toFixed(2)}</p>
+            <p>Initial Amount: ${Number(event.amount).toFixed(2)}</p>
+            <p>Expected Annual Change: ${Number(event.change).toFixed(2)}</p>
             {event.inflation && <p>Inflation Adjusted</p>}
             {event.discretionary && <p>Discretionary Expense</p>}
             <button className="edit-button" onClick={editEvent}>Edit</button>
