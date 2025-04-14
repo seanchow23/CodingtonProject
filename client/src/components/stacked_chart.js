@@ -162,12 +162,12 @@ function buildAveragedSeries(simulations, categoryKey, valueKey, labelKey, years
 
   simulations.forEach(sim => {
     sim.forEach((yearData, yearIndex) => {
-      yearData.categoryKey.forEach(item => {
-        const name = item.labelKey;
-        if (!totalsByType.name) {
-          totalsByType.name = Array(years.length).fill(0);
+      yearData[categoryKey].forEach(item => {
+        const name = item[labelKey];
+        if (!totalsByType[name]) {
+          totalsByType[name] = Array(years.length).fill(0);
         }
-        totalsByType.name[yearIndex] += item.valueKey;
+        totalsByType[name][yearIndex] += item[valueKey];
       });
     });
   });
