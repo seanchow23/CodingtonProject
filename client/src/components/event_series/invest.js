@@ -13,7 +13,9 @@ const Invest = ({ event }) => {
             <p>Duration: {event.duration} {event.duration === 1 ? 'Year' : 'Years'}</p>
             <p>Maximum: ${Number(event.max).toFixed(2)}</p>
             <p>Allocations:</p>
-            {event.allocations.map(((alloc) => (<ul key={alloc._id}>{alloc.investment.investmentType.name}: {alloc.percentage}%</ul>)))}
+            {event.allocations
+                .filter(alloc => alloc.investment.investmentType.name !== "Cash")
+                .map(((alloc) => (<ul key={alloc._id}>{alloc.investment.investmentType.name}: {alloc.percentage}%</ul>)))}
             <button className="edit-button" onClick={editEvent}>Edit</button>
         </div>
     );

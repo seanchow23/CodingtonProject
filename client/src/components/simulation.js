@@ -66,6 +66,7 @@ export default function Simulation({ scenarios }) {
         const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
         const IncomeEvents = scenario.events.filter(event => event.type === 'income');
         const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
+        const InvestEvent = scenario.events.find(event => event.type === 'invest');
         const Investments = scenario.investments;
     
         var curYearIncome = 0;
@@ -93,8 +94,7 @@ export default function Simulation({ scenarios }) {
         if (age > 120) { age = 120; }
         if (age >= 74 && scenario.investments.find(investment => (investment.taxStatus === "pre-tax retirement"))) {
             const rmd = scenario.rmd;
-            var total = 0;
-            for (const investment of rmd) { total += Number(investment.value); }
+            var total = rmd.reduce((sum, investment) => sum + Number(investment.value), 0);
             var withdrawal = total / rmd_distributions[age - 72];
 
             for (const investment of rmd) {
@@ -133,9 +133,10 @@ export default function Simulation({ scenarios }) {
         for (const investment of Investments) {
             const data = investment.investmentType;
             investment.value = Number(investment.value);
+            investment.baseValue = Number(investment.baseValue);
             const prev = investment.value;
             if (data.taxability && investment.taxStatus === "non-retirement") { curYearIncome += Number(data.expectedAnnualIncome); }
-            investment.value *= 1 + Number(data.expectedAnnualReturn);
+            investment.value *= 1 + Number(data.expectedAnnualReturn) / 100;
             investment.value += Number(data.expectedAnnualIncome);
             const expense_ratio = (prev + investment.value) * Number(data.expenseRatio) / 2;
             investment.value -= expense_ratio;
@@ -215,9 +216,6 @@ export default function Simulation({ scenarios }) {
         }
 
         const payment = federal_tax + capital_gains_tax + early_withdrawal_tax + non_discretionary;
-        console.log(federal_tax, capital_gains_tax, early_withdrawal_tax, non_discretionary);
-        console.log(prev_curYearIncome);
-        console.log(prev_federal_brackets);
 
         // Pay Expense and Tax, Perform Withdrawals, Invest Extra Cash
         var withdrawal_amount = payment - CashInvestment.value;
@@ -294,8 +292,116 @@ export default function Simulation({ scenarios }) {
         }
 
         // Run Invest
+        InvestEvent.duration = 1;
+        const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+        allocations.map(allocation => allocation.percentage = Number(allocation.percentage));
 
-        // Run rebalance
+        const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
+        const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
+        var after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+        var other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+        const sum_percentage = after_percentage + other_percentage;
+
+        if (sum_percentage === 0) { 
+            allocations.map(allocation => allocation.percentage += 100 / allocations.length);
+            after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+            other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+        }
+        else if (sum_percentage != 100) {
+            const scale_factor = 1 / (sum_percentage / 100);
+            allocations.map(allocation => allocation.percentage *= scale_factor);
+        }
+
+        var after_scale_factor = 1 / (after_percentage / 100);
+        var other_scale_factor = 1 / (other_percentage / 100);
+
+        if (CashInvestment.value > InvestEvent.max) {
+            const excess = CashInvestment.value - InvestEvent.max;
+            var after_excess = excess * (after_percentage / 100);
+            if (after_excess > scenario.annualLimit) { after_excess = scenario.annualLimit; }
+            var other_excess = excess - after_excess;
+
+            CashInvestment.value = InvestEvent.max;
+            CashInvestment.baseValue = InvestEvent.max;
+
+            for (const allocation of allocations) {
+                var sum = other_excess * allocation.percentage / 100 * other_scale_factor;
+                if (allocation.investment.taxStatus === "after-tax retirement") {
+                    sum = after_excess * allocation.percentage / 100 * after_scale_factor;
+                }
+                allocation.investment.value += sum;
+                allocation.investment.baseValue += sum;
+            }
+        }
+
+        // Run Rebalance
+        const retirement_value = retirement_assets.reduce((sum, allocation) => sum + allocation.investment.value, 0);
+        const non_retirement_value = non_retirement_assets.reduce((sum, allocation) => sum + allocation.investment.value, 0);
+        const retirement_rebalance  = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            type: "rebalance",
+            name: "Retirement Rebalance",
+            description: "",
+            startYear: year,
+            duration: 1,
+            allocations: [],
+        }
+        for (const allocation of retirement_assets) {
+            const expected_value = retirement_value * after_scale_factor * allocation.percentage / 100;
+            const difference = expected_value - allocation.investment.value;
+            if (difference != 0) {
+                if (difference > 0) {
+                    allocation.investment.value += difference;
+                    allocation.investment.baseValue += difference;
+                } else {
+                    allocation.investment.baseValue *= (1 - (-difference / allocation.investment.value));
+                    allocation.investment.value += difference;
+                    if (age < 59) { curYearEarlyWithdrawals += -difference; }
+                }
+                const newAllocation = {
+                    _id: Math.floor(Math.random() * 1000) + 1000,
+                    investment: allocation.investment,
+                    percentage: difference
+                }
+                retirement_rebalance.allocations.push(newAllocation);
+            }
+        }
+        const non_retirement_rebalance  = {
+            _id: Math.floor(Math.random() * 1000) + 1000,
+            type: "rebalance",
+            name: "Non Retirement Rebalance",
+            description: "",
+            startYear: year,
+            duration: 1,
+            allocations: [],
+        }
+        for (const allocation of non_retirement_assets) {
+            const expected_value = non_retirement_value * other_scale_factor * allocation.percentage / 100;
+            const difference = expected_value - allocation.investment.value;
+            console.log(non_retirement_value, other_scale_factor, allocation.percentage, expected_value, difference)
+            if (difference != 0) {
+                if (difference > 0) {
+                    allocation.investment.value += difference;
+                    allocation.investment.baseValue += difference;
+                } else {
+                    allocation.investment.baseValue *= (1 - (-difference / allocation.investment.value));
+                    allocation.investment.value += difference;
+                    if (age < 59) { curYearEarlyWithdrawals += -difference; }
+                }
+                const newAllocation = {
+                    _id: Math.floor(Math.random() * 1000) + 1000,
+                    investment: allocation.investment,
+                    percentage: difference
+                }
+                non_retirement_rebalance.allocations.push(newAllocation);
+            }
+        }
+        var index = scenario.events.findIndex(event => event.name === "Retirement Rebalance");
+        if (index === -1) { scenario.events.push(retirement_rebalance); }
+        else { scenario.events[index] = retirement_rebalance; }
+        index = scenario.events.findIndex(event => event.name === "Non Retirement Rebalance");
+        if (index === -1) { scenario.events.push(non_retirement_rebalance); }
+        else { scenario.events[index] = non_retirement_rebalance; }
 
         // Adjust for inflation
         const inflation = 1 + Number(scenario.inflation) / 100;
