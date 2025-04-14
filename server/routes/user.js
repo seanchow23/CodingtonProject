@@ -1,17 +1,61 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const Scenario = require('../models/scenario'); // Needed for .populate() to work properly
 
-// Get current user (based on session)
-router.get('/me', (req, res) => {
-    if (req.isAuthenticated()) {
-      return res.json(req.user);
+// ----------------------------------------------------
+// GET /api/users/:id/scenarios
+// Get all scenarios for a specific user (by user ID)
+// ----------------------------------------------------
+router.get('/:id/scenarios', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).populate('scenarios');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json(user.scenarios);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ----------------------------------------------------
+// POST /api/users/:id/scenarios/:scenarioId
+// Add an existing scenario to a user's list (sharing)
+// ----------------------------------------------------
+router.post('/:id/scenarios/:scenarioId', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const scenarioId = req.params.scenarioId;
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Avoid duplicates
+    if (!user.scenarios.includes(scenarioId)) {
+      user.scenarios.push(scenarioId);
+      await user.save();
     }
-    res.status(401).json({ error: 'Not authenticated' });
-  });
-  
 
+    res.json({ message: 'Scenario shared with user', scenarios: user.scenarios });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// ----------------------------------------------------
+// GET /api/users/me
+// Get the currently authenticated user
+// ----------------------------------------------------
+router.get('/me', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.json(req.user);
+  }
+  res.status(401).json({ error: 'Not authenticated' });
+});
+
+// ----------------------------------------------------
+// GET /api/users
 // Get all users
+// ----------------------------------------------------
 router.get('/', async (req, res) => {
   try {
     const users = await User.find();
@@ -21,7 +65,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get one user
+// ----------------------------------------------------
+// GET /api/users/:id
+// Get a specific user by ID
+// ----------------------------------------------------
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -32,7 +79,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update user
+// ----------------------------------------------------
+// PUT /api/users/:id
+// Update a specific user by ID
+// ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
     const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -43,7 +93,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete user
+// ----------------------------------------------------
+// DELETE /api/users/:id
+// Delete a specific user by ID
+// ----------------------------------------------------
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await User.findByIdAndDelete(req.params.id);
