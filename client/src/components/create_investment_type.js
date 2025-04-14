@@ -14,7 +14,7 @@ export default function CreateInvestmentTypes({ scenarios }) {
         expectedAnnualReturn: "",
         expenseRatio: "",
         expectedAnnualIncome: "",
-        taxability: "",
+        taxability: false,
     });
     
     const [error, setError] = useState("");
@@ -41,9 +41,9 @@ export default function CreateInvestmentTypes({ scenarios }) {
             _id: Math.floor(Math.random() * 1000) + 1000,
             name: formData.name,
             description: formData.description,
-            expectedAnnualReturn: formData.expectedAnnualReturn,
-            expenseRatio: formData.expenseRatio,
-            expectedAnnualIncome: formData.expectedAnnualIncome,
+            expectedAnnualReturn: Number(formData.expectedAnnualReturn),
+            expenseRatio: Number(formData.expenseRatio),
+            expectedAnnualIncome: Number(formData.expectedAnnualIncome),
             taxability: formData.taxability,
         };
         addInvestmentType(newInvestmentType);

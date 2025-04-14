@@ -1,6 +1,6 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-
+/*
 //simulate financial data
 function generateSimulations({ numSimulations = 50, numYears = 20, startValue = 200000 }) {
     const simulations = [];
@@ -16,7 +16,7 @@ function generateSimulations({ numSimulations = 50, numYears = 20, startValue = 
         simulations.push(sim);
         }
         return simulations;
-    }
+    }*/
 
 function getPercentile(values, p) {
   const sorted = [...values].sort((a, b) => a - b);
@@ -27,11 +27,11 @@ function getPercentile(values, p) {
   return sorted[lower] * (1 - weight) + sorted[upper] * weight;
 }
 
-export default function Shaded_Chart() {
+export default function Shaded_Chart({ data }) {
   const startYear = 2025;
   const numYears = 20;
   const labels = Array.from({ length: numYears }, (_, i) => startYear + i);
-  const simulations = generateSimulations({});
+  const simulations = data;
 
   // Get percentile bands
   const getBand = (p) => labels.map((_, i) =>

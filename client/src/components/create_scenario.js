@@ -60,7 +60,7 @@ export default function CreateScenario({ scenarios }) {
         const newAllocation = {
             _id: Math.floor(Math.random() * 1000) + 1000,
             investment: newInvestment,
-            percentage: 100
+            percentage: 0
         }
         const newInvestEvent  = {
             _id: Math.floor(Math.random() * 1000) + 1000,
@@ -78,20 +78,21 @@ export default function CreateScenario({ scenarios }) {
             married: formData.married,
             birthYearUser: formData.birthYearUser,
             birthYearSpouse: formData.birthYearSpouse,
-            lifeExpectancyUser: formData.lifeExpectancyUser,
-            lifeExpectancySpouse: formData.lifeExpectancySpouse,
+            lifeExpectancyUser: Number(formData.lifeExpectancyUser),
+            lifeExpectancySpouse: Number(formData.lifeExpectancySpouse),
             investments: [newInvestment],
             investmentTypes: [newInvestmentType],
             events: [newInvestEvent],
-            inflation: formData.inflation,
-            annualLimit: formData.annualLimit,
+            inflation: Number(formData.inflation),
+            annualLimit: Number(formData.annualLimit),
             spendingStrategy: [],
             withdrawalStrategy: [newInvestment],
             rmd: [],
-            rothStrategy: [new Date().getFullYear(), new Date().getFullYear() + Number(formData.lifeExpectancyUser)],
+            rothStrategy: [],
+            rothYears: [new Date().getFullYear(), new Date().getFullYear() + Number(formData.lifeExpectancyUser)],
             rothOptimizer: formData.rothOptimizer,
             sharing: formData.sharing,
-            financialGoal: formData.financialGoal,
+            financialGoal: Number(formData.financialGoal),
             state: formData.state,
         };
         addScenario(newScenario)
