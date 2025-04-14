@@ -51,6 +51,7 @@ export default function CreateInvestments({ scenarios }) {
             _id: Math.floor(Math.random() * 1000) + 1000,
             investmentType: investmentTypes[formData.investmentType],
             value: formData.value,
+            baseValue: formData.value,
             taxStatus: formData.taxStatus
         };
         addInvestment(newInvestment);

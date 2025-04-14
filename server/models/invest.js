@@ -1,17 +1,11 @@
 var mongoose = require('mongoose');
 var Event = require('./event.js');
-var Investment = require('./investment.js');
+var Allocation = require('./allocation.js');
 /* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
-
-// Allocation Schema
-var AllocationSchema = new mongoose.Schema({
-    investment: { type: mongoose.Schema.Types.ObjectId, ref: 'Investment' },
-    percentage: { type: Number, required: true, min: 0, max: 100 }
-})
 
 // Invest Schema
 var InvestSchema = new mongoose.Schema({
-    allocations: [AllocationSchema],
+    allocations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Allocation' }],
     max: { type: Number, required: true },
 });
 

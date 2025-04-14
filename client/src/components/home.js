@@ -38,7 +38,7 @@ function Home() {
             <Route path="/scenario/edit_investment_type/:id" element={<EditInvestmentTypes scenarios={scenarios}/>} />
             <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios}/>} />
             <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
-            <Route path="/simulation/:id" element={<Simulation />} />
+            <Route path="/simulation/:id" element={<Simulation scenarios={scenarios}/>} />
             <Route path="/tax-info" element={<TaxInfo />} />
             <Route path="/chart-test" element={<ChartTest />} />
           </Routes>
