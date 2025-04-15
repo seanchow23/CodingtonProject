@@ -1,4 +1,312 @@
 [
-    { "type": "short-term", "rate": 0.15 }
-  ]
-  
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 47025,
+    "rate": 0
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 47025,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 63000,
+    "rate": 0
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 63000,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 63000,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 94050,
+    "rate": 0
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 94050,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 94050,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 291850,
+    "rate": 0
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 291850,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 291850,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 518900,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 551350,
+    "rate": 0
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 551350,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 551350,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 583750,
+    "rate": 0
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 583750,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "head_of_household",
+    "incomeThreshold": 583750,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 47025,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 47025,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 63000,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 63000,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 63000,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 94050,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 94050,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 94050,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 291850,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 291850,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 291850,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 518900,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 551350,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 551350,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 551350,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 583750,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 583750,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married",
+    "incomeThreshold": 583750,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 47025,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 47025,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 63000,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 63000,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 63000,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 94050,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 94050,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 94050,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 291850,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 291850,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 291850,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 518900,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 551350,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 551350,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 583750,
+    "rate": 0
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 583750,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "married_separately",
+    "incomeThreshold": 583750,
+    "rate": 0.2
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 47025,
+    "rate": 0
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 47025,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 63000,
+    "rate": 0
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 63000,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 94050,
+    "rate": 0
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 94050,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 291850,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 518900,
+    "rate": 0.15
+  },
+  {
+    "filingStatus": "single",
+    "incomeThreshold": 583750,
+    "rate": 0.15
+  }
+]

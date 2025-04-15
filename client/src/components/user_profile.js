@@ -15,7 +15,7 @@ export default function UserProfile() {
     formData.append('yamlFile', file);
 
     try {
-      const res = await fetch('http://localhost:5001/api/tax/upload-state-yaml', {
+      const res = await fetch('http://localhost:5000/api/tax/upload-state-yaml', {
         method: 'POST',
         body: formData,
       });
