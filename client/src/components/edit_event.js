@@ -116,7 +116,12 @@ function AddInvestEvent({ formData, onChange, scenario }) {
             <InputField id="max" type="number" value={formData.max} onChange={onChange}>Maximum Cash ($)</InputField>
             <label htmlFor="allocations">Allocations (%)
                 {scenario.investments.filter(investment => investment.taxStatus !== 'pre-tax retirement').map((investment, index) => (
-                    <InputField key={index} id={index} type="number" value={formData.allocations[index].percentage} onChange={onChange}>{investment.investmentType.name}</InputField>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
+                        <label htmlFor={index} style={{ marginBottom: '20px' }}>{investment.investmentType.name}</label>
+                        <input type="number" id={index} name={index} value={formData.allocations[index].percentage} onChange={onChange} required />
+                        <p style={{ marginBottom: '30px' }}>To</p>
+                        <input type="number" id={index} name={index} value={formData.allocations[index].percentage} />
+                    </div>
                 ))}
             </label>
         </div>
