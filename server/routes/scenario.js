@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Scenario = require('../models/scenario');
 const User = require('../models/user');
+require('../models/investment');
+require('../models/investmentType');
+require('../models/event');
+require('../models/expense');
+
+
 
 // ----------------------------------------------------
 // GET /api/scenarios/user/:userId

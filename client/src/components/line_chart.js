@@ -39,6 +39,7 @@ export default function Line_Chart({ data }) {
         autosize: true,
       }}
       useResizeHandler
+      data-testid="plotly-chart"  //  Add this line
       style={{ width: '100%', height: '400px' }}
       config={{ responsive: true }}
     />
