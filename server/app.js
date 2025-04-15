@@ -2,8 +2,18 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
+
 require('dotenv').config();
 require('./auth');
+
+// Register all models globally so Mongoose knows them at startup
+require('./models/user');
+require('./models/scenario');
+require('./models/investment');
+require('./models/investmentType');
+require('./models/event');
+require('./models/expense'); // 👈 This one is key for your failing test
+
 
 const app = express();
 
@@ -11,6 +21,8 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(session({ secret: process.env.SESSION_SECRET || 'test-secret', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -86,4 +98,13 @@ app.get('/api/tax/capital-gains', (req, res) => {
   }
 });
 
+
+const scenarioRoutes = require('./routes/scenario');
+const userRoutes = require('./routes/user');
+
+app.use('/api/scenarios', scenarioRoutes);
+app.use('/api/users', userRoutes);
+
+
 module.exports = app;
+

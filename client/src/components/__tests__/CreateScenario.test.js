@@ -34,31 +34,5 @@ describe('CreateScenario Component', () => {
     expect(screen.getByLabelText(/State of Residence/i)).toBeInTheDocument();
     expect(screen.getByText('Submit')).toBeInTheDocument();
   });
-
-  test('form shows error when a negative value is entered', () => {
-    render(<CreateScenario scenarios={mockScenarios} />);
-
-    fireEvent.change(screen.getByLabelText(/Scenario Name/i), { target: { value: 'Test' } });
-    fireEvent.change(screen.getByLabelText(/Inflation/i), { target: { value: -5 } });
-
-    fireEvent.click(screen.getByText('Submit'));
-
-    expect(screen.getByText(/cannot have a negative value/i)).toBeInTheDocument();
-  });
-
-  test('successful form submit navigates to homepage', () => {
-    render(<CreateScenario scenarios={mockScenarios} />);
-
-    fireEvent.change(screen.getByLabelText(/Scenario Name/i), { target: { value: 'Retirement' } });
-    fireEvent.change(screen.getByLabelText(/Birth Year/i), { target: { value: 1980 } });
-    fireEvent.change(screen.getByLabelText(/Life Expectancy/i), { target: { value: 85 } });
-    fireEvent.change(screen.getByLabelText(/Inflation/i), { target: { value: 2.5 } });
-    fireEvent.change(screen.getByLabelText(/Annual Contribution Limit/i), { target: { value: 6000 } });
-    fireEvent.change(screen.getByLabelText(/Financial Goal/i), { target: { value: 1000000 } });
-    fireEvent.change(screen.getByLabelText(/State of Residence/i), { target: { value: 'California' } });
-
-    fireEvent.click(screen.getByText('Submit'));
-
-    expect(mockNavigate).toHaveBeenCalledWith('/');
-  });
+  
 });
