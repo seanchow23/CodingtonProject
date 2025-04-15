@@ -22,7 +22,7 @@ export default function ChartTest() {
     <div>
   <Line_Chart data={line_data}/>
   <Shaded_Chart data={shade_data}/>
-  <Stacked_Chart data={stacked_data}/>
+
   </div>
   );
 }
