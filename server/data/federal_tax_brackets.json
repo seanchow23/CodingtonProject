@@ -1,142 +1,142 @@
 [
   {
-    "filingStatus": "10%",
-    "incomeRange": "$0",
-    "taxRate": "$11,600"
+    "filingStatus": "10",
+    "incomeRange": "0",
+    "taxRate": "11600"
   },
   {
-    "filingStatus": "12%",
-    "incomeRange": "$11,601",
-    "taxRate": "$47,150"
+    "filingStatus": "12",
+    "incomeRange": "11601",
+    "taxRate": "47150"
   },
   {
-    "filingStatus": "22%",
-    "incomeRange": "$47,151",
-    "taxRate": "$100,525"
+    "filingStatus": "22",
+    "incomeRange": "47151",
+    "taxRate": "100525"
   },
   {
-    "filingStatus": "24%",
-    "incomeRange": "$100,526",
-    "taxRate": "$191,950"
+    "filingStatus": "24",
+    "incomeRange": "100526",
+    "taxRate": "191950"
   },
   {
-    "filingStatus": "32%",
-    "incomeRange": "$191,951",
-    "taxRate": "$243,725"
+    "filingStatus": "32",
+    "incomeRange": "191951",
+    "taxRate": "243725"
   },
   {
-    "filingStatus": "35%",
-    "incomeRange": "$243,726",
-    "taxRate": "$609,350"
+    "filingStatus": "35",
+    "incomeRange": "243726",
+    "taxRate": "609350"
   },
   {
-    "filingStatus": "37%",
-    "incomeRange": "$609,351",
+    "filingStatus": "37",
+    "incomeRange": "609351",
     "taxRate": "And up"
   },
   {
-    "filingStatus": "10%",
-    "incomeRange": "$0",
-    "taxRate": "$23,200"
+    "filingStatus": "10",
+    "incomeRange": "0",
+    "taxRate": "23200"
   },
   {
-    "filingStatus": "12%",
-    "incomeRange": "$23,201",
-    "taxRate": "$94,300"
+    "filingStatus": "12",
+    "incomeRange": "23201",
+    "taxRate": "94300"
   },
   {
-    "filingStatus": "22%",
-    "incomeRange": "$94,301",
-    "taxRate": "$201,050"
+    "filingStatus": "22",
+    "incomeRange": "94301",
+    "taxRate": "201050"
   },
   {
-    "filingStatus": "24%",
-    "incomeRange": "$201,051",
-    "taxRate": "$383,900"
+    "filingStatus": "24",
+    "incomeRange": "201051",
+    "taxRate": "383900"
   },
   {
-    "filingStatus": "32%",
-    "incomeRange": "$383,901",
-    "taxRate": "$487,450"
+    "filingStatus": "32",
+    "incomeRange": "383901",
+    "taxRate": "487450"
   },
   {
-    "filingStatus": "35%",
-    "incomeRange": "$487,451",
-    "taxRate": "$731,200"
+    "filingStatus": "35",
+    "incomeRange": "487451",
+    "taxRate": "731200"
   },
   {
-    "filingStatus": "37%",
-    "incomeRange": "$731,201",
+    "filingStatus": "37",
+    "incomeRange": "731201",
     "taxRate": "And up"
   },
   {
-    "filingStatus": "10%",
-    "incomeRange": "$0",
-    "taxRate": "$11,600"
+    "filingStatus": "10",
+    "incomeRange": "0",
+    "taxRate": "11600"
   },
   {
-    "filingStatus": "12%",
-    "incomeRange": "$11,601",
-    "taxRate": "$47,150"
+    "filingStatus": "12",
+    "incomeRange": "11601",
+    "taxRate": "47150"
   },
   {
-    "filingStatus": "22%",
-    "incomeRange": "$47,151",
-    "taxRate": "$100,525"
+    "filingStatus": "22",
+    "incomeRange": "47151",
+    "taxRate": "100525"
   },
   {
-    "filingStatus": "24%",
-    "incomeRange": "$100,526",
-    "taxRate": "$191,950"
+    "filingStatus": "24",
+    "incomeRange": "100526",
+    "taxRate": "191950"
   },
   {
-    "filingStatus": "32%",
-    "incomeRange": "$191,951",
-    "taxRate": "$243,725"
+    "filingStatus": "32",
+    "incomeRange": "191951",
+    "taxRate": "243725"
   },
   {
-    "filingStatus": "35%",
-    "incomeRange": "$243,726",
-    "taxRate": "$365,600"
+    "filingStatus": "35",
+    "incomeRange": "243726",
+    "taxRate": "365600"
   },
   {
-    "filingStatus": "37%",
-    "incomeRange": "$365,601",
+    "filingStatus": "37",
+    "incomeRange": "365601",
     "taxRate": "And up"
   },
   {
-    "filingStatus": "10%",
-    "incomeRange": "$0",
-    "taxRate": "$16,550"
+    "filingStatus": "10",
+    "incomeRange": "0",
+    "taxRate": "16550"
   },
   {
-    "filingStatus": "12%",
-    "incomeRange": "$16,551",
-    "taxRate": "$63,100"
+    "filingStatus": "12",
+    "incomeRange": "16551",
+    "taxRate": "63100"
   },
   {
-    "filingStatus": "22%",
-    "incomeRange": "$63,101",
-    "taxRate": "$100,500"
+    "filingStatus": "22",
+    "incomeRange": "63101",
+    "taxRate": "100500"
   },
   {
-    "filingStatus": "24%",
-    "incomeRange": "$100,501",
-    "taxRate": "$191,950"
+    "filingStatus": "24",
+    "incomeRange": "100501",
+    "taxRate": "191950"
   },
   {
-    "filingStatus": "32%",
-    "incomeRange": "$191,951",
-    "taxRate": "$243,700"
+    "filingStatus": "32",
+    "incomeRange": "191951",
+    "taxRate": "243700"
   },
   {
-    "filingStatus": "35%",
-    "incomeRange": "$243,701",
-    "taxRate": "$609,350"
+    "filingStatus": "35",
+    "incomeRange": "243701",
+    "taxRate": "609350"
   },
   {
-    "filingStatus": "37%",
-    "incomeRange": "$609,351",
+    "filingStatus": "37",
+    "incomeRange": "609351",
     "taxRate": "And up"
   }
 ]

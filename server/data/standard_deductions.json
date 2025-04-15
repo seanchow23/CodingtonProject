@@ -1,10 +1,14 @@
 [
   {
-    "filingStatus": "single",
-    "deduction": 13850
+    "filingStatus": "Single or Married filing separately",
+    "standardDeduction": 14600
   },
   {
-    "filingStatus": "married",
-    "deduction": 27700
+    "filingStatus": "Married filing jointly or Qualifying surviving spouse",
+    "standardDeduction": 29200
+  },
+  {
+    "filingStatus": "Head of household",
+    "standardDeduction": 21900
   }
 ]
