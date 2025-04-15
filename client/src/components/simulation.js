@@ -1,10 +1,7 @@
-import Investment from "./investment";
-
 export default function simulation({ scenario }) {
     const scenario_list = [structuredClone(scenario)];
     const output = [[], [], [[], [], []]];
 
-    //useEffect(() => {
     var year = 2025;
 
     // Get Taxes (need to connect to the scraper)
@@ -80,22 +77,21 @@ export default function simulation({ scenario }) {
                 CashInvestment.value += income.amount;
                 CashInvestment.baseValue += income.amount;
                 income.amount += Number(income.change);
-                income.amount *= (1 + (Number(income.inflation) / 100));
+                if (income.inflation) { income.amount *= (1 + (Number(scenario.inflation) / 100)); }
             }
         }
-        //tax += curYearSS * 0.15;
 
         // Perform RMD for previous year
-        const age = year - scenario.birthYearUser;
+        var age = year - scenario.birthYearUser;
         if (age > 120) { age = 120; }
-        if (age >= 74 && scenario.investments.find(investment => (investment.taxStatus === "pre-tax retirement"))) {
+        if (age >= 74 && Investments.find(investment => (investment.taxStatus === "pre-tax retirement"))) {
             const rmd = scenario.rmd;
             var total = rmd.reduce((sum, investment) => sum + Number(investment.value), 0);
             var withdrawal = total / rmd_distributions[age - 72];
 
             for (const investment of rmd) {
                 const principle = Number(investment.value);
-                var recipient = scenario.investments.filter(investment => (investment.investmentType._id === investment.investmentType._id)).find(investment => (investment.taxStatus === "non-retirement"));
+                var recipient = Investments.filter(inv => (inv.investmentType._id === investment.investmentType._id)).find(inv => (inv.taxStatus === "non-retirement"));
                 if (recipient === undefined) {
                     recipient = {
                         _id: Math.floor(Math.random() * 1000) + 1000,
@@ -207,7 +203,7 @@ export default function simulation({ scenario }) {
                 expense.amount = Number(expense.amount);
                 non_discretionary += expense.amount;
                 expense.amount += Number(expense.change);
-                expense.amount *= (1 + (Number(expense.inflation) / 100));
+                if (expense.inflation) { expense.amount *= (1 + (Number(scenario.inflation) / 100)); }
             }
         }
 
@@ -255,7 +251,7 @@ export default function simulation({ scenario }) {
                 expense.amount = Number(expense.amount);
                 discretionary += expense.amount;
                 expense.amount += Number(expense.change);
-                expense.amount *= (1 + (Number(expense.inflation) / 100));
+                if (expense.inflation) { expense.amount *= (1 + (Number(scenario.inflation) / 100)); }
             }
         }
 
@@ -283,14 +279,15 @@ export default function simulation({ scenario }) {
                 }
             }
         } else {
-            CashInvestment.baseValue -= payment;
-            CashInvestment.value -= payment;
+            CashInvestment.baseValue -= discretionary;
+            CashInvestment.value -= discretionary;
         }
 
         // Run Invest
         InvestEvent.duration = 1;
         const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
         allocations.map(allocation => allocation.percentage = Number(allocation.percentage));
+        allocations.map(allocation => allocation.investment = Investments.find(investment => investment._id === allocation.investment._id));
 
         const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
         const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
@@ -299,7 +296,7 @@ export default function simulation({ scenario }) {
         const sum_percentage = after_percentage + other_percentage;
 
         if (sum_percentage === 0) { 
-            allocations.map(allocation => allocation.percentage += 100 / allocations.length);
+            allocations.map(allocation => allocation.percentage = 100 / allocations.length);
             after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
             other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
         }
@@ -423,20 +420,19 @@ export default function simulation({ scenario }) {
         prev_curYearSS = curYearSS;
         prev_curYearGains = curYearGains;
         prev_curYearEarlyWithdrawals = curYearEarlyWithdrawals;
-
+        
         // Add to Output
         const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);
         output[0].push(Number(scenario.financialGoal) <= total_asset);
         output[1].push(total_asset);
-        output[2][0].push(IncomeEvents);
-        output[2][1].push(ExpenseEvents);
-        output[2][2].push(Investments);
+        output[2][0].push(structuredClone(IncomeEvents));
+        output[2][1].push(structuredClone(ExpenseEvents));
+        output[2][2].push(structuredClone(Investments));
 
         const copy = structuredClone(scenario);
         copy._id = Math.floor(Math.random() * 1000) + 1000;
         scenario_list.push(copy);
     }
-    //}, [scenario]);
 
     return output;
 }

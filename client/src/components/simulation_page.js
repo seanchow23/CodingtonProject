@@ -4,6 +4,7 @@ import simulation from './simulation'; // renamed to avoid conflict
 import Line_Chart from './line_chart';
 import Shaded_Chart from './shaded_chart';
 import UnifiedStackedFinanceChart from './stacked_chart'; 
+import ScenarioList from './scenario_list';
 
 export default function SimulationPage() { 
     const location = useLocation();
