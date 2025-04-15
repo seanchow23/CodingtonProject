@@ -44,6 +44,7 @@ export default function simulation({ scenario }) {
         5.2, 4.9, 4.6, 4.3, 4.1, 3.9, 3.7, 3.5, 3.4, 3.3, 3.1, 3.0, 2.9, 2.8, 2.7, 2.5, 2.3, 2.0
     ];
 
+    // Prev variables
     var prev_curYearIncome = 0;
     var prev_curYearSS = 0;
     var prev_curYearGains = 0;
@@ -51,6 +52,14 @@ export default function simulation({ scenario }) {
     var prev_federal_brackets = federal_brackets;
     var prev_federal_deductions = federal_deductions;
     var prev_capital_gains = capital_gains;
+
+    // Add to Output
+    const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
+    output[0].push(Number(scenario.financialGoal) <= total_asset);
+    output[1].push(total_asset);
+    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income')));
+    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense')));
+    output[2][2].push(structuredClone(scenario.investments));
 
     while (scenario.lifeExpectancyUser > 0) {
         year += 1
