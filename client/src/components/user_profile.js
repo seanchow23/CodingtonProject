@@ -6,26 +6,47 @@ import { FaDownload, FaTrash } from 'react-icons/fa';
 // we generated the following code using chatgpt. We fed our wireframe for figma and prompted gpt "how can we make a similar html layout"
 export default function UserProfile() {
   const [message, setMessage] = useState('');
-
+  
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-
+    if (!file) {
+      console.error("❌ No file selected.");
+      setMessage("No file selected");
+      return;
+    }
+  
     const formData = new FormData();
     formData.append('yamlFile', file);
-
+  
     try {
-      const res = await fetch('http://localhost:5000/api/tax/upload-state-yaml', {
+      console.log("📤 Uploading file:", file.name);
+  
+      const res = await fetch('http://localhost:5001/api/tax/upload-state-yaml', {
         method: 'POST',
         body: formData,
       });
+  
+      console.log("📥 Received response:", res.status, res.statusText);
+  
+      const contentType = res.headers.get('content-type');
+      console.log("📄 Content-Type of response:", contentType);
+  
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error("❗ Received non-JSON response:", text.substring(0, 300));
+        throw new Error("Received non-JSON error page");
+      }
+  
       const data = await res.json();
+      console.log("✅ Response JSON:", data);
+  
       setMessage(data.message || "Upload successful");
     } catch (err) {
-      console.error("Upload failed", err);
-      setMessage("Upload failed");
+      console.error("❌ Upload failed:", err);
+      setMessage("Upload failed: " + (err.message || "Unknown error"));
     }
   };
+  
 
 
 

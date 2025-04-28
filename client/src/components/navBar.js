@@ -8,7 +8,6 @@ export default function Navbar() {
       <div className="navbar-buttons">
         <NavLink to="/user_profile">Profile</NavLink>
         <NavLink to="/login">Login</NavLink>
-        <NavLink to="/tax-info">Tax Info</NavLink>
       </div>
     </nav>
   );
