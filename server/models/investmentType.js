@@ -7,7 +7,8 @@ const investmentTypeSchema = new mongoose.Schema({
     expectedAnnualReturn: { type: Number, required: true },
     expenseRatio: { type: Number, required: true },
     expectedAnnualIncome: { type: Number, required: true },
-    taxability: { type: Boolean, required: true }
+    taxability: { type: Boolean, required: true },
+    random: [{ type: Number }]
 });
 
 module.exports = mongoose.model('InvestmentType', investmentTypeSchema);;

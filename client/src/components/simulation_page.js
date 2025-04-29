@@ -10,23 +10,27 @@ export default function SimulationPage() {
     const location = useLocation();
     const { scenario } = location.state;
     const num = 10;
+    var simResult = null;
 
     const line = [];
     const shade = [];
     const bar = [];
     for (let i = 0; i < num; i++) {
-        const simResult = simulation({ scenario: structuredClone(scenario) });
+        simResult = simulation({ scenario: structuredClone(scenario) });
         line.push(simResult[0]);
-        shade.push(simResult[1])
-        bar.push(simResult[2])
+        shade.push(simResult[1]);
+        bar.push(simResult[2]);
     }
 
     return (
         <div>
             <h3>Ran {num} simulations</h3>
+            <h4>Proability of Success</h4>
             <Line_Chart data={line} />
+            <h4>Total Assets</h4>
             <Shaded_Chart data={shade} />
-            <UnifiedStackedFinanceChart data={bar} />
+            <h4>Value of Events/Investments</h4>
+            <UnifiedStackedFinanceChart data={bar}/>
         </div>
     );
 }

@@ -19,7 +19,8 @@ export default function EditScenario({ scenarios }) {
         annualLimit: scenario.annualLimit,
         rothOptimizer: scenario.rothOptimizer,
         financialGoal: scenario.financialGoal,
-        state: scenario.state
+        state: scenario.state,
+        random: scenario.random,
     });
     
     const [error, setError] = useState("");
@@ -30,6 +31,23 @@ export default function EditScenario({ scenarios }) {
     };
 
     const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
+
+    const handleRandom = (e) => {
+        const { name, value, checked } = e.target;
+        if (name === "random_life") {
+            setFormData({ ...formData, random: [checked ? 1 : 0, formData.random[1], formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+        } else if (name === "mean") {
+            setFormData({ ...formData, random: [formData.random[0], Number(value), formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+        } else if (name === "sd") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], Number(value), formData.random[3], formData.random[4], formData.random[5]] });
+        } else if (name === "random_inflation") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], checked ? 1 : 0, formData.random[4], formData.random[5]] });
+        } else if (name === "mean_inflation") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], Number(value), formData.random[5]] });
+        } else if (name === "sd_inflation") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], formData.random[4], Number(value)] });
+        }
+    }
 
     const submit = (e) => {
         e.preventDefault();
@@ -50,6 +68,7 @@ export default function EditScenario({ scenarios }) {
         target.rothOptimizer = formData.rothOptimizer,
         target.financialGoal = Number(formData.financialGoal);
         target.state = formData.state;
+        target.random = formData.random;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
 
@@ -74,12 +93,33 @@ export default function EditScenario({ scenarios }) {
                 <input type="radio" name="married" value={true} onChange={handleRadioChange} /> Married
 
                 <InputField id="birthYearUser" type="number" value={formData.birthYearUser} onChange={handleInputChange}>Birth Year</InputField>
-                <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy (Years)</InputField>
+                {formData.random[0] === 0 && <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy (Years)</InputField>}
+                    <div style={{ display: 'flex', gap: '10px'}}>
+                        <label htmlFor="random_life">Life Expectancy Sampling</label>
+                        <input type="checkbox" id="random_life" name="random_life" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                    </div>
+                    {formData.random[0] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <label htmlFor="mean" style={{ marginBottom: '20px' }}>Mean</label>
+                        <input type="number" name="mean" value={formData.random[1]} onChange={handleRandom} required />
+                        <label htmlFor="sd" style={{ marginBottom: '20px' }}>Standard Deviation</label>
+                        <input type="number" name="sd" value={formData.random[2]} onChange={handleRandom} required />
+                    </div>}
 
                 {formData.married === "true" && <InputField id="birthYearSpouse" type="number" value={formData.birthYearSpouse} onChange={handleInputChange}>Spouse Birth Year</InputField>}
                 {formData.married === "true" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse} onChange={handleInputChange}>Spouse Life Expectancy (Years)</InputField>}
 
-                <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation (%)</InputField>
+                {formData.random[3] === 0 && <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation (%)</InputField>}
+                <div style={{ display: 'flex', gap: '10px'}}>
+                    <label htmlFor="random_inflation">Inflation Sampling</label>
+                    <input type="checkbox" id="random_inflation" name="random_inflation" value={formData.random[3] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                </div>
+                {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="mean_inflation" style={{ marginBottom: '20px' }}>Mean</label>
+                    <input type="number" name="mean_inflation" value={formData.random[4]} onChange={handleRandom} required />
+                    <label htmlFor="sd_inflation" style={{ marginBottom: '20px' }}>Standard Deviation</label>
+                    <input type="number" name="sd_inflation" value={formData.random[5]} onChange={handleRandom} required />
+                </div>}
+
                 <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit ($)</InputField>
 
                 <InputField id="rothOptimizer" type="checkbox" checked={formData.rothOptimizer} onChange={handleInputChange}>Roth Optimizer</InputField>
