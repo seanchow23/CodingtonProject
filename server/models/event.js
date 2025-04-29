@@ -5,7 +5,8 @@ var EventSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, default: null },
     startYear: { type: Number, required: true },
-    duration: { type: Number, required: true }
+    duration: { type: Number, required: true },
+    random: [{ type: Number }]
 }, {
     discriminatorKey: 'type'
 });

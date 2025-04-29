@@ -1,4 +1,14 @@
 export default function simulation({ scenario }) {
+
+    // Check and perform random sampling
+    if (scenario.random[0] !== 0) {
+        scenario.lifeExpectancyUser = Math.floor(sampleNormal(scenario.random[1], scenario.random[2]));
+        scenario.lifeExpectancySpouse = Math.floor(sampleNormal(scenario.random[1], scenario.random[2]));
+    }
+    if (scenario.random[3] !== 0) {
+        scenario.inflation = sampleNormal(scenario.random[4], scenario.random[5]);
+    }
+
     const scenario_list = [structuredClone(scenario)];
     const output = [[], [], [[], [], []]];
 
@@ -53,14 +63,6 @@ export default function simulation({ scenario }) {
     var prev_federal_deductions = federal_deductions;
     var prev_capital_gains = capital_gains;
 
-    // Add to Output
-    const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
-    output[0].push(Number(scenario.financialGoal) <= total_asset);
-    output[1].push(total_asset);
-    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income').filter(event => event.startYear <= year)));
-    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear <= year)));
-    output[2][2].push(structuredClone(scenario.investments));
-
     // Extract Events and Strategies
     const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
     const IncomeEvents = scenario.events.filter(event => event.type === 'income');
@@ -96,6 +98,40 @@ export default function simulation({ scenario }) {
             allocation.glide = (allocation.finalPercentage - allocation.percentage) / scenario.lifeExpectancyUser;
         }
     }
+
+    // Randomness in Event Duration/Start Year
+    for (const event of IncomeEvents) {
+        if (event.random[0] === 1) {
+            event.startYear = Math.floor(sampleNormal(event.random[1], event.random[2]));
+        } else if (event.random[0] === 2) {
+            event.startYear = Math.floor(Math.random() * (event.random[2] - event.random[1]) + event.random[1]);
+        }
+        if (event.random[3] === 1) {
+            event.duration = Math.floor(sampleNormal(event.random[4], event.random[5]));
+        } else if (event.random[3] === 2) {
+            event.duration = Math.floor(Math.random() * (event.random[5] - event.random[4]) + event.random[4]);
+        }
+    }
+    for (const event of ExpenseEvents) {
+        if (event.random[0] === 1) {
+            event.startYear = Math.floor(sampleNormal(event.random[1], event.random[2]));
+        } else if (event.random[0] === 2) {
+            event.startYear = Math.floor(Math.random() * (event.random[2] - event.random[1]) + event.random[1]);
+        }
+        if (event.random[3] === 1) {
+            event.duration = Math.floor(sampleNormal(event.random[4], event.random[5]));
+        } else if (event.random[3] === 2) {
+            event.duration = Math.floor(Math.random() * (event.random[5] - event.random[4]) + event.random[4]);
+        }
+    }
+
+    // Add to Output
+    const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
+    output[0].push(Number(scenario.financialGoal) <= total_asset);
+    output[1].push(total_asset);
+    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income').filter(event => event.startYear <= year)));
+    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear <= year)));
+    output[2][2].push(structuredClone(scenario.investments));
 
     while (scenario.lifeExpectancyUser > 0) {
         year += 1
@@ -160,6 +196,14 @@ export default function simulation({ scenario }) {
         }
 
         // Update Investment
+        for (const types of scenario.investmentTypes) {
+            if (types.random[0] !== 0) {
+                types.expectedAnnualReturn = sampleNormal(types.random[1], types.random[2]);
+            }
+            if (types.random[3] !== 0) {
+                types.expectedAnnualIncome = sampleNormal(types.random[4], types.random[5]);
+            }
+        }
         for (const investment of Investments) {
             const data = investment.investmentType;
             investment.value = Number(investment.value);
@@ -438,6 +482,9 @@ export default function simulation({ scenario }) {
             bracket.max = bracket.max * inflation;
         }
         scenario.annualLimit *= inflation;
+        if (scenario.random[3] !== 0) {
+            scenario.inflation = sampleNormal(scenario.random[4], scenario.random[5]);
+        }
 
         // Subtract Life Expectancy
         scenario.lifeExpectancyUser--;
@@ -462,5 +509,13 @@ export default function simulation({ scenario }) {
         scenario_list.push(copy);
     }
 
-    return scenario_list;
+    return output;
+}
+
+function sampleNormal(mean, sd) {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    return z * sd + mean;
 }

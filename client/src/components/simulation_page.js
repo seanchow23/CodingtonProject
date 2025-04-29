@@ -17,18 +17,20 @@ export default function SimulationPage() {
     const bar = [];
     for (let i = 0; i < num; i++) {
         simResult = simulation({ scenario: structuredClone(scenario) });
-        //line.push(simResult[0]);
-        //shade.push(simResult[1]);
-        //bar.push(simResult[2]);
+        line.push(simResult[0]);
+        shade.push(simResult[1]);
+        bar.push(simResult[2]);
     }
 
     return (
-        /*<div>
+        <div>
             <h3>Ran {num} simulations</h3>
+            <h4>Proability of Success</h4>
             <Line_Chart data={line} />
+            <h4>Total Assets</h4>
             <Shaded_Chart data={shade} />
-            <UnifiedStackedFinanceChart data={bar} />
-        </div>*/
-        <ScenarioList scenarios={simResult} simulate={true}/>
+            <h4>Value of Events/Investments</h4>
+            <UnifiedStackedFinanceChart data={bar}/>
+        </div>
     );
 }

@@ -24,6 +24,7 @@ const scenarioSchema = new mongoose.Schema({
     sharing: { type: String },
     financialGoal: { type: Number, required: true },
     state: { type: String, required: true },
+    random: [{ type: Number }],
 });
 
 module.exports = mongoose.model('Scenario', scenarioSchema);
