@@ -9,7 +9,7 @@ const InvestmentType = ({ investmentType }) => {
         <div className="investments">
             <h2 id={investmentType._id}>{investmentType.name}</h2>
             {investmentType.description && <p>Description: {investmentType.description}</p>}
-            <p>Expected Annual Return: ${investmentType.expectedAnnualReturn}</p>
+            <p>Expected Annual Return: {investmentType.expectedAnnualReturn}%</p>
             <p>Expense Ratio: {investmentType.expenseRatio}%</p>
             <p>Expected Annual Income: ${investmentType.expectedAnnualIncome}</p>
             <p>{investmentType.taxability ? 'Taxable' : 'Not Taxable'}</p>

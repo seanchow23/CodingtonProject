@@ -19,8 +19,6 @@ export default function CreateEvent({ scenarios }) {
         inflation: false,
         ss: false,
         discretionary: false,
-        allocations: scenario.investments.filter(investment => investment.taxStatus !== 'pre-tax retirement').map(() => 0),
-        max: ""
     });
 
     const [error, setError] = useState("");
@@ -30,16 +28,6 @@ export default function CreateEvent({ scenarios }) {
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
-    };
-
-    const handleInvestChange = (e) => {
-        const { name, value } = e.target;
-        if (name === "max") {setFormData({...formData, [name]: value});}
-        else {
-            const updatedAllocations = [...formData.allocations];
-            updatedAllocations[name].percentage = Number(value);
-            setFormData({ ...formData, allocations: updatedAllocations });
-        }
     };
 
     const addEvent = (newEvent) => {
@@ -65,11 +53,11 @@ export default function CreateEvent({ scenarios }) {
             amount: Number(formData.amount),
             change: Number(formData.change),
             inflation: Number(formData.inflation),
+
+            // These fields are different for income and expense events
             ss: formData.ss,
             type: formData.type,
             discretionary: formData.discretionary,
-            allocations: formData.allocations,
-            max: Number(formData.max)
         };
         addEvent(newEvent);
     };
@@ -80,7 +68,6 @@ export default function CreateEvent({ scenarios }) {
                 <label htmlFor="type">Select Event Type*</label>
                 <input type="radio" name="type" value="income" onChange={handleRadioChange} required/> Income
                 <input type="radio" name="type" value="expense" onChange={handleRadioChange} /> Expense
-                <input type="radio" name="type" value="invest" onChange={handleRadioChange} /> Invest
 
                 <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Event Name</InputField>
 
@@ -92,7 +79,6 @@ export default function CreateEvent({ scenarios }) {
 
                 {formData.type === "income" && <AddIncomeEvent formData={formData} onChange={handleInputChange} />}
                 {formData.type === "expense" && <AddExpenseEvent formData={formData} onChange={handleInputChange} />}
-                {formData.type === "invest" && <AddInvestEvent formData={formData} onChange={handleInvestChange} scenario={scenario} />}
 
                 <button type="submit">Submit</button>
                 {error && <div className="error">{error}</div>}
@@ -119,19 +105,6 @@ function AddExpenseEvent({ formData, onChange }) {
             <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Change ($)</InputField>
             <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation (%)</InputField>
             <InputField id="discretionary" type="checkbox" checked={formData.discretionary} onChange={onChange}>Discretionary</InputField>
-        </div>
-    );
-}
-
-function AddInvestEvent({ formData, onChange, scenario }) {
-    return (
-        <div>
-            <InputField id="max" type="number" value={formData.max} onChange={onChange}>Maximum Cash ($)</InputField>
-            <label htmlFor="allocations">Allocations (%)
-                {scenario.investments.filter(investment => investment.taxStatus !== 'pre-tax retirement').map((investment, index) => (
-                    <InputField key={index} id={index} type="number" value={formData.allocations[index]} onChange={onChange}>{investment.investmentType.name}</InputField>
-                ))}
-            </label>
         </div>
     );
 }

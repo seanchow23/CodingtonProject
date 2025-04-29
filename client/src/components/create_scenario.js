@@ -60,7 +60,9 @@ export default function CreateScenario({ scenarios }) {
         const newAllocation = {
             _id: Math.floor(Math.random() * 1000) + 1000,
             investment: newInvestment,
-            percentage: 0
+            percentage: 0,
+            finalPercentage: 0,
+            glide: 0
         }
         const newInvestEvent  = {
             _id: Math.floor(Math.random() * 1000) + 1000,
@@ -70,7 +72,8 @@ export default function CreateScenario({ scenarios }) {
             startYear: new Date().getFullYear(),
             duration: 1,
             allocations: [newAllocation],
-            max: 0
+            max: 0,
+            glide: false
         }
         const newScenario = {
             _id: Math.floor(Math.random() * 1000) + 1000,

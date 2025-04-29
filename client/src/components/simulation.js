@@ -57,19 +57,48 @@ export default function simulation({ scenario }) {
     const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
     output[0].push(Number(scenario.financialGoal) <= total_asset);
     output[1].push(total_asset);
-    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income')));
-    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense')));
+    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income').filter(event => event.startYear <= year)));
+    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear <= year)));
     output[2][2].push(structuredClone(scenario.investments));
+
+    // Extract Events and Strategies
+    const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
+    const IncomeEvents = scenario.events.filter(event => event.type === 'income');
+    const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
+    const InvestEvent = scenario.events.find(event => event.type === 'invest');
+    const Investments = scenario.investments;
+
+    const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+    allocations.map(allocation => allocation.percentage = Number(allocation.percentage));
+    allocations.map(allocation => allocation.investment = Investments.find(investment => investment._id === allocation.investment._id));
+    
+    // Ensure 100% total for Invest Event
+    const sumPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+    if (sumPercentage === 0) { 
+        allocations.map(allocation => allocation.percentage = 100 / allocations.length);
+    }
+    else if (sumPercentage != 100) {
+        const scale_factor = 1 / (sumPercentage / 100);
+        allocations.map(allocation => allocation.percentage *= scale_factor);
+    }
+
+    // Glide Calculation
+    if (InvestEvent.glide) {
+        const totalPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.finalPercentage, 0);
+        if (totalPercentage === 0) {
+            allocations.map(allocation => allocation.finalPercentage = 100 / allocations.length);
+        }
+        if (totalPercentage != 100) {
+            const scale_factor = 1 / (totalPercentage / 100);
+            allocations.map(allocation => allocation.finalPercentage *= scale_factor);
+        }
+        for (const allocation of allocations) {
+            allocation.glide = (allocation.finalPercentage - allocation.percentage) / scenario.lifeExpectancyUser;
+        }
+    }
 
     while (scenario.lifeExpectancyUser > 0) {
         year += 1
-
-        // Extract Events and Strategies
-        const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
-        const IncomeEvents = scenario.events.filter(event => event.type === 'income');
-        const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
-        const InvestEvent = scenario.events.find(event => event.type === 'invest');
-        const Investments = scenario.investments;
     
         var curYearIncome = 0;
         var curYearSS = 0;
@@ -294,26 +323,11 @@ export default function simulation({ scenario }) {
 
         // Run Invest
         InvestEvent.duration = 1;
-        const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
-        allocations.map(allocation => allocation.percentage = Number(allocation.percentage));
-        allocations.map(allocation => allocation.investment = Investments.find(investment => investment._id === allocation.investment._id));
 
         const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
         const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
         var after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
         var other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
-        const sum_percentage = after_percentage + other_percentage;
-
-        if (sum_percentage === 0) { 
-            allocations.map(allocation => allocation.percentage = 100 / allocations.length);
-            after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
-            other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
-        }
-        else if (sum_percentage != 100) {
-            const scale_factor = 1 / (sum_percentage / 100);
-            allocations.map(allocation => allocation.percentage *= scale_factor);
-        }
-
         var after_scale_factor = 1 / (after_percentage / 100);
         var other_scale_factor = 1 / (other_percentage / 100);
 
@@ -334,6 +348,11 @@ export default function simulation({ scenario }) {
                 allocation.investment.value += sum;
                 allocation.investment.baseValue += sum;
             }
+        }
+
+        // Glide Path
+        for (const allocation of allocations) {
+            allocation.percentage += allocation.glide;
         }
 
         // Run Rebalance
@@ -434,8 +453,8 @@ export default function simulation({ scenario }) {
         const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);
         output[0].push(Number(scenario.financialGoal) <= total_asset);
         output[1].push(total_asset);
-        output[2][0].push(structuredClone(IncomeEvents));
-        output[2][1].push(structuredClone(ExpenseEvents));
+        output[2][0].push(structuredClone(IncomeEvents.filter(event => event.startYear <= year)));
+        output[2][1].push(structuredClone(ExpenseEvents.filter(event => event.startYear <= year)));
         output[2][2].push(structuredClone(Investments));
 
         const copy = structuredClone(scenario);
@@ -443,5 +462,5 @@ export default function simulation({ scenario }) {
         scenario_list.push(copy);
     }
 
-    return output;
+    return scenario_list;
 }

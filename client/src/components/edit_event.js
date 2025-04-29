@@ -21,7 +21,8 @@ export default function EditEvent({ scenarios }) {
         ss: event.ss,
         discretionary: event.discretionary,
         allocations: event.allocations,
-        max: event.max
+        max: event.max,
+        glide: event.glide
     });
 
     const [error, setError] = useState("");
@@ -32,8 +33,14 @@ export default function EditEvent({ scenarios }) {
     };
 
     const handleInvestChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, checked, id } = e.target;
         if (name === "max") {setFormData({...formData, [name]: value});}
+        else if (name === "glide") {setFormData({...formData, [name]: checked});}
+        else if (id === "final") {
+            const updatedAllocations = [...formData.allocations];
+            updatedAllocations[name].finalPercentage = Number(value);
+            setFormData({ ...formData, allocations: updatedAllocations });
+        }
         else {
             const updatedAllocations = [...formData.allocations];
             updatedAllocations[name].percentage = Number(value);
@@ -62,6 +69,7 @@ export default function EditEvent({ scenarios }) {
         } else {
             target_event.allocations = formData.allocations;
             target_event.max = Number(formData.max);
+            target_event.glide = formData.glide;
         }
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
@@ -115,12 +123,16 @@ function AddInvestEvent({ formData, onChange, scenario }) {
         <div>
             <InputField id="max" type="number" value={formData.max} onChange={onChange}>Maximum Cash ($)</InputField>
             <label htmlFor="allocations">Allocations (%)
-                {scenario.investments.filter(investment => investment.taxStatus !== 'pre-tax retirement').map((investment, index) => (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
-                        <label htmlFor={index} style={{ marginBottom: '20px' }}>{investment.investmentType.name}</label>
-                        <input type="number" id={index} name={index} value={formData.allocations[index].percentage} onChange={onChange} required />
-                        <p style={{ marginBottom: '30px' }}>To</p>
-                        <input type="number" id={index} name={index} value={formData.allocations[index].percentage} />
+                        <label htmlFor="glide">Glide</label>
+                        <input type="checkbox" id="glide" name="glide" value={formData.glide} onChange={onChange}/>
+                    </div>
+                {scenario.investments.filter(investment => investment.taxStatus !== 'pre-tax retirement').map((investment, index) => (
+                    <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '20px' }}>
+                        <label htmlFor={index} style={{ marginBottom: '20px', flex: '0 0 50px' }}>{investment.investmentType.name}</label>
+                        <input type="number" name={index} value={formData.allocations[index].percentage} onChange={onChange} required />
+                        {formData.glide && <p style={{ marginBottom: '30px' }}>To</p>}
+                        {formData.glide && <input type="number" id="final" name={index} value={formData.allocations[index].finalPercentage} onChange={onChange}/>}
                     </div>
                 ))}
             </label>
