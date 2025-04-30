@@ -33,7 +33,9 @@ export default function CreateInvestments({ scenarios }) {
             const newAllocation = {
                 _id: Math.floor(Math.random() * 1000) + 1000,
                 investment: newInvestment,
-                percentage: 0
+                percentage: 0,
+                finalPercentage: 0,
+                glide: 0
             }
             currentScenario.events.filter(event => event.type === 'invest').map(event => event.allocations.push(newAllocation))
         }

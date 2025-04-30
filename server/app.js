@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
+const multer = require('multer');
 
 require('dotenv').config();
 require('./auth');
@@ -40,7 +41,6 @@ app.get('/auth/logout', (req, res) => {
 const fs = require('fs');
 const path = require('path');
 
-const multer = require('multer');
 const yaml = require('js-yaml');
 
 // Setup multer for file upload
@@ -58,10 +58,10 @@ app.post('/api/tax/upload-state-yaml', upload.single('yamlFile'), (req, res) => 
     const outputPath = path.join(__dirname, 'data/state_tax_data.json');
     fs.writeFileSync(outputPath, JSON.stringify(yamlData, null, 2));
 
-    res.json({ message: '✅ YAML file uploaded and parsed successfully' });
+    res.json({ message: 'YAML file uploaded and parsed successfully' });
   } catch (err) {
     console.error("YAML parse error:", err);
-    res.status(500).json({ message: '❌ Failed to parse YAML file' });
+    res.status(500).json({ message: 'Failed to parse YAML file' });
   } finally {
     fs.unlinkSync(filePath); // Clean up temp file
   }

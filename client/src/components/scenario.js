@@ -25,9 +25,11 @@ export default function Scenario() {
             <h2>Scenario Details</h2>
             <div className="details_div">
                 <p>Marital Status: {scenario.married == "true" ? "Married" : "Single"}</p>
-                <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.lifeExpectancyUser}</p>
-                {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.lifeExpectancySpouse}</p>}
-                <p>Inflation: {scenario.inflation}%</p>
+                <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.random[0] === 0 ? scenario.lifeExpectancyUser : "Sampled"}</p>
+                {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.random[0] === 0 ? scenario.lifeExpectancySpouse : "Sampled"}</p>}
+                {scenario.random[0] !== 0 && <p>Sampled Life Expectancy, Mean [{scenario.random[1]}], Deviation [{scenario.random[2]}]</p>}
+                {scenario.random[3] === 0 && <p>Inflation: {scenario.inflation}%</p>}
+                {scenario.random[3] !== 0 && <p>Inflation: Sampled, Mean [{scenario.random[4]}], Deviation [{scenario.random[5]}]</p>}
                 <p>Annual Contribution Limit: ${scenario.annualLimit}</p>
                 <p>Roth Optimizer: {scenario.rothOptimizer === true ? "Active" : "Inactive"}</p>
                 {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}

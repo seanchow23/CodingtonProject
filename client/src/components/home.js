@@ -6,7 +6,6 @@ import Scenario from "./scenario.js";
 import { Route, Routes } from "react-router-dom"
 import Login from "./login.js"
 import UserProfile from "./user_profile.js"
-import TaxInfo from "./taxinfo.js";
 
 import CreateScenario from "./create_scenario";
 import CreateInvestmentTypes from "./create_investment_type.js";
@@ -39,7 +38,6 @@ function Home() {
             <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios}/>} />
             <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
             <Route path="/simulation/:id" element={<SimulationPage/>} />
-            <Route path="/tax-info" element={<TaxInfo />} />
             <Route path="/chart-test" element={<ChartTest />} />
           </Routes>
         </main>

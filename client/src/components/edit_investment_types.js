@@ -15,6 +15,7 @@ export default function EditInvestmentTypes({ scenarios }) {
         expenseRatio: investmentType.expenseRatio,
         expectedAnnualIncome: investmentType.expectedAnnualIncome,
         taxability: investmentType.taxability,
+        random: investmentType.random,
     });
     
     const [error, setError] = useState("");
@@ -23,6 +24,23 @@ export default function EditInvestmentTypes({ scenarios }) {
         const { name, value, type, checked } = e.target;
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
     };
+
+    const handleRandom = (e) => {
+        const { name, value, checked } = e.target;
+        if (name === "random_return") {
+            setFormData({ ...formData, random: [checked ? 1 : 0, formData.random[1], formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+        } else if (name === "mean_return") {
+            setFormData({ ...formData, random: [formData.random[0], Number(value), formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+        } else if (name === "sd_return") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], Number(value), formData.random[3], formData.random[4], formData.random[5]] });
+        } else if (name === "random_income") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], checked ? 1 : 0, formData.random[4], formData.random[5]] });
+        } else if (name === "mean_income") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], Number(value), formData.random[5]] });
+        } else if (name === "sd_income") {
+            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], formData.random[4], Number(value)] });
+        }
+    }
 
     const submit = (e) => {
         e.preventDefault();
@@ -39,6 +57,7 @@ export default function EditInvestmentTypes({ scenarios }) {
         target_investmentType.expenseRatio = Number(formData.expenseRatio);
         target_investmentType.expectedAnnualIncome = Number(formData.expectedAnnualIncome);
         target_investmentType.taxability = formData.taxability;
+        target_investmentType.random = formData.random;
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
 
@@ -50,8 +69,30 @@ export default function EditInvestmentTypes({ scenarios }) {
                 <label htmlFor="description">Description</label>
                 <textarea type="text" id="description" name="description" value={formData.description} onChange={handleInputChange}></textarea>
 
-                <InputField id="expectedAnnualReturn" type="number" value={formData.expectedAnnualReturn} onChange={handleInputChange}>Expected Annual Return (%)</InputField>
-                <InputField id="expectedAnnualIncome" type="number" value={formData.expectedAnnualIncome} onChange={handleInputChange}>Expected Annual Income ($)</InputField>
+                {formData.random[0] === 0 && <InputField id="expectedAnnualReturn" type="number" value={formData.expectedAnnualReturn} onChange={handleInputChange}>Expected Annual Return (%)</InputField>}
+                <div style={{ display: 'flex', gap: '10px'}}>
+                    <label htmlFor="random_return">Annual Return Sampling</label>
+                    <input type="checkbox" id="random_return" name="random_return" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                </div>
+                {formData.random[0] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="mean_return" style={{ marginBottom: '20px' }}>Mean</label>
+                    <input type="number" name="mean_return" value={formData.random[1]} onChange={handleRandom} required />
+                    <label htmlFor="sd_return" style={{ marginBottom: '20px' }}>Standard Deviation</label>
+                    <input type="number" name="sd_return" value={formData.random[2]} onChange={handleRandom} required />
+                </div>}
+
+                {formData.random[3] === 0 && <InputField id="expectedAnnualIncome" type="number" value={formData.expectedAnnualIncome} onChange={handleInputChange}>Expected Annual Income ($)</InputField>}
+                <div style={{ display: 'flex', gap: '10px'}}>
+                    <label htmlFor="random_income">Annual Return Sampling</label>
+                    <input type="checkbox" id="random_income" name="random_income" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                </div>
+                {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="mean_income" style={{ marginBottom: '20px' }}>Mean</label>
+                    <input type="number" name="mean_income" value={formData.random[4]} onChange={handleRandom} required />
+                    <label htmlFor="sd_income" style={{ marginBottom: '20px' }}>Standard Deviation</label>
+                    <input type="number" name="sd_income" value={formData.random[5]} onChange={handleRandom} required />
+                </div>}
+
                 <InputField id="expenseRatio" type="number" value={formData.expenseRatio} onChange={handleInputChange}>Expense Ratio (%)</InputField>
                 <InputField id="taxability" type="checkbox" checked={formData.taxability} onChange={handleInputChange}>Taxability</InputField>
 
