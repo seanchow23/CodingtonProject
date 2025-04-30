@@ -107,4 +107,3 @@ app.get('/api/tax/capital-gains', (req, res) => {
 
 
 module.exports = app;
-

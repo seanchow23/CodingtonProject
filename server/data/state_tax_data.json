@@ -1,58 +1,174 @@
 {
-  "new_york": {
-    "filing_statuses": {
-      "single": [
-        {
-          "min": 0,
-          "max": 8500,
-          "rate": 0.04
-        },
-        {
-          "min": 8501,
-          "max": 11700,
-          "rate": 0.045
-        }
-      ],
-      "married": [
-        {
-          "min": 0,
-          "max": 17150,
-          "rate": 0.04
-        },
-        {
-          "min": 17151,
-          "max": 23600,
-          "rate": 0.045
-        }
-      ]
-    }
+  "california": {
+    "single": [
+      {
+        "bracket": 0,
+        "rate": 0.01
+      },
+      {
+        "bracket": 9325,
+        "rate": 0.02
+      },
+      {
+        "bracket": 22107,
+        "rate": 0.04
+      },
+      {
+        "bracket": 34892,
+        "rate": 0.06
+      },
+      {
+        "bracket": 48435,
+        "rate": 0.08
+      },
+      {
+        "bracket": 61214,
+        "rate": 0.093
+      },
+      {
+        "bracket": 312686,
+        "rate": 0.103
+      },
+      {
+        "bracket": 375221,
+        "rate": 0.113
+      },
+      {
+        "bracket": 625369,
+        "rate": 0.123
+      },
+      {
+        "bracket": 1000000,
+        "rate": 0.133
+      }
+    ],
+    "married": [
+      {
+        "bracket": 0,
+        "rate": 0.01
+      },
+      {
+        "bracket": 18650,
+        "rate": 0.02
+      },
+      {
+        "bracket": 44214,
+        "rate": 0.04
+      },
+      {
+        "bracket": 69784,
+        "rate": 0.06
+      },
+      {
+        "bracket": 96870,
+        "rate": 0.08
+      },
+      {
+        "bracket": 122428,
+        "rate": 0.093
+      },
+      {
+        "bracket": 625372,
+        "rate": 0.103
+      },
+      {
+        "bracket": 750442,
+        "rate": 0.113
+      },
+      {
+        "bracket": 1250738,
+        "rate": 0.123
+      },
+      {
+        "bracket": 2000000,
+        "rate": 0.133
+      }
+    ]
   },
-  "new_jersey": {
-    "filing_statuses": {
-      "single": [
-        {
-          "min": 0,
-          "max": 20000,
-          "rate": 0.014
-        },
-        {
-          "min": 20001,
-          "max": 35000,
-          "rate": 0.0175
-        }
-      ],
-      "married": [
-        {
-          "min": 0,
-          "max": 50000,
-          "rate": 0.014
-        },
-        {
-          "min": 50001,
-          "max": 70000,
-          "rate": 0.0175
-        }
-      ]
-    }
+  "new_york": {
+    "single": [
+      {
+        "bracket": 0,
+        "rate": 0.04
+      },
+      {
+        "bracket": 8500,
+        "rate": 0.045
+      },
+      {
+        "bracket": 11700,
+        "rate": 0.0525
+      },
+      {
+        "bracket": 13900,
+        "rate": 0.059
+      },
+      {
+        "bracket": 21400,
+        "rate": 0.0621
+      },
+      {
+        "bracket": 80650,
+        "rate": 0.0649
+      },
+      {
+        "bracket": 215400,
+        "rate": 0.0685
+      },
+      {
+        "bracket": 1077550,
+        "rate": 0.0965
+      },
+      {
+        "bracket": 5000000,
+        "rate": 0.103
+      },
+      {
+        "bracket": 25000000,
+        "rate": 0.109
+      }
+    ],
+    "married": [
+      {
+        "bracket": 0,
+        "rate": 0.04
+      },
+      {
+        "bracket": 17150,
+        "rate": 0.045
+      },
+      {
+        "bracket": 23600,
+        "rate": 0.0525
+      },
+      {
+        "bracket": 27900,
+        "rate": 0.059
+      },
+      {
+        "bracket": 43000,
+        "rate": 0.0621
+      },
+      {
+        "bracket": 161550,
+        "rate": 0.0649
+      },
+      {
+        "bracket": 323200,
+        "rate": 0.0685
+      },
+      {
+        "bracket": 2155350,
+        "rate": 0.0965
+      },
+      {
+        "bracket": 5000000,
+        "rate": 0.103
+      },
+      {
+        "bracket": 25000000,
+        "rate": 0.109
+      }
+    ]
   }
 }
