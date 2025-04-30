@@ -29,7 +29,7 @@ function getPercentile(values, p) {
 
 export default function Shaded_Chart({ data }) {
   const startYear = 2025;
-  const numYears = 20;
+  const numYears = data?.[0]?.length || 0;
   const labels = Array.from({ length: numYears }, (_, i) => startYear + i);
   const simulations = data;
 
