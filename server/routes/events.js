@@ -50,8 +50,25 @@ router.delete('/:id', async (req, res) => {
 // ----------------------------------------------------
 router.post('/', async (req, res) => {
   try {
-    const newEvent = new Event(req.body);
-    const saved = await newEvent.save();
+    let event;
+    switch (req.body.type) {
+      case 'Income':
+        event = new Income(req.body);
+        break;
+      case 'Expense':
+        event = new Expense(req.body);
+        break;
+      case 'invest':
+        event = new Invest(req.body);
+        break;
+      case 'rebalance':
+        event = new Rebalance(req.body);
+        break;
+      default:
+        event = new Event(req.body); // fallback to base Event
+    }
+
+    const saved = await event.save();
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: err.message });
