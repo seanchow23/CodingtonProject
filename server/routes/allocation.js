@@ -16,7 +16,14 @@ router.post('/', async (req, res) => {
 // READ ALL
 router.get('/', async (req, res) => {
   try {
-    const allocations = await Allocation.find().populate('investment');
+    const allocations = await Allocation.find()
+      .populate({
+        path: 'investment',
+        populate: {
+          path: 'investmentType'
+        }
+      });
+
     res.json(allocations);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -26,7 +33,14 @@ router.get('/', async (req, res) => {
 // READ ONE
 router.get('/:id', async (req, res) => {
   try {
-    const allocation = await Allocation.findById(req.params.id).populate('investment');
+    const allocation = await Allocation.findById(req.params.id)
+      .populate({
+        path: 'investment',
+        populate: {
+          path: 'investmentType'
+        }
+      });
+
     if (!allocation) return res.status(404).json({ error: 'Allocation not found' });
     res.json(allocation);
   } catch (err) {
@@ -37,7 +51,14 @@ router.get('/:id', async (req, res) => {
 // UPDATE
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await Allocation.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Allocation.findByIdAndUpdate(req.params.id, req.body, { new: true })
+      .populate({
+        path: 'investment',
+        populate: {
+          path: 'investmentType'
+        }
+      });
+
     if (!updated) return res.status(404).json({ error: 'Allocation not found' });
     res.json(updated);
   } catch (err) {

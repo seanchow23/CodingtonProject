@@ -24,6 +24,7 @@ const allocationRoutes = require('./routes/allocation');
 const expenseRoutes = require('./routes/expense');
 const incomeRoutes = require('./routes/income');
 const investRoutes = require('./routes/invest');
+const rebalanceRoutes = require('./routes/rebalance');
 
 
 require('dotenv').config();
@@ -80,6 +81,7 @@ app.use('/api/allocation', allocationRoutes);
 app.use('/api/expense', expenseRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/invest', investRoutes);
+app.use('/api/rebalance', rebalanceRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

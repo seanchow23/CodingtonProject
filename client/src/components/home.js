@@ -18,7 +18,8 @@ import EditEvent from "./edit_event.js";
 import SimulationPage from "./simulation_page.js";
 import ChartTest from "./chart_test.js"
 function Home() {
-  const scenarios = [];
+  const scenarios = []; // here if the user is logged in check if the user has any scenarios already created,
+  //if they do show that otherwise show empty list
 
   return (
     <div className="home-container">
