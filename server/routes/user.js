@@ -9,7 +9,46 @@ const Scenario = require('../models/scenario'); // Needed for .populate() to wor
 // ----------------------------------------------------
 router.get('/:id/scenarios', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).populate('scenarios');
+    const user = await User.findById(req.params.id)
+      .populate({
+        path: 'scenarios',
+        populate: [
+          { path: 'investmentTypes' },
+          {
+            path: 'investments',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'events',
+            populate: {
+              path: 'allocations',
+              populate: {
+                path: 'investment',
+                populate: {
+                  path: 'investmentType'
+                }
+              }
+            }
+          },
+          {
+            path: 'spendingStrategy',
+            model: 'Expense'
+          },
+          {
+            path: 'withdrawalStrategy',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'rmd',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'rothStrategy',
+            populate: { path: 'investmentType' }
+          }
+        ]
+      });
+
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     res.json(user.scenarios);
@@ -69,15 +108,97 @@ router.get('/', async (req, res) => {
 // GET /api/users/:id
 // Get a specific user by ID
 // ----------------------------------------------------
+// ----------------------------------------------------
+// GET /api/users/:id
+// Get a specific user by ID with full scenarios
+// ----------------------------------------------------
 router.get('/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id)
+      .populate({
+        path: 'scenarios',
+        populate: [
+          { path: 'investmentTypes' },
+          {
+            path: 'investments',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'events',
+            populate: {
+              path: 'allocations',
+              populate: {
+                path: 'investment',
+                populate: {
+                  path: 'investmentType'
+                }
+              }
+            }
+          },
+          {
+            path: 'spendingStrategy',
+            model: 'Expense'
+          },
+          {
+            path: 'withdrawalStrategy',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'rmd',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'rothStrategy',
+            populate: { path: 'investmentType' }
+          }
+        ]
+      })
+      .populate({
+        path: 'sharedScenarios',
+        populate: [
+          { path: 'investmentTypes' },
+          {
+            path: 'investments',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'events',
+            populate: {
+              path: 'allocations',
+              populate: {
+                path: 'investment',
+                populate: {
+                  path: 'investmentType'
+                }
+              }
+            }
+          },
+          {
+            path: 'spendingStrategy',
+            model: 'Expense'
+          },
+          {
+            path: 'withdrawalStrategy',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'rmd',
+            populate: { path: 'investmentType' }
+          },
+          {
+            path: 'rothStrategy',
+            populate: { path: 'investmentType' }
+          }
+        ]
+      });
+
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // ----------------------------------------------------
 // PUT /api/users/:id

@@ -11,4 +11,4 @@ const investmentTypeSchema = new mongoose.Schema({
     random: [{ type: Number }]
 });
 
-module.exports = mongoose.model('InvestmentType', investmentTypeSchema);;
+module.exports = mongoose.model('InvestmentType', investmentTypeSchema);

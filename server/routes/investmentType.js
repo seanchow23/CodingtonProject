@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const InvestmentType = require('../models/investmentType');
 
-// ----------------------------------------------------
 // GET /api/investment-types/:id
 // Get a specific investment type by ID
-// ----------------------------------------------------
 router.get('/:id', async (req, res) => {
   try {
     const type = await InvestmentType.findById(req.params.id);
@@ -16,10 +14,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
 // PUT /api/investment-types/:id
 // Update an investment type
-// ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
     const updated = await InvestmentType.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -30,10 +26,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
 // DELETE /api/investment-types/:id
 // Delete an investment type
-// ----------------------------------------------------
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await InvestmentType.findByIdAndDelete(req.params.id);
@@ -44,10 +38,9 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
+
 // POST /api/investment-types
 // Create a new investment type
-// ----------------------------------------------------
 router.post('/', async (req, res) => {
   try {
     const newType = new InvestmentType(req.body);
@@ -58,10 +51,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
+
 // GET /api/investment-types
 // Get all investment types
-// ----------------------------------------------------
 router.get('/', async (req, res) => {
   try {
     const types = await InvestmentType.find();
