@@ -25,18 +25,31 @@ require('../models/expense');
 
 // ----------------------------------------------------
 // POST /api/scenarios
-// Create a new scenario (does NOT assign to a user)
-// Requires: { name, married, birthYearUser, etc. }
-// ----------------------------------------------------
+// Create a new scenario (user is optional; if logged in, associate it with the user)
 router.post('/', async (req, res) => {
-    try {
-      const newScenario = new Scenario(req.body);
-      const savedScenario = await newScenario.save();
-      res.status(201).json(savedScenario);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
+  console.log('Received new scenario data:', req.body); // Log received data
+  try {
+    const user = req.user; // This will be set by your auth middleware (Passport, JWT, etc.)
+
+    // Create a new scenario
+    const newScenario = new Scenario(req.body);
+
+    // If the user is logged in, associate the scenario with the user
+    if (user) {
+      newScenario.user = user._id; // Link scenario to logged-in user
+      user.scenarios.push(newScenario._id); // Add to the user's scenarios list
+      await user.save();
     }
-  });
+
+    // Save the scenario to the database
+    const savedScenario = await newScenario.save();
+
+    res.status(201).json(savedScenario); // Return the saved scenario
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Error creating scenario' });
+  }
+});
 
 // ----------------------------------------------------
 // GET /api/scenarios/:id
