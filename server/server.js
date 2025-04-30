@@ -36,7 +36,7 @@ require('./models/investmentType');
 require('./models/event');
 require('./models/expense'); 
 
-const PORT = 5001; // use 5000 for targeting Google OAuth callback
+const PORT = 5000; // use 5000 for targeting Google OAuth callback
 
 
 // set up connection to MongoDB
@@ -100,13 +100,13 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
- const scrapeCapitalGains = require('./scrapers/capital_gains');
- const scrapeStandardDeductions = require('./scrapers/standardDeductions');
- const scrapeRMDUniformTable = require('./scrapers/rmdscraper'); // ✅ RMD scraper
+const scrapeCapitalGains = require('./scrapers/capital_gains');
+const scrapeStandardDeductions = require('./scrapers/standardDeductions');
+const scrapeRMDUniformTable = require('./scrapers/rmdscraper');
  
- scrapeCapitalGains();       // <-- call it
- scrapeStandardDeductions(); // <-- call it
- scrapeRMDUniformTable();
+scrapeCapitalGains(); 
+scrapeStandardDeductions();
+scrapeRMDUniformTable();
  
 
 app.listen(PORT, () => {

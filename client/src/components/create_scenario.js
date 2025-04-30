@@ -4,6 +4,7 @@ import InputField from "./input_field";
 import { createScenario, getScenario } from "../api/scenarioApi";
 import { getCurrentUser } from "../api/userApi";
 import { createInvestmentType } from "../api/investmentTypeApi";
+import * as allocationApi from "../api/allocationApi";
 import * as investmentApi from "../api/investmentApi";
 import * as eventsApi from "../api/eventsApi";
 
@@ -137,6 +138,7 @@ export default function CreateScenario({ scenarios }) {
       max: 0,
       glide: false
     };
+
     const eventResponse = await eventsApi.createEvent(newInvestEvent);
     const createdEvent = eventResponse.data;
 
@@ -159,7 +161,7 @@ export default function CreateScenario({ scenarios }) {
       rothStrategy: [],
       rothYears: [
         new Date().getFullYear(),
-        new Date().getFullYear() + Number(formData.lifeExpectancyUser),
+        new Date().getFullYear() + (formData.lifeExpectancyUser === 0 ? Number(formData.lifeExpectancyUser) + 1000 : formData.lifeExpectancyUser), // 1000 is a placeholder for the end year. need to account for randomness
       ],
       rothOptimizer: formData.rothOptimizer,
       sharing: formData.sharing,
@@ -171,7 +173,6 @@ export default function CreateScenario({ scenarios }) {
     const createdScenario = await createScenario(newScenario);
     const populatedScenario = await getScenario(createdScenario._id); // fetch with populated data
     sessionStorage.removeItem('temporaryScenario');
-    console.log(populatedScenario)
     addScenario(populatedScenario);
   };
   

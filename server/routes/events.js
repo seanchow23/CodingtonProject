@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Event = require('../models/event');
+const Income = require('../models/income');
+const Expense = require('../models/expense');
+const Invest = require('../models/invest');
+const Rebalance = require('../models/rebalance');
 
 // ----------------------------------------------------
 // GET /api/events/:id
@@ -71,7 +75,8 @@ router.post('/', async (req, res) => {
     const saved = await event.save();
     res.status(201).json(saved);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error("Save error:", err);
+    res.status(400).json({ error: err.message, details: err.errors });
   }
 });
 

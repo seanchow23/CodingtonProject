@@ -81,6 +81,22 @@ router.get('/:id', async (req, res) => {
       populate: { path: 'investmentType' }
     });
 
+    await Promise.all(
+      scenario.events
+        .filter(event => event.type === 'invest')
+        .map(event =>
+          event.populate({
+            path: 'allocations',
+            populate: {
+              path: 'investment',
+              populate: {
+                path: 'investmentType'
+              }
+            }
+          })
+        )
+    );
+
     if (!scenario) return res.status(404).json({ error: 'Scenario not found' });
     res.json(scenario);
   } catch (err) {
