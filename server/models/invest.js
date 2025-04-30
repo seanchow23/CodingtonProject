@@ -6,7 +6,7 @@ var Allocation = require('./allocation.js');
 // Invest Schema
 var InvestSchema = new mongoose.Schema({
     allocations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Allocation' }],
-    max: { type: Number, required: true },
+    max: { type: Number, required: true, min: 0 },
     glide: { type: Boolean, default: false, required: true },
 });
 
