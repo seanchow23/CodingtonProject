@@ -5,7 +5,7 @@ var Allocation = require('./allocation.js');
 
 // Rebalance Schema
 var RebalanceSchema = new mongoose.Schema({
-    allocation: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Allocation' }],
+    allocations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Allocation' }],
 });
 
 RebalanceSchema.virtual('url').get(function () {

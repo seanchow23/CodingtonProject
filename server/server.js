@@ -20,6 +20,11 @@ const scenarioRoutes = require('./routes/scenario');
 const investmentTypeRoutes = require('./routes/investmentType');
 const investmentRoutes = require('./routes/investment');
 const eventsRoutes = require('./routes/events');
+const allocationRoutes = require('./routes/allocation');
+const expenseRoutes = require('./routes/expense');
+const incomeRoutes = require('./routes/income');
+const investRoutes = require('./routes/invest');
+
 
 require('dotenv').config();
 require('./auth'); // auth config file
@@ -71,6 +76,10 @@ app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/investment-types', investmentTypeRoutes);
 app.use('/api/investment', investmentRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/allocation', allocationRoutes);
+app.use('/api/expense', expenseRoutes);
+app.use('/api/income', incomeRoutes);
+app.use('/api/invest', investRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
