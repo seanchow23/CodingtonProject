@@ -10,7 +10,7 @@ export default function simulation({ scenario }) {
     }
 
     const scenario_list = [structuredClone(scenario)];
-    const output = [[], [], [[], [], []]];
+    const output = [[], [[],[],[],[],[]], [[], [], []]];
 
     var year = 2025;
 
@@ -128,7 +128,7 @@ export default function simulation({ scenario }) {
     // Add to Output
     const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
     output[0].push(Number(scenario.financialGoal) <= total_asset);
-    output[1].push(total_asset);
+    output[1].push([total_asset, 0, 0, 0, 0]);
     output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income').filter(event => event.startYear <= year)));
     output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear <= year)));
     output[2][2].push(structuredClone(scenario.investments));
@@ -499,7 +499,11 @@ export default function simulation({ scenario }) {
         // Add to Output
         const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);
         output[0].push(Number(scenario.financialGoal) <= total_asset);
-        output[1].push(total_asset);
+        output[1][0].push(total_asset);
+        output[1][1].push(curYearIncome);
+        output[1][2].push(payment + discretionary);
+        output[1][3].push(curYearEarlyWithdrawals);
+        output[1][4].push(discretionary / (discretionary + non_discretionary));
         output[2][0].push(structuredClone(IncomeEvents.filter(event => event.startYear <= year)));
         output[2][1].push(structuredClone(ExpenseEvents.filter(event => event.startYear <= year)));
         output[2][2].push(structuredClone(Investments));

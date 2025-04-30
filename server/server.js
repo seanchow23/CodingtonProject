@@ -5,6 +5,15 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const app = require('./app');  // This imports app with all routes
+
+require('./scrapers/taxscraper'); // assuming taxscraper exports a function too
+require('./scrapers/standardDeductions'); // assuming taxscraper exports a function too
+require('./scrapers/capital_gains'); // assuming taxscraper exports a function too
+require('./scrapers/rmdscraper'); // assuming taxscraper exports a function too
+
+
 
 const userRoutes = require('./routes/user'); 
 const scenarioRoutes = require('./routes/scenario');
@@ -24,8 +33,7 @@ require('./models/investmentType');
 require('./models/event');
 require('./models/expense'); 
 
-const app = express();
-const PORT = 5000; // use 5000 for targeting Google OAuth callback
+const PORT = 5001; // use 5000 for targeting Google OAuth callback
 
 
 // set up connection to MongoDB
@@ -52,7 +60,6 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
-
 
 
 
@@ -88,36 +95,14 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
-// tax API Route 
-app.get('/api/tax/federal', (req, res) => {
-  const fs = require('fs');
-  const path = require('path');
-
-  const filePath = path.join(__dirname, 'data/federal_tax_brackets.json');
-  console.log("Trying to read file from:", filePath);
-
-  try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    res.json(JSON.parse(data));
-  } catch (err) {
-    console.error("Failed to read or parse JSON:", err.message);
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-// deductions API route
-app.get('/api/tax/deductions', (req, res) => {
-  const file = path.join(__dirname, 'data/standard_deductions.json');
-  try {
-    const data = fs.readFileSync(file, 'utf8');
-    res.json(JSON.parse(data));
-  } catch (err) {
-    console.error('Error reading standard deductions:', err.message);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
+ const scrapeCapitalGains = require('./scrapers/capital_gains');
+ const scrapeStandardDeductions = require('./scrapers/standardDeductions');
+ const scrapeRMDUniformTable = require('./scrapers/rmdscraper'); // ✅ RMD scraper
+ 
+ scrapeCapitalGains();       // <-- call it
+ scrapeStandardDeductions(); // <-- call it
+ scrapeRMDUniformTable();
+ 
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

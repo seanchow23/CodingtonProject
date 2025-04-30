@@ -2,10 +2,11 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 async function scrapeRMDUniformTable() {
-  const url = 'https://www.irs.gov/publications/p590b';
-  console.log(`📥 Fetching IRS page: ${url}`);
+    const url = process.env.RMD_URL;
+    console.log(`📥 Fetching IRS page: ${url}`);
 
   try {
     const response = await axios.get(url, {

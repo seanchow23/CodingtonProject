@@ -16,4 +16,4 @@ expenseSchema.virtual('url').get(function () {
 });
 
 
-module.exports = mongoose.model('Expense', expenseSchema);
+module.exports = Event.discriminator('Expense', expenseSchema);
