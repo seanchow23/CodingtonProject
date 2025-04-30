@@ -5,10 +5,22 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+
 const userRoutes = require('./routes/user'); 
+const scenarioRoutes = require('./routes/scenario');
+const investmentTypeRoutes = require('./routes/investmentType');
+const investmentRoutes = require('./routes/investment');
+const eventsRoutes = require('./routes/events');
 
 require('dotenv').config();
 require('./auth'); // auth config file
+
+require('./models/user');
+require('./models/scenario');
+require('./models/investment');
+require('./models/investmentType');
+require('./models/event');
+require('./models/expense'); 
 
 const app = express();
 const PORT = 5000; // use 5000 for targeting Google OAuth callback
@@ -21,6 +33,10 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => console.log("MongoDB connected"))
 .catch((err) => console.error("MongoDB connection error:", err));
+
+
+app.use(express.json());
+
 
 // enable CORS to allow client (frontend) to talk to server
 app.use(cors({
@@ -35,13 +51,19 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// use user routes
-app.use('/api/users', userRoutes);
+
 
 
 // initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
+// use user routes
+app.use('/api/users', userRoutes);
+app.use('/api/scenarios', scenarioRoutes);
+app.use('/api/investment-types', investmentTypeRoutes);
+app.use('/api/investment', investmentRoutes);
+app.use('/api/events', eventsRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

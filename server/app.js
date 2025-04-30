@@ -12,7 +12,7 @@ require('./models/scenario');
 require('./models/investment');
 require('./models/investmentType');
 require('./models/event');
-require('./models/expense'); // 👈 This one is key for your failing test
+require('./models/expense'); 
 
 
 const app = express();
@@ -99,11 +99,11 @@ app.get('/api/tax/capital-gains', (req, res) => {
 });
 
 
-const scenarioRoutes = require('./routes/scenario');
-const userRoutes = require('./routes/user');
+// const scenarioRoutes = require('./routes/scenario');
+// const userRoutes = require('./routes/user');
 
-app.use('/api/scenarios', scenarioRoutes);
-app.use('/api/users', userRoutes);
+// app.use('/api/scenarios', scenarioRoutes);
+// app.use('/api/users', userRoutes);
 
 
 module.exports = app;

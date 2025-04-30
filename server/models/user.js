@@ -3,11 +3,10 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email:    { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-
+  
   googleAuth: {
-    googleId: String,         // for Google login
-    accessToken: String
+    googleId: { type: String, required: true },  // Google ID is required
+    accessToken: { type: String, required: true } // Access token can be saved
   },
 
   scenarios: [{
