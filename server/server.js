@@ -93,10 +93,10 @@ app.get('/auth/logout', (req, res) => {
 
  const scrapeCapitalGains = require('./scrapers/capital_gains');
  const scrapeStandardDeductions = require('./scrapers/standardDeductions');
- const scrapeRMDUniformTable = require('./scrapers/rmdscraper'); // ✅ RMD scraper
+ const scrapeRMDUniformTable = require('./scrapers/rmdscraper'); 
  
- scrapeCapitalGains();       // <-- call it
- scrapeStandardDeductions(); // <-- call it
+ scrapeCapitalGains();       
+ scrapeStandardDeductions(); 
  scrapeRMDUniformTable();
  
 

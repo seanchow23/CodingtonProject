@@ -15,7 +15,7 @@ async function scrapeRMDUniformTable() {
     });
 
     const $ = cheerio.load(response.data);
-    console.log('✅ Page loaded.');
+    console.log(' Page loaded.');
 
     let rmdTable = [];
 
@@ -24,7 +24,7 @@ async function scrapeRMDUniformTable() {
     if (targetTable.length === 0) {
       console.warn('⚠️ Could not find Uniform Lifetime Table.');
     } else {
-      console.log(`✅ Found Uniform Lifetime Table.`);
+      console.log(`Found Uniform Lifetime Table.`);
 
       targetTable.find('tr').each((i, row) => {
         const cols = $(row).find('td');
