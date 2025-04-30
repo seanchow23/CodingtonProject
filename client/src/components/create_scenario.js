@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "./input_field";
-import { createScenario } from "../api/scenarioApi";
+import { createScenario, getScenario } from "../api/scenarioApi";
 import { getCurrentUser } from "../api/userApi";
 import { createInvestmentType } from "../api/investmentTypeApi";
 import * as investmentApi from "../api/investmentApi";
@@ -106,7 +106,6 @@ export default function CreateScenario({ scenarios }) {
     };
     const investmentTypeResponse = await createInvestmentType(newInvestmentType);
     const createdInvestmentType = investmentTypeResponse.data; // <-- now you have _id
-    console.log("this is the investmentTypeID",createdInvestmentType._id);
 
     const newInvestment = {
       investmentType: createdInvestmentType._id,
@@ -118,11 +117,14 @@ export default function CreateScenario({ scenarios }) {
     const createdInvestment = investmentResponse.data;
   
     const newAllocation = {
-      investment: newInvestment,
+      investment: createdInvestment._id,
       percentage: 0,
       finalPercentage: 0,
       glide: 0
     };
+
+    const allocationResponse = await allocationApi.createAllocation(newAllocation);
+    const createdAllocation = allocationResponse.data;
   
     const newInvestEvent = {
       type: "invest",
@@ -131,7 +133,7 @@ export default function CreateScenario({ scenarios }) {
       startYear: new Date().getFullYear(),
       duration: 1,
       random: [0, 0, 0, 0, 0, 0],
-      allocations: [newAllocation],
+      allocations: [createdAllocation._id],
       max: 0,
       glide: false
     };
@@ -139,6 +141,7 @@ export default function CreateScenario({ scenarios }) {
     const createdEvent = eventResponse.data;
 
     const newScenario = {
+      user: user ? user._id : null,
       name: formData.name,
       married: formData.married === true || formData.married === "true",
       birthYearUser: formData.birthYearUser,
@@ -151,7 +154,7 @@ export default function CreateScenario({ scenarios }) {
       inflation: Number(formData.inflation),
       annualLimit: Number(formData.annualLimit),
       spendingStrategy: [],
-      withdrawalStrategy: [newInvestment._id],
+      withdrawalStrategy: [createdInvestment._id],
       rmd: [],
       rothStrategy: [],
       rothYears: [
@@ -164,25 +167,12 @@ export default function CreateScenario({ scenarios }) {
       state: formData.state,
       random: formData.random,
     };
-  
-    console.log("Sending scenario:", newScenario);
-    console.log("The user is", user);
-  
-    if (user) {
-      createScenario(newScenario)
-        .then((response) => {
-          console.log('Scenario created successfully:', response);
-          sessionStorage.removeItem('temporaryScenario');
-          navigate('/');
-        })
-        .catch((error) => {
-          console.error('Error creating scenario:', error);
-          setError("An error occurred while creating the scenario.");
-        });
-    } else {
-      addScenario(newScenario); // still save locally if needed
-      navigate('/');
-    }
+
+    const createdScenario = await createScenario(newScenario);
+    const populatedScenario = await getScenario(createdScenario._id); // fetch with populated data
+    sessionStorage.removeItem('temporaryScenario');
+    console.log(populatedScenario)
+    addScenario(populatedScenario);
   };
   
 

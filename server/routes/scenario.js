@@ -27,7 +27,7 @@ require('../models/expense');
 // POST /api/scenarios
 // Create a new scenario (user is optional; if logged in, associate it with the user)
 router.post('/', async (req, res) => {
-  console.log('Received new scenario data:', req.body); // Log received data
+  //console.log('Received new scenario data:', req.body); // Log received data
   try {
     const user = req.user; // This will be set by your auth middleware (Passport, JWT, etc.)
 
@@ -58,13 +58,28 @@ router.post('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const scenario = await Scenario.findById(req.params.id)
-      .populate('investments')
-      .populate('investmentTypes')
-      .populate('events')
-      .populate('spendingStrategy')
-      .populate('withdrawalStrategy')
-      .populate('rmd')
-      .populate('rothStrategy');
+    .populate('investmentTypes')
+    .populate({
+      path: 'investments',
+      populate: { path: 'investmentType' }
+    })
+    .populate('events')
+    .populate({
+      path: 'spendingStrategy',
+      model: 'Expense'
+    })
+    .populate({
+      path: 'withdrawalStrategy',
+      populate: { path: 'investmentType' }
+    })
+    .populate({
+      path: 'rmd',
+      populate: { path: 'investmentType' }
+    })
+    .populate({
+      path: 'rothStrategy',
+      populate: { path: 'investmentType' }
+    });
 
     if (!scenario) return res.status(404).json({ error: 'Scenario not found' });
     res.json(scenario);
