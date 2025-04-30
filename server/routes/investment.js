@@ -22,7 +22,8 @@ router.get('/:id', async (req, res) => {
 // ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await Investment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Investment.findByIdAndUpdate(req.params.id, req.body, { new: true })
+      .populate('investmentType'); //  populate added here
     if (!updated) return res.status(404).json({ error: 'Investment not found' });
     res.json(updated);
   } catch (err) {
@@ -52,7 +53,8 @@ router.post('/', async (req, res) => {
   try {
     const newInvestment = new Investment(req.body);
     const saved = await newInvestment.save();
-    res.status(201).json(saved);
+    const populated = await saved.populate('investmentType'); // populate after save
+    res.status(201).json(populated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

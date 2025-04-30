@@ -450,7 +450,6 @@ export default function simulation({ scenario }) {
                 } else {
                     allocation.investment.baseValue *= (1 - (-difference / allocation.investment.value));
                     allocation.investment.value += difference;
-                    if (age < 59) { curYearEarlyWithdrawals += -difference; }
                 }
                 const newAllocation = {
                     _id: Math.floor(Math.random() * 1000) + 1000,

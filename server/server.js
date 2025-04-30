@@ -20,6 +20,12 @@ const scenarioRoutes = require('./routes/scenario');
 const investmentTypeRoutes = require('./routes/investmentType');
 const investmentRoutes = require('./routes/investment');
 const eventsRoutes = require('./routes/events');
+const allocationRoutes = require('./routes/allocation');
+const expenseRoutes = require('./routes/expense');
+const incomeRoutes = require('./routes/income');
+const investRoutes = require('./routes/invest');
+const rebalanceRoutes = require('./routes/rebalance');
+
 
 require('dotenv').config();
 require('./auth'); // auth config file
@@ -31,7 +37,7 @@ require('./models/investmentType');
 require('./models/event');
 require('./models/expense'); 
 
-const PORT = 5001; // use 5000 for targeting Google OAuth callback
+const PORT = 5000; // use 5000 for targeting Google OAuth callback
 
 
 // set up connection to MongoDB
@@ -71,6 +77,11 @@ app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/investment-types', investmentTypeRoutes);
 app.use('/api/investment', investmentRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/allocation', allocationRoutes);
+app.use('/api/expense', expenseRoutes);
+app.use('/api/income', incomeRoutes);
+app.use('/api/invest', investRoutes);
+app.use('/api/rebalance', rebalanceRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
