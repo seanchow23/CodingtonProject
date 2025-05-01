@@ -83,7 +83,7 @@ export default function EditInvestmentTypes({ scenarios }) {
 
                 {formData.random[3] === 0 && <InputField id="expectedAnnualIncome" type="number" value={formData.expectedAnnualIncome} onChange={handleInputChange}>Expected Annual Income ($)</InputField>}
                 <div style={{ display: 'flex', gap: '10px'}}>
-                    <label htmlFor="random_income">Annual Return Sampling</label>
+                    <label htmlFor="random_income">Annual Income Sampling</label>
                     <input type="checkbox" id="random_income" name="random_income" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
                 </div>
                 {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
