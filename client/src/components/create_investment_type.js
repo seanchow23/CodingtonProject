@@ -1,6 +1,8 @@
 import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
+import { createInvestmentType } from "../api/investmentTypeApi";
+import { updateScenario } from "../api/scenarioApi";
 
 export default function CreateInvestmentTypes({ scenarios }) {
     const location = useLocation();
@@ -48,15 +50,15 @@ export default function CreateInvestmentTypes({ scenarios }) {
         navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
     }
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
         const check = Object.keys(formData).find((key) => formData[key] < 0);
         if (check) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
         };
+
         const newInvestmentType = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
             name: formData.name,
             description: formData.description,
             expectedAnnualReturn: Number(formData.expectedAnnualReturn),
@@ -65,7 +67,29 @@ export default function CreateInvestmentTypes({ scenarios }) {
             taxability: formData.taxability,
             random: formData.random,
         };
-        addInvestmentType(newInvestmentType);
+        //addInvestmentType(newInvestmentType);
+
+        try {
+            // SSave the investment type
+            const response = await createInvestmentType(newInvestmentType);
+            const savedType = response.data;
+        
+            //  Add it to the scenario's investmentTypes array
+            const updatedScenario = {
+              ...scenario,
+              investmentTypes: [...scenario.investmentTypes, savedType._id],
+            };
+        
+            // Save the updated scenario
+            await updateScenario(scenario._id, updatedScenario);
+        
+            // Push to local state & navigate
+            addInvestmentType(savedType);
+        
+          } catch (err) {
+            console.error("Failed to create investment type:", err);
+            setError("An error occurred while saving the investment type.");
+          }
     };
 
     return (
