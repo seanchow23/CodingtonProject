@@ -33,6 +33,17 @@ export const getScenario = async (id) => {
   }
 };
 
+// Get unpopulated scenario by ID
+export const getScenarioUnpop = async (id) => {
+  try {
+    const response = await API.get(`/unpopulated/${id}`);
+    return response.data; // Return the fetched scenario
+  } catch (error) {
+    console.error('Error fetching scenario:', error);
+    throw error;
+  }
+};
+
 // Update a scenario
 export const updateScenario = async (id, data) => {
   try {

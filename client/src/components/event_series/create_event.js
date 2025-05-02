@@ -1,12 +1,14 @@
 import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "../input_field";
+import {AddIncomeEvent, AddExpenseEvent, AddInvestEvent, AddRebalanceEvent, addAllocations} from "./add_event";
 
 export default function CreateEvent({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
 
     const {scenario} = location.state
+    const event_allocations = addAllocations(scenario.investments); // Only applicable for invest and rebalance events
 
     const [formData, setFormData] = useState({
         type: "",
@@ -20,6 +22,9 @@ export default function CreateEvent({ scenarios }) {
         ss: false,
         discretionary: false,
         random: [0, 0, 0, 0, 0, 0],
+        allocations: event_allocations,
+        max: "",
+        glide: false
     });
 
     const [error, setError] = useState("");
@@ -29,6 +34,22 @@ export default function CreateEvent({ scenarios }) {
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData({...formData, [name]: type === "checkbox" ? checked : value});
+    };
+
+    const handleAllocationChange = (e) => {
+        const { name, value, checked, id } = e.target;
+        if (name === "max") {setFormData({...formData, [name]: value});}
+        else if (name === "glide") {setFormData({...formData, [name]: checked});}
+        else if (id === "final") {
+            const updatedAllocations = [...formData.allocations];
+            updatedAllocations[name].finalPercentage = Number(value);
+            setFormData({ ...formData, allocations: updatedAllocations });
+        }
+        else {
+            const updatedAllocations = [...formData.allocations];
+            updatedAllocations[name].percentage = Number(value);
+            setFormData({ ...formData, allocations: updatedAllocations });
+        }
     };
 
     const handleRandom = (e) => {
@@ -64,19 +85,27 @@ export default function CreateEvent({ scenarios }) {
         }
         const newEvent = {
             _id: Math.floor(Math.random() * 1000) + 1000,
+            type: formData.type,
             name: formData.name,
             description: formData.description,
             startYear: formData.startYear,
             duration: Number(formData.duration),
+
+            // These fields are for income and expense events
             amount: Number(formData.amount),
             change: Number(formData.change),
             inflation: Number(formData.inflation),
+
             random: formData.random,
 
             // These fields are different for income and expense events
             ss: formData.ss,
-            type: formData.type,
             discretionary: formData.discretionary,
+
+            // These fields are for invest and rebalance events
+            allocations: event_allocations,
+            max: "",    // Just invest events have this field
+            glide: false
         };
         addEvent(newEvent);
     };
@@ -87,6 +116,8 @@ export default function CreateEvent({ scenarios }) {
                 <label htmlFor="type">Select Event Type*</label>
                 <input type="radio" name="type" value="income" onChange={handleRadioChange} required/> Income
                 <input type="radio" name="type" value="expense" onChange={handleRadioChange} /> Expense
+                <input type="radio" name="type" value="invest" onChange={handleRadioChange} /> Invest
+                <input type="radio" name="type" value="rebalance" onChange={handleRadioChange} /> Rebalance
 
                 <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Event Name</InputField>
 
@@ -127,32 +158,12 @@ export default function CreateEvent({ scenarios }) {
 
                 {formData.type === "income" && <AddIncomeEvent formData={formData} onChange={handleInputChange} />}
                 {formData.type === "expense" && <AddExpenseEvent formData={formData} onChange={handleInputChange} />}
+                {formData.type === "invest" && <AddInvestEvent formData={formData} onChange={handleAllocationChange} scenario={scenario}/>}
+                {formData.type === "rebalance" && <AddRebalanceEvent formData={formData} onChange={handleAllocationChange} scenario={scenario}/>}
 
                 <button type="submit">Submit</button>
                 {error && <div className="error">{error}</div>}
             </form>
         </div>
     )
-}
-
-function AddIncomeEvent({ formData, onChange }) {
-    return (
-        <div>
-            <InputField id="amount" type="number" value={formData.amount} onChange={onChange}>Inital Amount ($)</InputField>
-            <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Change ($)</InputField>
-            <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation (%)</InputField>
-            <InputField id="ss" type="checkbox" checked={formData.ss} onChange={onChange}>Social Security</InputField>
-        </div>
-    );
-}
-
-function AddExpenseEvent({ formData, onChange }) {
-    return (
-        <div>
-            <InputField id="amount" type="number" value={formData.amount} onChange={onChange}>Inital Amount ($)</InputField>
-            <InputField id="change" type="number" value={formData.change} onChange={onChange}>Yearly Change ($)</InputField>
-            <InputField id="inflation" type="checkbox" checked={formData.inflation} onChange={onChange}>Inflation (%)</InputField>
-            <InputField id="discretionary" type="checkbox" checked={formData.discretionary} onChange={onChange}>Discretionary</InputField>
-        </div>
-    );
 }

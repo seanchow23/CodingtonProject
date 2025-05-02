@@ -55,6 +55,16 @@ router.post('/', async (req, res) => {
 // GET /api/scenarios/:id
 // Get a specific scenario by ID (with populated references)
 // ----------------------------------------------------
+router.get('/unpopulated/:id', async (req, res) => {
+  try {
+    const scenario = await Scenario.findById(req.params.id)
+    if (!scenario) return res.status(404).json({ error: 'Scenario not found' });
+    res.json(scenario);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const scenario = await Scenario.findById(req.params.id)

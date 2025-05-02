@@ -14,7 +14,7 @@ import CreateEvent from "./event_series/create_event.js";
 import EditScenario from "./edit_scenario";
 import EditInvestmentTypes from "./edit_investment_types.js";
 import EditInvestments from "./edit_investments.js";
-import EditEvent from "./edit_event.js";
+import EditEvent from "./event_series/edit_event.js";
 import SimulationPage from "./simulation_page.js";
 import ChartTest from "./chart_test.js"
 function Home() {
