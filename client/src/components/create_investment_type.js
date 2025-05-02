@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 import { createInvestmentType } from "../api/investmentTypeApi";
-import { updateScenario } from "../api/scenarioApi";
+import { getScenarioUnpop, updateScenario } from "../api/scenarioApi";
 
 export default function CreateInvestmentTypes({ scenarios }) {
     const location = useLocation();
@@ -75,21 +75,22 @@ export default function CreateInvestmentTypes({ scenarios }) {
             const savedType = response.data;
         
             //  Add it to the scenario's investmentTypes array
+            const sc = await getScenarioUnpop(scenario._id);
             const updatedScenario = {
-              ...scenario,
-              investmentTypes: [...scenario.investmentTypes, savedType._id],
+              ...sc,
+              investmentTypes: [...sc.investmentTypes, savedType._id],
             };
         
             // Save the updated scenario
-            await updateScenario(scenario._id, updatedScenario);
+            await updateScenario(sc._id, updatedScenario);
         
             // Push to local state & navigate
             addInvestmentType(savedType);
         
-          } catch (err) {
+        } catch (err) {
             console.error("Failed to create investment type:", err);
             setError("An error occurred while saving the investment type.");
-          }
+        }
     };
 
     return (

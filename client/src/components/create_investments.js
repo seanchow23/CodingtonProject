@@ -4,6 +4,7 @@ import InputField from "./input_field";
 import * as investmentApi from "../api/investmentApi";
 import * as scenarioApi from "../api/scenarioApi";
 import * as allocationApi from "../api/allocationApi";
+import { updateEventAllocations, getEventUnpop } from "../api/eventsApi";
 
 export default function CreateInvestments({ scenarios }) {
     const location = useLocation();
@@ -26,13 +27,13 @@ export default function CreateInvestments({ scenarios }) {
     };
 
     const addInvestment = async (newInvestment) => {
-        const currentScenario = scenarios.find(s => s._id === scenario._id);
-        currentScenario.investments.push(newInvestment);
-        currentScenario.withdrawalStrategy.push(newInvestment);
+        const currentScenario = await scenarioApi.getScenarioUnpop(scenarios.find(s => s._id === scenario._id)._id);
+        currentScenario.investments.push(newInvestment._id);
+        currentScenario.withdrawalStrategy.push(newInvestment._id);
       
         if (newInvestment.taxStatus === 'pre-tax retirement') {
-          currentScenario.rmd.push(newInvestment);
-          currentScenario.rothStrategy.push(newInvestment);
+          currentScenario.rmd.push(newInvestment._id);
+          currentScenario.rothStrategy.push(newInvestment._id);
         } else {
           const newAllocationData = {
             investment: newInvestment._id,
@@ -42,16 +43,13 @@ export default function CreateInvestments({ scenarios }) {
           };
       
           try {
-            const allocationResponse = await allocationApi.createAllocation(newAllocationData);
-            const savedAllocation = allocationResponse.data;
-      
             // Push saved allocation into each 'invest' event
-            currentScenario.events
-              .filter(event => event.type === 'invest')
-              .forEach(event => event.allocations.push(savedAllocation._id)); // use _id, not full object
-      
+            for (const event of scenario.events.filter(e => e.type === 'invest' || e.type === 'rebalance')) {
+              const allocationResponse = await allocationApi.createAllocation(newAllocationData);   
+              const { data: ev } = await getEventUnpop(event._id);  
+              await updateEventAllocations(ev._id, {allocationId: allocationResponse.data._id, type: event.type});
+            }
           } catch (err) {
-            console.error("Failed to create allocation:", err);
             setError("Failed to create allocation for the investment.");
             return;
           }
@@ -59,15 +57,13 @@ export default function CreateInvestments({ scenarios }) {
       
         try {
           await scenarioApi.updateScenario(currentScenario._id, currentScenario);
-          navigate(`/scenario/${currentScenario._id}`, { state: { scenario: currentScenario }});
+          navigate(`/scenario/${currentScenario._id}`, { state: { scenario: await scenarioApi.getScenario(currentScenario._id) }});
         } catch (err) {
           console.error("Failed to update scenario:", err);
           setError("Failed to update scenario with new investment.");
         }
       };
       
-    
-
     const submit = async (e) => {
         e.preventDefault();
         const check = Object.keys(formData).find((key) => formData[key] < 0);

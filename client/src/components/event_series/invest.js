@@ -13,7 +13,7 @@ const Invest = ({ event }) => {
             <p>Duration: {event.duration} {event.duration === 1 ? 'Year' : 'Years'}</p>
             <p>Maximum: ${Number(event.max).toFixed(2)}</p>
             <p>Allocations:</p>
-            {event.allocations
+            {event.allocations.length !== 0 && event.allocations
                 .filter(alloc => alloc.investment?.investmentType?.name !== "Cash")
                 .map(alloc => (
                     <ul key={alloc._id}>

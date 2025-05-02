@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Event = require('../models/event');
 const Income = require('../models/income');
@@ -20,6 +21,16 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.get('/unpopulated/:id', async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    res.json(event);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // ----------------------------------------------------
 // PUT /api/events/:id
 // Update an event
@@ -31,6 +42,43 @@ router.put('/:id', async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.put('/:id/allocations', async (req, res) => {
+  try {
+    const { allocationId, type } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(allocationId)) {
+      return res.status(400).json({ error: 'Invalid allocation ID' });
+    }
+
+    if (type === 'invest') {
+      const updated = await Invest.findByIdAndUpdate(
+        req.params.id,
+        { $push: { allocations: allocationId } },
+        { new: true }
+      );
+
+      if (!updated) return res.status(404).json({ error: 'Invest Event not found' });
+
+      res.json(updated);
+    
+  } else {
+    const updated = await Rebalance.findByIdAndUpdate(
+      req.params.id,
+      { $push: { allocations: allocationId } },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: 'Rebalance Event not found' });
+
+    res.json(updated);
+  }
+
+  } catch (err) {
+    console.error('Error updating allocations:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
