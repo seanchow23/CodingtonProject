@@ -104,10 +104,10 @@ router.post('/', async (req, res) => {
   try {
     let event;
     switch (req.body.type) {
-      case 'Income':
+      case 'income':
         event = new Income(req.body);
         break;
-      case 'Expense':
+      case 'expense':
         event = new Expense(req.body);
         break;
       case 'invest':

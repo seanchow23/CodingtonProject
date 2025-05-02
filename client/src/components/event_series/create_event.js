@@ -73,16 +73,12 @@ export default function CreateEvent({ scenarios }) {
 
     const addEvent = async (newEvent) => {
       try {
-        console.log("this is the scenario from create-event ", scenario._id);
         const currentScenario = await scenarioApi.getScenarioUnpop(scenarios.find(s => s._id === scenario._id)._id);
-        //const currentScenario = currentScenarioRes.data;
-
-        console.log("this is the scenario from create-event ", currentScenario);
         currentScenario.events.push(newEvent._id);
     
         // If it's a discretionary expense, also push to spendingStrategy
+        console.log("New Event:", newEvent);
         if (newEvent.type === 'expense' && newEvent.discretionary) {
-          if (!currentScenario.spendingStrategy) currentScenario.spendingStrategy = [];
           currentScenario.spendingStrategy.push(newEvent._id);
         }
     

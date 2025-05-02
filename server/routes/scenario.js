@@ -76,7 +76,7 @@ router.get('/:id', async (req, res) => {
     .populate('events')
     .populate({
       path: 'spendingStrategy',
-      model: 'Expense'
+      model: 'expense'
     })
     .populate({
       path: 'withdrawalStrategy',
