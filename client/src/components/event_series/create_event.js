@@ -2,6 +2,8 @@ import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "../input_field";
 import {AddIncomeEvent, AddExpenseEvent, AddInvestEvent, AddRebalanceEvent, addAllocations} from "./add_event";
+import * as eventApi from "../../api/eventsApi"; 
+import * as scenarioApi from "../../api/scenarioApi"
 
 export default function CreateEvent({ scenarios }) {
     const location = useLocation()
@@ -69,46 +71,97 @@ export default function CreateEvent({ scenarios }) {
         }
     }
 
-    const addEvent = (newEvent) => {
-        const currentScenario = scenarios.find(s => s._id === scenario._id);
-        currentScenario.events.push(newEvent);
-        if (newEvent.type === "expense" && newEvent.discretionary === true) {currentScenario.spendingStrategy.push(newEvent);}
-        navigate(`/scenario/${scenario._id}`, { state: { scenario: currentScenario}});
-    }
+    const addEvent = async (newEvent) => {
+      try {
+        console.log("this is the scenario from create-event ", scenario._id);
+        const currentScenario = await scenarioApi.getScenarioUnpop(scenarios.find(s => s._id === scenario._id)._id);
+        //const currentScenario = currentScenarioRes.data;
 
-    const submit = (e) => {
-        e.preventDefault();
-        const check = Object.keys(formData).find((key) => formData[key] < 0);
-        if (check) {
-            setError(`The ${check} field cannot have a negative value.`);
-            return;
+        console.log("this is the scenario from create-event ", currentScenario);
+        currentScenario.events.push(newEvent._id);
+    
+        // If it's a discretionary expense, also push to spendingStrategy
+        if (newEvent.type === 'expense' && newEvent.discretionary) {
+          if (!currentScenario.spendingStrategy) currentScenario.spendingStrategy = [];
+          currentScenario.spendingStrategy.push(newEvent._id);
         }
-        const newEvent = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            type: formData.type,
-            name: formData.name,
-            description: formData.description,
-            startYear: formData.startYear,
-            duration: Number(formData.duration),
-
-            // These fields are for income and expense events
-            amount: Number(formData.amount),
-            change: Number(formData.change),
-            inflation: Number(formData.inflation),
-
-            random: formData.random,
-
-            // These fields are different for income and expense events
-            ss: formData.ss,
-            discretionary: formData.discretionary,
-
-            // These fields are for invest and rebalance events
-            allocations: event_allocations,
-            max: "",    // Just invest events have this field
-            glide: false
-        };
-        addEvent(newEvent);
+    
+        await scenarioApi.updateScenario(currentScenario._id, currentScenario);
+    
+        const updatedScenario = await scenarioApi.getScenario(currentScenario._id);
+        navigate(`/scenario/${updatedScenario._id}`, { state: { scenario: updatedScenario } });
+    
+      } catch (err) {
+        console.error("Failed to update scenario with new event:", err);
+        setError("Failed to update scenario with new event.");
+      }
     };
+    
+    const submit = async (e) => {
+      e.preventDefault();
+      const check = Object.keys(formData).find((key) => formData[key] < 0);
+      if (check) {
+        setError(`The ${check} field cannot have a negative value.`);
+        return;
+      }
+    
+      // Construct event object based on type
+      const baseEvent = {
+        type: formData.type,
+        name: formData.name,
+        description: formData.description,
+        startYear: formData.startYear,
+        duration: Number(formData.duration),
+        random: formData.random,
+      };
+    
+      let eventData;
+    
+      if (formData.type === "income") {
+        eventData = {
+          ...baseEvent,
+          amount: Number(formData.amount),
+          change: Number(formData.change),
+          inflation: formData.inflation,
+          ss: formData.ss,
+        };
+      } else if (formData.type === "expense") {
+        eventData = {
+          ...baseEvent,
+          amount: Number(formData.amount),
+          change: Number(formData.change),
+          inflation: formData.inflation,
+          discretionary: formData.discretionary,
+        };
+      } else if (formData.type === "invest") {
+        eventData = {
+          ...baseEvent,
+          max: Number(formData.max),
+          glide: formData.glide,
+          allocations: formData.allocations,
+        };
+      } else if (formData.type === "rebalance") {
+        eventData = {
+          ...baseEvent,
+          glide: formData.glide,
+          allocations: formData.allocations,
+        };
+      } else {
+        setError("Invalid event type.");
+        return;
+      }
+    
+      try {
+        const response = await eventApi.createEvent(eventData);
+        const newEvent = response.data;
+        await addEvent(newEvent);
+      } catch (err) {
+        console.error("Failed to create event:", err);
+        setError("Failed to create event.");
+      }
+    };
+    
+    
     
     return (
         <div id = "add_event">
