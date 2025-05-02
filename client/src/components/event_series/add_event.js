@@ -82,6 +82,5 @@ export function addAllocations(inv) {
         }
         allocations.push(newAllocation);
     })
-    console.log(allocations);
     return allocations;
 }

@@ -127,12 +127,12 @@ export default function EditEvent({ scenarios }) {
                         <option value={2}>Uniform Distribution</option>
                     </select>
                 </div>
-                && formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <label htmlFor="v3" style={{ marginBottom: '20px' }}>{formData.random[3] === 1 ? "Mean" : "Min"}</label>
                     <input type="number" name="v3" value={formData.random[4]} onChange={handleRandom} required />
                     <label htmlFor="v4" style={{ marginBottom: '20px' }}>{formData.random[3] === 1 ? "Standard Deviation" : "Max"}</label>
                     <input type="number" name="v4" value={formData.random[5]} onChange={handleRandom} required />
-                </div>
+                </div>}
 
                 {formData.type === "income" && <AddIncomeEvent formData={formData} onChange={handleInputChange} />}
                 {formData.type === "expense" && <AddExpenseEvent formData={formData} onChange={handleInputChange} />}

@@ -321,7 +321,7 @@ export default function simulation({ scenario }) {
         }
 
         if (withdrawal_amount > 0) {
-            console.log("k")
+            console.log("Simulation Error: Not enough cash to pay expenses and taxes. Please check your scenario settings.");
             break;
         }
 
@@ -334,6 +334,9 @@ export default function simulation({ scenario }) {
                 discretionary += expense.amount;
                 expense.amount += Number(expense.change);
                 if (expense.inflation) { expense.amount *= (1 + (Number(scenario.inflation) / 100)); }
+                const expenseEvent = ExpenseEvents.find(event => event._id === expense._id);
+                expenseEvent.amount = expense.amount;
+                expenseEvent.duration = expense.duration;
             }
         }
 

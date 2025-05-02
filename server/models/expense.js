@@ -16,4 +16,4 @@ expenseSchema.virtual('url').get(function () {
 });
 
 
-module.exports = Event.discriminator('Expense', expenseSchema);
+module.exports = Event.discriminator('expense', expenseSchema);

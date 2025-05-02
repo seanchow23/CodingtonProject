@@ -15,7 +15,7 @@ const scenarioSchema = new mongoose.Schema({
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
     inflation: { type: Number, required: true },
     annualLimit: { type: Number, required: true },
-    spendingStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Expense' }],
+    spendingStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'expense' }],
     withdrawalStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
     rmd: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
     rothStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
