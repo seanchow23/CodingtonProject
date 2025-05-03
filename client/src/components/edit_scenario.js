@@ -33,19 +33,44 @@ export default function EditScenario({ scenarios }) {
     const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
 
     const handleRandom = (e) => {
-        const { name, value, checked } = e.target;
+        const { name, value } = e.target;
+        let distribution;
         if (name === "random_life") {
-            setFormData({ ...formData, random: [checked ? 1 : 0, formData.random[1], formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
-        } else if (name === "mean") {
-            setFormData({ ...formData, random: [formData.random[0], Number(value), formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
-        } else if (name === "sd") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], Number(value), formData.random[3], formData.random[4], formData.random[5]] });
+          distribution = { ...formData.lifeExpectancyUser, type: value };
+          setFormData({ ...formData, lifeExpectancyUser: distribution });
+        } else if (name === "random_spouse") {
+          distribution = { ...formData.lifeExpectancySpouse, type: value };
+          setFormData({ ...formData, lifeExpectancySpouse: distribution });
         } else if (name === "random_inflation") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], checked ? 1 : 0, formData.random[4], formData.random[5]] });
-        } else if (name === "mean_inflation") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], Number(value), formData.random[5]] });
-        } else if (name === "sd_inflation") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], formData.random[4], Number(value)] });
+          distribution = { ...formData.inflation, type: value };
+          setFormData({ ...formData, inflation: distribution });
+        } else if (name === "uv1") {
+          distribution = { ...formData.lifeExpectancyUser, value1: Number(value) };
+          setFormData({ ...formData, lifeExpectancyUser: distribution });
+        } else if (name === "uv2") {
+          distribution = { ...formData.lifeExpectancyUser, value2: Number(value) };
+          setFormData({ ...formData, lifeExpectancyUser: distribution });
+        } else if (name === "sv1") {
+          distribution = { ...formData.lifeExpectancySpouse, value1: Number(value) };
+          setFormData({ ...formData, lifeExpectancySpouse: distribution });
+        } else if (name === "sv2") {
+          distribution = { ...formData.lifeExpectancySpouse, value2: Number(value) };
+          setFormData({ ...formData, lifeExpectancySpouse: distribution });
+        } else if (name === "iv1") {
+          distribution = { ...formData.inflation, value1: Number(value) };
+          setFormData({ ...formData, inflation: distribution });
+        } else if (name === "iv2") {
+          distribution = { ...formData.inflation, value2: Number(value) };
+          setFormData({ ...formData, inflation: distribution });
+        } else if (name === "lifeExpectancyUser") {
+          distribution = { ...formData.lifeExpectancyUser, value1: Number(value) };
+          setFormData({ ...formData, lifeExpectancyUser: distribution });
+        } else if (name === "lifeExpectancySpouse") {
+          distribution = { ...formData.lifeExpectancySpouse, value1: Number(value) };
+          setFormData({ ...formData, lifeExpectancySpouse: distribution });
+        } else if (name === "inflation") {
+          distribution = { ...formData.inflation, value1: Number(value) };
+          setFormData({ ...formData, inflation: distribution });
         }
     }
 
@@ -61,9 +86,9 @@ export default function EditScenario({ scenarios }) {
         target.married = formData.married;
         target.birthYearUser = formData.birthYearUser;
         target.birthYearSpouse = formData.birthYearSpouse;
-        target.lifeExpectancyUser = Number(formData.lifeExpectancyUser);
-        target.lifeExpectancySpouse = Number(formData.lifeExpectancySpouse);
-        target.inflation = Number(formData.inflation);
+        target.lifeExpectancyUser = formData.lifeExpectancyUser;
+        target.lifeExpectancySpouse = formData.lifeExpectancySpouse;
+        target.inflation = formData.inflation;
         target.annualLimit = Number(formData.annualLimit);
         target.rothOptimizer = formData.rothOptimizer,
         target.financialGoal = Number(formData.financialGoal);
@@ -93,31 +118,53 @@ export default function EditScenario({ scenarios }) {
                 <input type="radio" name="married" value={true} onChange={handleRadioChange} /> Married
 
                 <InputField id="birthYearUser" type="number" value={formData.birthYearUser} onChange={handleInputChange}>Birth Year</InputField>
-                {formData.random[0] === 0 && <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser} onChange={handleInputChange}>Life Expectancy (Years)</InputField>}
-                    <div style={{ display: 'flex', gap: '10px'}}>
-                        <label htmlFor="random_life">Life Expectancy Sampling</label>
-                        <input type="checkbox" id="random_life" name="random_life" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
-                    </div>
-                    {formData.random[0] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <label htmlFor="mean" style={{ marginBottom: '20px' }}>Mean</label>
-                        <input type="number" name="mean" value={formData.random[1]} onChange={handleRandom} required />
-                        <label htmlFor="sd" style={{ marginBottom: '20px' }}>Standard Deviation</label>
-                        <input type="number" name="sd" value={formData.random[2]} onChange={handleRandom} required />
-                    </div>}
+                {formData.lifeExpectancyUser.type === "fixed" && <InputField id="lifeExpectancyUser" type="number" value={formData.lifeExpectancyUser.value1} onChange={handleRandom}>Life Expectancy (Years)</InputField>}
+                <div style={{ display: 'flex', gap: '10px'}}>
+                    <label htmlFor="random_life">Life Expectancy Sampling</label>
+                    <select name="random_life" value={formData.lifeExpectancyUser.type} onChange={handleRandom}>
+                        <option value={"fixed"}>Fixed</option>
+                        <option value={"normal"}>Normal Distribution</option>
+                        <option value={"uniform"}>Uniform Distribution</option>
+                    </select>
+                </div>
+                {formData.lifeExpectancyUser.type !== "fixed" && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="uv1" style={{ marginBottom: '20px' }}>{formData.lifeExpectancyUser.type === "normal" ? "Mean" : "Min"}</label>
+                    <input type="number" name="uv1" value={formData.lifeExpectancyUser.value1} onChange={handleRandom} required />
+                    <label htmlFor="uv2" style={{ marginBottom: '20px' }}>{formData.lifeExpectancyUser.type === "normal" ? "Standard Deviation" : "Max"}</label>
+                    <input type="number" name="uv2" value={formData.lifeExpectancyUser.value2} onChange={handleRandom} required />
+                </div>}
 
                 {formData.married === "true" && <InputField id="birthYearSpouse" type="number" value={formData.birthYearSpouse} onChange={handleInputChange}>Spouse Birth Year</InputField>}
-                {formData.married === "true" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse} onChange={handleInputChange}>Spouse Life Expectancy (Years)</InputField>}
+                {formData.married === "true" && formData.lifeExpectancySpouse.type === "fixed" && <InputField id="lifeExpectancySpouse" type="number" value={formData.lifeExpectancySpouse.value1} onChange={handleRandom}>Spouse Life Expectancy (Years)</InputField>}
+                {formData.married === "true" && <div style={{ display: 'flex', gap: '10px'}}>
+                    <label htmlFor="random_spouse">Life Expectancy Sampling</label>
+                    <select name="random_spouse" value={formData.lifeExpectancySpouse.type} onChange={handleRandom}>
+                        <option value={"fixed"}>Fixed</option>
+                        <option value={"normal"}>Normal Distribution</option>
+                        <option value={"uniform"}>Uniform Distribution</option>
+                    </select>
+                </div>}
+                {formData.married === "true" && formData.lifeExpectancySpouse.type !== "fixed" && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="sv1" style={{ marginBottom: '20px' }}>{formData.lifeExpectancySpouse.type === "normal" ? "Mean" : "Min"}</label>
+                    <input type="number" name="sv1" value={formData.lifeExpectancySpouse.value1} onChange={handleRandom} required />
+                    <label htmlFor="sv2" style={{ marginBottom: '20px' }}>{formData.lifeExpectancySpouse.type === "normal" ? "Standard Deviation" : "Max"}</label>
+                    <input type="number" name="sv2" value={formData.lifeExpectancySpouse.value2} onChange={handleRandom} required />
+                </div>}
 
-                {formData.random[3] === 0 && <InputField id="inflation" type="number" value={formData.inflation} onChange={handleInputChange}>Inflation (%)</InputField>}
+                {formData.inflation.type === "fixed" && <InputField id="inflation" type="number" value={formData.inflation.value1} onChange={handleRandom}>Inflation (%)</InputField>}
                 <div style={{ display: 'flex', gap: '10px'}}>
                     <label htmlFor="random_inflation">Inflation Sampling</label>
-                    <input type="checkbox" id="random_inflation" name="random_inflation" value={formData.random[3] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                    <select name="random_inflation" value={formData.inflation.type} onChange={handleRandom}>
+                        <option value={"fixed"}>Fixed</option>
+                        <option value={"normal"}>Normal Distribution</option>
+                        <option value={"uniform"}>Uniform Distribution</option>
+                    </select>
                 </div>
-                {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <label htmlFor="mean_inflation" style={{ marginBottom: '20px' }}>Mean</label>
-                    <input type="number" name="mean_inflation" value={formData.random[4]} onChange={handleRandom} required />
-                    <label htmlFor="sd_inflation" style={{ marginBottom: '20px' }}>Standard Deviation</label>
-                    <input type="number" name="sd_inflation" value={formData.random[5]} onChange={handleRandom} required />
+                {formData.inflation.type !== "fixed" && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="iv1" style={{ marginBottom: '20px' }}>{formData.inflation.type === "normal" ? "Mean" : "Min"}</label>
+                    <input type="number" name="iv1" value={formData.inflation.value1} onChange={handleRandom} required />
+                    <label htmlFor="iv2" style={{ marginBottom: '20px' }}>{formData.inflation.type === "normal" ? "Standard Deviation" : "Max"}</label>
+                    <input type="number" name="iv2" value={formData.inflation.value2} onChange={handleRandom} required />
                 </div>}
 
                 <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit ($)</InputField>

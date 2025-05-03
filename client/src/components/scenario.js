@@ -6,11 +6,34 @@ import Rebalance from "./event_series/rebalance";
 import Investment from "./investment";
 import InvestmentType from "./investment_type";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getScenario } from "../api/scenarioApi";
 
 export default function Scenario() {
     const location = useLocation()
     const navigate = useNavigate();
-    const { scenario } = location.state;
+    const initialScenario = location.state?.scenario;
+
+    const [scenario, setScenario] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+      async function fetchScenario() {
+        try {
+          const data = await getScenario(initialScenario._id);
+          setScenario(data);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      }
+      fetchScenario();
+    }, []);
+  
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
+    if (!scenario) return <p>No scenario found</p>;
 
     const createEvent = () => {navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
     const editScenario = () => {navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } }); }
@@ -24,11 +47,15 @@ export default function Scenario() {
             <h2>Scenario Details</h2>
             <div className="details_div">
                 <p>Marital Status: {scenario.married == "true" ? "Married" : "Single"}</p>
-                <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.random[0] === 0 ? scenario.lifeExpectancyUser : "Sampled"}</p>
-                {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.random[0] === 0 ? scenario.lifeExpectancySpouse : "Sampled"}</p>}
-                {scenario.random[0] !== 0 && <p>Sampled Life Expectancy, Mean [{scenario.random[1]}], Deviation [{scenario.random[2]}]</p>}
-                {scenario.random[3] === 0 && <p>Inflation: {scenario.inflation}%</p>}
-                {scenario.random[3] !== 0 && <p>Inflation: Sampled, Mean [{scenario.random[4]}], Deviation [{scenario.random[5]}]</p>}
+                <p>User Birth Year: {scenario.birthYearUser}, Life Expectancy: {scenario.lifeExpectancyUser.type === "fixed" ? scenario.lifeExpectancyUser.value1 : "Sampled"}</p>
+                {scenario.lifeExpectancyUser.type === "normal" && <p>Sampled Life Expectancy, Mean [{scenario.lifeExpectancyUser.value1}], Deviation [{scenario.lifeExpectancyUser.value2}]</p>}
+                {scenario.lifeExpectancyUser.type === "uniform" && <p>Sampled Life Expectancy, Min [{scenario.lifeExpectancyUser.value1}], Max [{scenario.lifeExpectancyUser.value2}]</p>}
+                {scenario.married == "true" && <p>Spouse Birth Year: {scenario.birthYearSpouse}, Life Expectancy: {scenario.lifeExpectancySpouse.type === "fixed" ? scenario.lifeExpectancySpouse.value1 : "Sampled"}</p>}
+                {scenario.married == "true" && scenario.lifeExpectancySpouse.type === "normal" && <p>Sampled Life Expectancy, Mean [{scenario.lifeExpectancySpouse.value1}], Deviation [{scenario.lifeExpectancySpouse.value2}]</p>}
+                {scenario.married == "true" && scenario.lifeExpectancySpouse.type === "uniform" && <p>Sampled Life Expectancy, Min [{scenario.lifeExpectancySpouse.value1}], Max [{scenario.lifeExpectancySpouse.value2}]</p>}
+                {scenario.inflation.type === "fixed" && <p>Inflation: {scenario.inflation.value1}%</p>}
+                {scenario.inflation.type === "normal" && <p>Sampled Inflation, Mean [{scenario.inflation.value1}], Deviation [{scenario.inflation.value2}]</p>}
+                {scenario.inflation.type === "uniform" && <p>Sampled Inflation, Min [{scenario.inflation.value1}], Max [{scenario.inflation.value2}]</p>}
                 <p>Annual Contribution Limit: ${scenario.annualLimit}</p>
                 <p>Roth Optimizer: {scenario.rothOptimizer === true ? "Active" : "Inactive"}</p>
                 {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}

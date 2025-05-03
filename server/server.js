@@ -25,7 +25,7 @@ const expenseRoutes = require('./routes/expense');
 const incomeRoutes = require('./routes/income');
 const investRoutes = require('./routes/invest');
 const rebalanceRoutes = require('./routes/rebalance');
-
+const distributionRoutes = require('./routes/distribution');
 
 require('dotenv').config();
 require('./auth'); // auth config file
@@ -82,6 +82,7 @@ app.use('/api/expense', expenseRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/invest', investRoutes);
 app.use('/api/rebalance', rebalanceRoutes);
+app.use('/api/distributions', distributionRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
