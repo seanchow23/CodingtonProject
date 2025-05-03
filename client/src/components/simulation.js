@@ -67,37 +67,7 @@ export default function simulation({ scenario }) {
     const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
     const IncomeEvents = scenario.events.filter(event => event.type === 'income');
     const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
-    const InvestEvent = scenario.events.find(event => event.type === 'invest');
     const Investments = scenario.investments;
-
-    const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
-    allocations.map(allocation => allocation.percentage = Number(allocation.percentage));
-    allocations.map(allocation => allocation.investment = Investments.find(investment => investment._id === allocation.investment._id));
-    
-    // Ensure 100% total for Invest Event
-    const sumPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
-    if (sumPercentage === 0) { 
-        allocations.map(allocation => allocation.percentage = 100 / allocations.length);
-    }
-    else if (sumPercentage != 100) {
-        const scale_factor = 1 / (sumPercentage / 100);
-        allocations.map(allocation => allocation.percentage *= scale_factor);
-    }
-
-    // Glide Calculation
-    if (InvestEvent.glide) {
-        const totalPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.finalPercentage, 0);
-        if (totalPercentage === 0) {
-            allocations.map(allocation => allocation.finalPercentage = 100 / allocations.length);
-        }
-        if (totalPercentage != 100) {
-            const scale_factor = 1 / (totalPercentage / 100);
-            allocations.map(allocation => allocation.finalPercentage *= scale_factor);
-        }
-        for (const allocation of allocations) {
-            allocation.glide = (allocation.finalPercentage - allocation.percentage) / scenario.lifeExpectancyUser;
-        }
-    }
 
     // Randomness in Event Duration/Start Year
     for (const event of IncomeEvents) {
@@ -134,8 +104,6 @@ export default function simulation({ scenario }) {
     output[2][2].push(structuredClone(scenario.investments));
 
     while (scenario.lifeExpectancyUser > 0) {
-        year += 1
-    
         var curYearIncome = 0;
         var curYearSS = 0;
         var curYearGains = 0;
@@ -369,104 +337,120 @@ export default function simulation({ scenario }) {
         }
 
         // Run Invest
-        InvestEvent.duration = 1;
+        const InvestEvent = scenario.events.find(event => event.type === 'invest' && event.startYear <= year && event.duration > 0);
+        if (InvestEvent) {
+            const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+            allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
+            
+            // Ensure 100% total for Invest Event
+            const sumPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+            if (sumPercentage === 0) { 
+                allocations.map(allocation => allocation.percentage = 100 / allocations.length);
+            }
+            else if (sumPercentage != 100) {
+                const scale_factor = 1 / (sumPercentage / 100);
+                allocations.map(allocation => allocation.percentage *= scale_factor);
+            }
 
-        const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
-        const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
-        var after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
-        var other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
-        var after_scale_factor = 1 / (after_percentage / 100);
-        var other_scale_factor = 1 / (other_percentage / 100);
+            // Glide Calculation
+            if (InvestEvent.glide) {
+                const totalPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.finalPercentage, 0);
+                if (totalPercentage === 0) {
+                    allocations.map(allocation => allocation.finalPercentage = 100 / allocations.length);
+                }
+                if (totalPercentage != 100) {
+                    const scale_factor = 1 / (totalPercentage / 100);
+                    allocations.map(allocation => allocation.finalPercentage *= scale_factor);
+                }
+                for (const allocation of allocations) {
+                    allocation.glide = (allocation.finalPercentage - allocation.percentage) / scenario.lifeExpectancyUser;
+                }
+            }
 
-        if (CashInvestment.value > InvestEvent.max && allocations.length > 0) {
-            const excess = CashInvestment.value - InvestEvent.max;
-            var after_excess = excess * (after_percentage / 100);
-            if (after_excess > scenario.annualLimit) { after_excess = scenario.annualLimit; }
-            var other_excess = excess - after_excess;
+            InvestEvent.duration -= 1;
 
-            CashInvestment.value = InvestEvent.max;
-            CashInvestment.baseValue = InvestEvent.max;
+            const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
+            const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
+            var after_percentage = retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+            var other_percentage = non_retirement_assets.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+            var after_scale_factor = 1 / (after_percentage / 100);
+            var other_scale_factor = 1 / (other_percentage / 100);
 
+            if (CashInvestment.value > InvestEvent.max && allocations.length > 0) {
+                const excess = CashInvestment.value - InvestEvent.max;
+                var after_excess = excess * (after_percentage / 100);
+                if (after_excess > scenario.annualLimit) { after_excess = scenario.annualLimit; }
+                var other_excess = excess - after_excess;
+
+                CashInvestment.value = InvestEvent.max;
+                CashInvestment.baseValue = InvestEvent.max;
+
+                for (const allocation of allocations) {
+                    var sum = other_excess * allocation.percentage / 100 * other_scale_factor;
+                    const alloc_investment = Investments.find(investment => allocation.investment._id === investment._id);
+                    if (alloc_investment.taxStatus === "after-tax retirement") {
+                        sum = after_excess * allocation.percentage / 100 * after_scale_factor;
+                    }
+                    alloc_investment.value += sum;
+                    alloc_investment.baseValue += sum;
+                }
+            }
+
+            // Glide Path
             for (const allocation of allocations) {
-                var sum = other_excess * allocation.percentage / 100 * other_scale_factor;
-                if (allocation.investment.taxStatus === "after-tax retirement") {
-                    sum = after_excess * allocation.percentage / 100 * after_scale_factor;
-                }
-                allocation.investment.value += sum;
-                allocation.investment.baseValue += sum;
+                allocation.percentage += allocation.glide;
             }
         }
+        
+        const RebalanceEvent = scenario.events.find(event => event.type === 'rebalance' && event.startYear <= year && event.duration > 0);
+        if (RebalanceEvent) {
+            const allocations = RebalanceEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+            allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
+            
+            // Ensure 100% total percentage for Rebalance Event
+            const sumPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.percentage, 0);
+            if (sumPercentage === 0) { 
+                allocations.map(allocation => allocation.percentage = 100 / allocations.length);
+            }
+            else if (sumPercentage != 100) {
+                const scale_factor = 1 / (sumPercentage / 100);
+                allocations.map(allocation => allocation.percentage *= scale_factor);
+            }
 
-        // Glide Path
-        for (const allocation of allocations) {
-            allocation.percentage += allocation.glide;
-        }
+            RebalanceEvent.duration -= 1;
 
-        // Run Rebalance
-        const retirement_value = retirement_assets.reduce((sum, allocation) => sum + allocation.investment.value, 0);
-        const non_retirement_value = non_retirement_assets.reduce((sum, allocation) => sum + allocation.investment.value, 0);
-        const retirement_rebalance  = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            type: "rebalance",
-            name: "Retirement Rebalance",
-            description: "",
-            startYear: year,
-            duration: 1,
-            allocations: [],
-        }
-        for (const allocation of retirement_assets) {
-            const expected_value = retirement_value * after_scale_factor * allocation.percentage / 100;
-            const difference = expected_value - allocation.investment.value;
-            if (difference != 0) {
-                if (difference > 0) {
-                    allocation.investment.value += difference;
-                    allocation.investment.baseValue += difference;
-                } else {
-                    allocation.investment.baseValue *= (1 - (-difference / allocation.investment.value));
-                    allocation.investment.value += difference;
+            const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
+            const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
+            const retirement_value = retirement_assets.reduce((sum, allocation) => sum + allocation.investment.value, 0);
+            const non_retirement_value = non_retirement_assets.reduce((sum, allocation) => sum + allocation.investment.value, 0);
+
+            for (const allocation of retirement_assets) {
+                const expected_value = retirement_value * allocation.percentage / 100;
+                const alloc_investment = Investments.find(investment => allocation.investment._id === investment._id);
+                const difference = expected_value - alloc_investment.value;
+                if (difference != 0) {
+                    if (difference > 0) {
+                        alloc_investment.baseValue += difference;
+                    } else {
+                        alloc_investment.baseValue *= (1 - (-difference / alloc_investment.value));
+                    }
+                    alloc_investment.value += difference;
                 }
-                const newAllocation = {
-                    _id: Math.floor(Math.random() * 1000) + 1000,
-                    investment: allocation.investment,
-                    percentage: difference
+            }
+            for (const allocation of non_retirement_assets) {
+                const expected_value = non_retirement_value * allocation.percentage / 100;
+                const alloc_investment = Investments.find(investment => allocation.investment._id === investment._id);
+                const difference = expected_value - alloc_investment.value;
+                if (difference != 0) {
+                    if (difference > 0) {
+                        alloc_investment.baseValue += difference;
+                    } else {
+                        alloc_investment.baseValue *= (1 - (-difference / alloc_investment.value));
+                    }
+                    alloc_investment.value += difference;
                 }
-                retirement_rebalance.allocations.push(newAllocation);
             }
         }
-        const non_retirement_rebalance  = {
-            _id: Math.floor(Math.random() * 1000) + 1000,
-            type: "rebalance",
-            name: "Non Retirement Rebalance",
-            description: "",
-            startYear: year,
-            duration: 1,
-            allocations: [],
-        }
-        for (const allocation of non_retirement_assets) {
-            const expected_value = non_retirement_value * other_scale_factor * allocation.percentage / 100;
-            const difference = expected_value - allocation.investment.value;
-            if (difference != 0) {
-                if (difference > 0) {
-                    allocation.investment.value += difference;
-                    allocation.investment.baseValue += difference;
-                } else {
-                    allocation.investment.baseValue *= (1 - (-difference / allocation.investment.value));
-                    allocation.investment.value += difference;
-                }
-                const newAllocation = {
-                    _id: Math.floor(Math.random() * 1000) + 1000,
-                    investment: allocation.investment,
-                    percentage: difference
-                }
-                non_retirement_rebalance.allocations.push(newAllocation);
-            }
-        }
-        var index = scenario.events.findIndex(event => event.name === "Retirement Rebalance");
-        if (index === -1) { scenario.events.push(retirement_rebalance); }
-        else { scenario.events[index] = retirement_rebalance; }
-        index = scenario.events.findIndex(event => event.name === "Non Retirement Rebalance");
-        if (index === -1) { scenario.events.push(non_retirement_rebalance); }
-        else { scenario.events[index] = non_retirement_rebalance; }
 
         // Adjust for inflation
         const inflation = 1 + Number(scenario.inflation) / 100;
@@ -496,6 +480,7 @@ export default function simulation({ scenario }) {
         prev_curYearSS = curYearSS;
         prev_curYearGains = curYearGains;
         prev_curYearEarlyWithdrawals = curYearEarlyWithdrawals;
+        year += 1;
         
         // Add to Output
         const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);

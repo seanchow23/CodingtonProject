@@ -64,7 +64,7 @@ router.put('/:id/allocations', async (req, res) => {
 
       res.json(updated);
     
-  } else {
+  } else if (type === 'rebalance') {
     const updated = await Rebalance.findByIdAndUpdate(
       req.params.id,
       { $push: { allocations: allocationId } },

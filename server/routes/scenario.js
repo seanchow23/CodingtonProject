@@ -93,7 +93,7 @@ router.get('/:id', async (req, res) => {
 
     await Promise.all(
       scenario.events
-        .filter(event => event.type === 'invest')
+        .filter(event => event.type === 'invest' || event.type === 'rebalance')
         .map(event =>
           event.populate({
             path: 'allocations',

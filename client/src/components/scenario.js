@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Income from "./event_series/income";
 import Expense from "./event_series/expense";
 import Invest from "./event_series/invest";
@@ -7,11 +7,10 @@ import Investment from "./investment";
 import InvestmentType from "./investment_type";
 import { useLocation, useNavigate } from "react-router-dom";
 
-
 export default function Scenario() {
     const location = useLocation()
     const navigate = useNavigate();
-    const {scenario} = location.state;
+    const { scenario } = location.state;
 
     const createEvent = () => {navigate(`/scenario/create_event/${scenario._id}`, { state: { scenario } });};
     const editScenario = () => {navigate(`/scenario/edit/${scenario._id}`, { state: { scenario } }); }

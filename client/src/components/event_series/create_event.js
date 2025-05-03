@@ -4,6 +4,7 @@ import InputField from "../input_field";
 import {AddIncomeEvent, AddExpenseEvent, AddInvestEvent, AddRebalanceEvent, addAllocations} from "./add_event";
 import * as eventApi from "../../api/eventsApi"; 
 import * as scenarioApi from "../../api/scenarioApi"
+import { createAllocation } from "../../api/allocationApi";
 
 export default function CreateEvent({ scenarios }) {
     const location = useLocation()
@@ -77,7 +78,6 @@ export default function CreateEvent({ scenarios }) {
         currentScenario.events.push(newEvent._id);
     
         // If it's a discretionary expense, also push to spendingStrategy
-        console.log("New Event:", newEvent);
         if (newEvent.type === 'expense' && newEvent.discretionary) {
           currentScenario.spendingStrategy.push(newEvent._id);
         }
@@ -102,7 +102,7 @@ export default function CreateEvent({ scenarios }) {
       }
     
       // Construct event object based on type
-      const baseEvent = {
+      let baseEvent = {
         type: formData.type,
         name: formData.name,
         description: formData.description,
@@ -110,6 +110,21 @@ export default function CreateEvent({ scenarios }) {
         duration: Number(formData.duration),
         random: formData.random,
       };
+
+      // Update allocation array
+      if (formData.type === "invest" || formData.type === "rebalance") {
+        const updatedAllocations = await Promise.all(
+          formData.allocations.map(async (allocation) => {
+            const response = await createAllocation(allocation);
+            return response.data._id;
+          })
+        );
+        baseEvent = {
+          ...baseEvent,
+          glide: formData.glide,
+          allocations: updatedAllocations,
+        };
+      }
     
       let eventData;
     
@@ -133,14 +148,10 @@ export default function CreateEvent({ scenarios }) {
         eventData = {
           ...baseEvent,
           max: Number(formData.max),
-          glide: formData.glide,
-          allocations: formData.allocations,
         };
       } else if (formData.type === "rebalance") {
         eventData = {
           ...baseEvent,
-          glide: formData.glide,
-          allocations: formData.allocations,
         };
       } else {
         setError("Invalid event type.");
