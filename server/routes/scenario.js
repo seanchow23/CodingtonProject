@@ -89,7 +89,10 @@ router.get('/:id', async (req, res) => {
     .populate({
       path: 'rothStrategy',
       populate: { path: 'investmentType' }
-    });
+    })
+    .populate('lifeExpectancyUser')
+    .populate('lifeExpectancySpouse')
+    .populate('inflation');
 
     await Promise.all(
       scenario.events

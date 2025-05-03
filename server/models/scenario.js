@@ -8,12 +8,12 @@ const scenarioSchema = new mongoose.Schema({
     married: { type: Boolean, required: true },
     birthYearUser: { type: Number, required: true },
     birthYearSpouse: { type: Number },
-    lifeExpectancyUser: { type: Number, required: true },
-    lifeExpectancySpouse: { type: Number },
+    lifeExpectancyUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Distribution', required: true},
+    lifeExpectancySpouse: { type: mongoose.Schema.Types.ObjectId, ref: 'Distribution' },
     investments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
     investmentTypes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'InvestmentType' }],
     events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
-    inflation: { type: Number, required: true },
+    inflation: { type: mongoose.Schema.Types.ObjectId, ref: 'Distribution', required: true},
     annualLimit: { type: Number, required: true },
     spendingStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'expense' }],
     withdrawalStrategy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Investment' }],
@@ -24,7 +24,6 @@ const scenarioSchema = new mongoose.Schema({
     sharing: { type: String },
     financialGoal: { type: Number, required: true },
     state: { type: String, required: true },
-    random: [{ type: Number }],
 });
 
 module.exports = mongoose.model('Scenario', scenarioSchema);

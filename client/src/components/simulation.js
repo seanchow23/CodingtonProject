@@ -1,13 +1,13 @@
 export default function simulation({ scenario }) {
 
+    let user_life_expectancy = 0;
+    let spouse_life_expectancy = 0;
+    let inflation = 0;
+
     // Check and perform random sampling
-    if (scenario.random[0] !== 0) {
-        scenario.lifeExpectancyUser = Math.floor(sampleNormal(scenario.random[1], scenario.random[2]));
-        scenario.lifeExpectancySpouse = Math.floor(sampleNormal(scenario.random[1], scenario.random[2]));
-    }
-    if (scenario.random[3] !== 0) {
-        scenario.inflation = sampleNormal(scenario.random[4], scenario.random[5]);
-    }
+    user_life_expectancy = getDistributionResult(scenario.lifeExpectancyUser);
+    spouse_life_expectancy = getDistributionResult(scenario.lifeExpectancySpouse);
+    inflation = getDistributionResult(scenario.inflation);
 
     const scenario_list = [structuredClone(scenario)];
     const output = [[], [[],[],[],[],[]], [[], [], []]];
@@ -103,7 +103,9 @@ export default function simulation({ scenario }) {
     output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear <= year)));
     output[2][2].push(structuredClone(scenario.investments));
 
-    while (scenario.lifeExpectancyUser > 0) {
+    let life = 0;
+
+    while (user_life_expectancy > life) {
         var curYearIncome = 0;
         var curYearSS = 0;
         var curYearGains = 0;
@@ -119,7 +121,7 @@ export default function simulation({ scenario }) {
                 CashInvestment.value += income.amount;
                 CashInvestment.baseValue += income.amount;
                 income.amount += Number(income.change);
-                if (income.inflation) { income.amount *= (1 + (Number(scenario.inflation) / 100)); }
+                if (income.inflation) { income.amount *= (1 + (Number(inflation) / 100)); }
             }
         }
 
@@ -253,7 +255,7 @@ export default function simulation({ scenario }) {
                 expense.amount = Number(expense.amount);
                 non_discretionary += expense.amount;
                 expense.amount += Number(expense.change);
-                if (expense.inflation) { expense.amount *= (1 + (Number(scenario.inflation) / 100)); }
+                if (expense.inflation) { expense.amount *= (1 + (Number(inflation) / 100)); }
             }
         }
 
@@ -301,7 +303,7 @@ export default function simulation({ scenario }) {
                 expense.amount = Number(expense.amount);
                 discretionary += expense.amount;
                 expense.amount += Number(expense.change);
-                if (expense.inflation) { expense.amount *= (1 + (Number(scenario.inflation) / 100)); }
+                if (expense.inflation) { expense.amount *= (1 + (Number(inflation) / 100)); }
                 const expenseEvent = ExpenseEvents.find(event => event._id === expense._id);
                 expenseEvent.amount = expense.amount;
                 expenseEvent.duration = expense.duration;
@@ -363,7 +365,7 @@ export default function simulation({ scenario }) {
                     allocations.map(allocation => allocation.finalPercentage *= scale_factor);
                 }
                 for (const allocation of allocations) {
-                    allocation.glide = (allocation.finalPercentage - allocation.percentage) / scenario.lifeExpectancyUser;
+                    allocation.glide = (allocation.finalPercentage - allocation.percentage) / user_life_expectancy;
                 }
             }
 
@@ -453,7 +455,7 @@ export default function simulation({ scenario }) {
         }
 
         // Adjust for inflation
-        const inflation = 1 + Number(scenario.inflation) / 100;
+        inflation = 1 + Number(inflation) / 100;
         prev_federal_brackets = federal_brackets;
         prev_federal_deductions = federal_deductions;
         prev_capital_gains = capital_gains;
@@ -467,13 +469,10 @@ export default function simulation({ scenario }) {
             bracket.max = bracket.max * inflation;
         }
         scenario.annualLimit *= inflation;
-        if (scenario.random[3] !== 0) {
-            scenario.inflation = sampleNormal(scenario.random[4], scenario.random[5]);
-        }
+        inflation = getDistributionResult(scenario.inflation);
 
         // Subtract Life Expectancy
-        scenario.lifeExpectancyUser--;
-        if (scenario.lifeExpectancySpouse) {scenario.lifeExpectancySpouse--;}
+        life++;
 
         // Keep track of previous values
         prev_curYearIncome = curYearIncome;
@@ -508,4 +507,22 @@ function sampleNormal(mean, sd) {
     while (v === 0) v = Math.random();
     const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     return z * sd + mean;
+}
+
+function getDistributionResult(distribution) {
+    if (distribution.type === "fixed") {
+        return distribution.value1;
+    } else if (distribution.type === "normal") {
+        return Math.floor(sampleNormal(distribution.value1, distribution.value2));
+    } else if (distribution.type === "uniform") {
+        const min = distribution.value1;
+        const max = distribution.value2;
+        return Math.floor(Math.random() * (max - min) + min);
+    } else if (distribution.type === "starts-with") {
+        return distribution.event.startYear;
+    } else if (distribution.type === "starts-after") {
+        return distribution.event.startYear + distribution.event.duration + 1;
+    } else {
+        return 0;
+    }
 }
