@@ -2,8 +2,8 @@ import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 import { updateInvestmentType } from "../api/investmentTypeApi";
-import { updateScenario } from "../api/scenarioApi";
 import { getScenario } from "../api/scenarioApi";
+import { updateDistribution } from "../api/distributionApi";
 
 export default function EditInvestmentTypes({ scenarios }) {
     const location = useLocation();
@@ -18,7 +18,6 @@ export default function EditInvestmentTypes({ scenarios }) {
         expenseRatio: investmentType.expenseRatio,
         expectedAnnualIncome: investmentType.expectedAnnualIncome,
         taxability: investmentType.taxability,
-        random: investmentType.random,
     });
     
     const [error, setError] = useState("");
@@ -31,17 +30,21 @@ export default function EditInvestmentTypes({ scenarios }) {
     const handleRandom = (e) => {
         const { name, value, checked } = e.target;
         if (name === "random_return") {
-            setFormData({ ...formData, random: [checked ? 1 : 0, formData.random[1], formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, expectedAnnualReturn: { ...formData.expectedAnnualReturn, type: checked ? "normal" : "fixed" } });
         } else if (name === "mean_return") {
-            setFormData({ ...formData, random: [formData.random[0], Number(value), formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, expectedAnnualReturn: { ...formData.expectedAnnualReturn, value1: Number(value) } });
         } else if (name === "sd_return") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], Number(value), formData.random[3], formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, expectedAnnualReturn: { ...formData.expectedAnnualReturn, value2: Number(value) } });
         } else if (name === "random_income") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], checked ? 1 : 0, formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, expectedAnnualIncome: { ...formData.expectedAnnualIncome, type: checked ? "normal" : "fixed" } });
         } else if (name === "mean_income") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], Number(value), formData.random[5]] });
+            setFormData({ ...formData, expectedAnnualIncome: { ...formData.expectedAnnualIncome, value1: Number(value) } });
         } else if (name === "sd_income") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], formData.random[4], Number(value)] });
+            setFormData({ ...formData, expectedAnnualIncome: { ...formData.expectedAnnualIncome, value2: Number(value) } });
+        } else if (name === "expectedAnnualReturn") {
+            setFormData({ ...formData, expectedAnnualReturn: { ...formData.expectedAnnualReturn, value1: Number(value) } });
+        } else if (name === "expectedAnnualIncome") {
+            setFormData({ ...formData, expectedAnnualIncome: { ...formData.expectedAnnualIncome, value1: Number(value) } });
         }
     }
 
@@ -57,35 +60,21 @@ export default function EditInvestmentTypes({ scenarios }) {
         }
     
         try {
+          // Update Distribution in DB
+          await updateDistribution(investmentType.expectedAnnualReturn._id, investmentType.expectedAnnualReturn);
+          await updateDistribution(investmentType.expectedAnnualIncome._id, investmentType.expectedAnnualIncome);
+
           //  Update InvestmentType in DB
           await updateInvestmentType(investmentType._id, {
             name: formData.name,
             description: formData.description,
-            expectedAnnualReturn: Number(formData.expectedAnnualReturn),
+            expectedAnnualReturn: formData.expectedAnnualReturn._id,
             expenseRatio: Number(formData.expenseRatio),
-            expectedAnnualIncome: Number(formData.expectedAnnualIncome),
+            expectedAnnualIncome: formData.expectedAnnualIncome._id,
             taxability: formData.taxability,
-            random: formData.random,
           });
-    
-          //  Update Scenario with correct structure
-          const target = scenarios.find((s) =>
-            s.investmentTypes.some((i) => i._id === investmentType._id)
-          );
-    
-          const updatedScenario = {
-            ...target,
-            investments: target.investments.map((i) => i._id),
-            investmentTypes: target.investmentTypes.map((i) => i._id),
-            events: target.events.map((e) => e._id),
-            spendingStrategy: target.spendingStrategy.map((e) => e._id),
-            withdrawalStrategy: target.withdrawalStrategy.map((i) => i._id),
-            rmd: target.rmd.map((i) => i._id),
-            rothStrategy: target.rothStrategy.map((i) => i._id),
-          };
-    
-          await updateScenario(target._id, updatedScenario);
-    
+
+          const target = scenarios.find((s) => s.investmentTypes.some((i) => i._id === investmentType._id));
           const newupdatedScenario = await getScenario(target._id); // refetch from backend
           navigate(`/scenario/${target._id}`, { state: { scenario: newupdatedScenario }});
         } catch (err) {
@@ -93,9 +82,6 @@ export default function EditInvestmentTypes({ scenarios }) {
           setError("An error occurred while saving changes.");
         }
       };
-    
-    
-      
 
     return (
         <div id = "add_event">
@@ -105,28 +91,28 @@ export default function EditInvestmentTypes({ scenarios }) {
                 <label htmlFor="description">Description</label>
                 <textarea type="text" id="description" name="description" value={formData.description} onChange={handleInputChange}></textarea>
 
-                {formData.random[0] === 0 && <InputField id="expectedAnnualReturn" type="number" value={formData.expectedAnnualReturn} onChange={handleInputChange}>Expected Annual Return (%)</InputField>}
+                {formData.expectedAnnualReturn.type === "fixed" && <InputField id="expectedAnnualReturn" type="number" value={formData.expectedAnnualReturn.value1} onChange={handleRandom}>Expected Annual Return (%)</InputField>}
                 <div style={{ display: 'flex', gap: '10px'}}>
                     <label htmlFor="random_return">Annual Return Sampling</label>
-                    <input type="checkbox" id="random_return" name="random_return" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                    <input type="checkbox" id="random_return" name="random_return" value={formData.expectedAnnualReturn.type === "normal"} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
                 </div>
-                {formData.random[0] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                {formData.expectedAnnualReturn.type === "normal" && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <label htmlFor="mean_return" style={{ marginBottom: '20px' }}>Mean</label>
-                    <input type="number" name="mean_return" value={formData.random[1]} onChange={handleRandom} required />
+                    <input type="number" name="mean_return" value={formData.expectedAnnualReturn.value1} onChange={handleRandom} required />
                     <label htmlFor="sd_return" style={{ marginBottom: '20px' }}>Standard Deviation</label>
-                    <input type="number" name="sd_return" value={formData.random[2]} onChange={handleRandom} required />
+                    <input type="number" name="sd_return" value={formData.expectedAnnualReturn.value2} onChange={handleRandom} required />
                 </div>}
 
-                {formData.random[3] === 0 && <InputField id="expectedAnnualIncome" type="number" value={formData.expectedAnnualIncome} onChange={handleInputChange}>Expected Annual Income ($)</InputField>}
+                {formData.expectedAnnualIncome.type === "fixed" && <InputField id="expectedAnnualIncome" type="number" value={formData.expectedAnnualIncome.value1} onChange={handleRandom}>Expected Annual Income ($)</InputField>}
                 <div style={{ display: 'flex', gap: '10px'}}>
                     <label htmlFor="random_income">Annual Income Sampling</label>
-                    <input type="checkbox" id="random_income" name="random_income" value={formData.random[0] === 0} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
+                    <input type="checkbox" id="random_income" name="random_income" value={formData.expectedAnnualIncome.type === "normal"} onChange={handleRandom} style={{ marginBottom: '15px' }}/>
                 </div>
-                {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                {formData.expectedAnnualIncome.type === "normal" && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <label htmlFor="mean_income" style={{ marginBottom: '20px' }}>Mean</label>
-                    <input type="number" name="mean_income" value={formData.random[4]} onChange={handleRandom} required />
+                    <input type="number" name="mean_income" value={formData.expectedAnnualIncome.value1} onChange={handleRandom} required />
                     <label htmlFor="sd_income" style={{ marginBottom: '20px' }}>Standard Deviation</label>
-                    <input type="number" name="sd_income" value={formData.random[5]} onChange={handleRandom} required />
+                    <input type="number" name="sd_income" value={formData.expectedAnnualIncome.value2} onChange={handleRandom} required />
                 </div>}
 
                 <InputField id="expenseRatio" type="number" value={formData.expenseRatio} onChange={handleInputChange}>Expense Ratio (%)</InputField>

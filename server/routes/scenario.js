@@ -68,7 +68,13 @@ router.get('/unpopulated/:id', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const scenario = await Scenario.findById(req.params.id)
-    .populate('investmentTypes')
+    .populate({
+      path: 'investmentTypes',
+      populate: [
+        { path: 'expectedAnnualReturn' },
+        { path: 'expectedAnnualIncome' }
+      ]
+    })
     .populate({
       path: 'investments',
       populate: { path: 'investmentType' }
@@ -104,7 +110,8 @@ router.get('/:id', async (req, res) => {
     })
     .populate('lifeExpectancyUser')
     .populate('lifeExpectancySpouse')
-    .populate('inflation');
+    .populate('inflation')
+    .populate('user');
 
     await Promise.all(
       scenario.events

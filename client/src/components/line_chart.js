@@ -4,13 +4,15 @@ import Plot from 'react-plotly.js';
 export default function Line_Chart({ data }) {
   const startYear = 2025;
   const simulations = data;
-  const numYears = simulations[0].length;
-  const years = Array.from({ length: numYears }, (_, i) => startYear + i);
+
+  const maxYears = Math.max(...simulations.map(sim => sim.length));
+  const years = Array.from({ length: maxYears }, (_, i) => startYear + i);
 
   // Calculate probability of success per year
   const probabilities = years.map((_, i) => {
-    const successes = simulations.filter(sim => sim[i]).length;
-    return (successes / simulations.length) * 100; // % value
+    const alive = simulations.filter(sim => sim.length > i);
+    const successes = alive.filter(sim => sim[i] === true).length;
+    return alive.length > 0 ? (successes / alive.length) * 100 : null;
   });
 
   return (

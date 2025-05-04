@@ -4,10 +4,8 @@ import InputField from "./input_field";
 import { createScenario, getScenario } from "../api/scenarioApi";
 import { getCurrentUser } from "../api/userApi";
 import { createInvestmentType } from "../api/investmentTypeApi";
-import * as allocationApi from "../api/allocationApi";
 import * as investmentApi from "../api/investmentApi";
-import * as eventsApi from "../api/eventsApi";
-import * as distributionApi from "../api/distributionApi";
+import {createDistribution} from "../api/distributionApi";
 
 export default function CreateScenario({ scenarios }) {
   const navigate = useNavigate();
@@ -136,15 +134,19 @@ export default function CreateScenario({ scenarios }) {
       setError(`The ${check} field cannot have a negative value.`);
       return;
     }
+
+    const returnDistributionResponse = await createDistribution({type: "fixed", value1: 0, value2: 0});
+    const returnDistribution = returnDistributionResponse.data;
+    const incomeDistributionResponse = await createDistribution({type: "fixed", value1: 0, value2: 0});
+    const incomeDistribution = incomeDistributionResponse.data;
     
     const newInvestmentType = {
       name: "Cash",
       description: "",
-      expectedAnnualReturn: 0,
+      expectedAnnualReturn: returnDistribution._id,
       expenseRatio: 0,
-      expectedAnnualIncome: 0,
+      expectedAnnualIncome: incomeDistribution._id,
       taxability: false,
-      random: [0, 0, 0, 0, 0, 0]
     };
     const investmentTypeResponse = await createInvestmentType(newInvestmentType);
     const createdInvestmentType = investmentTypeResponse.data; // <-- now you have _id
@@ -158,11 +160,11 @@ export default function CreateScenario({ scenarios }) {
     const investmentResponse = await investmentApi.createInvestment(newInvestment);
     const createdInvestment = investmentResponse.data;
   
-    const lifeDistributionResponse = await distributionApi.createDistribution(formData.lifeExpectancyUser);
+    const lifeDistributionResponse = await createDistribution(formData.lifeExpectancyUser);
     const createdLifeDistribution = lifeDistributionResponse.data;
-    const spouseDistributionResponse = await distributionApi.createDistribution(formData.lifeExpectancySpouse);
+    const spouseDistributionResponse = await createDistribution(formData.lifeExpectancySpouse);
     const createdSpouseDistribution = spouseDistributionResponse.data;
-    const inflationDistributionResponse = await distributionApi.createDistribution(formData.inflation);
+    const inflationDistributionResponse = await createDistribution(formData.inflation);
     const createdInflationDistribution = inflationDistributionResponse.data;
 
     const newScenario = {
