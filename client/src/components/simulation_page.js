@@ -35,33 +35,40 @@ export default function SimulationPage() {
     const [shade5, setShade5] = useState([]);
     const [bar, setBar] = useState([]);
 
-    const handleRunSimulations = () => {
-        const newLine = [] 
-        const newShade1 = []
-        const newShade2 = []
-        const newShade3 = []
-        const newShade4 = []
-        const newShade5 = []
-        const newBar = [];
 
-        for (let i = 0; i < formData.num; i++) {
-            simResult = simulation({ scenario: structuredClone(scenario) });
-            newLine.push(simResult[0]);
-            newShade1.push(simResult[1][0]);
-            newShade2.push(simResult[1][1]);
-            newShade3.push(simResult[1][2]);
-            newShade4.push(simResult[1][3]);
-            newShade5.push(simResult[1][4]);
-            newBar.push(simResult[2]);
-        }
-        setLine(newLine);
-        setShade1(newShade1);
-        setShade2(newShade2);
-        setShade3(newShade3);
-        setShade4(newShade4);
-        setShade5(newShade5);
-        setBar(newBar);
-        setHasRun(true);
+    const handleRunSimulations = async () => {
+      const newLine    = [];
+      const newShade1  = [];
+      const newShade2  = [];
+      const newShade3  = [];
+      const newShade4  = [];
+      const newShade5  = [];
+      const newBar     = [];
+  
+      for (let i = 0; i < formData.num; i++) {
+        // await here so simResult is the actual array
+        const simResult = await simulation({
+          scenario: structuredClone(scenario)
+        });
+  
+        newLine   .push(simResult[0]);
+        newShade1 .push(simResult[1][0]);
+        newShade2 .push(simResult[1][1]);
+        newShade3 .push(simResult[1][2]);
+        newShade4 .push(simResult[1][3]);
+        newShade5 .push(simResult[1][4]);
+        newBar    .push(simResult[2]);
+      }
+  
+      setLine  (newLine);
+      setShade1(newShade1);
+      setShade2(newShade2);
+      setShade3(newShade3);
+      setShade4(newShade4);
+      setShade5(newShade5);
+      setBar   (newBar);
+      setHasRun(true);
+    
       };
     
 return (
