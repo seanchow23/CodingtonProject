@@ -73,7 +73,19 @@ router.get('/:id', async (req, res) => {
       path: 'investments',
       populate: { path: 'investmentType' }
     })
-    .populate('events')
+    .populate({
+      path: 'events',
+      populate: [
+        {
+          path: 'startYear',
+          populate: { path: 'event' }
+        },
+        {
+          path: 'duration',
+          populate: { path: 'event' }
+        }
+      ]
+    })
     .populate({
       path: 'spendingStrategy',
       model: 'expense'
