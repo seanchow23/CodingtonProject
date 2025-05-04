@@ -3,18 +3,18 @@
 export default async function simulation({ scenario, seed = null }) {
     // 1) Fetch all four endpoints in parallel
     const [dedRes, rmdRes, gainsRes, fedRes] = await Promise.all([
-      fetch('http://localhost:5000/api/tax/deductions'),
-      fetch('http://localhost:5000/api/tax/rmd-table'),
-      fetch('http://localhost:5000/api/tax/capital-gains'),
-      fetch('http://localhost:5000/api/tax/federal')
+        fetch('http://localhost:5000/api/tax/deductions'),
+        fetch('http://localhost:5000/api/tax/rmd-table'),
+        fetch('http://localhost:5000/api/tax/capital-gains'),
+        fetch('http://localhost:5000/api/tax/federal')
     ]);
   
     // 2) Parse JSON
     const [dedData, rmdTable, gainsData, fedData] = await Promise.all([
-      dedRes.json(),
-      rmdRes.json(),
-      gainsRes.json(),
-      fedRes.json()
+        dedRes.json(),
+        rmdRes.json(),
+        gainsRes.json(),
+        fedRes.json()
     ]);
     
     // --- standard deduction ---
@@ -26,109 +26,102 @@ export default async function simulation({ scenario, seed = null }) {
     var federal_deductions = deductionEntry?.standardDeduction ?? 0;
     console.log('here is federal_deductionss for simulation single', federal_deductions);
 
-  
-
     // --- RMD distributions ---
     const rmd_distributions = rmdTable
-    .filter(item => item.age >= 72 && item.age <= 120)  // only ages 72–120
-    .sort ((a, b) => a.age - b.age)                     // sort ascending by age
-    .map  (item => item.divisor);                       // pull out just the number
-      console.log('here is rmd dist new', rmd_distributions);
+        .filter(item => item.age >= 72 && item.age <= 120)  // only ages 72–120
+        .sort ((a, b) => a.age - b.age)                     // sort ascending by age
+        .map  (item => item.divisor);                       // pull out just the number
+    console.log('here is rmd dist new', rmd_distributions);
 
-// const gainsRes = await fetch('…/capital-gains');
-// const gainsData = await gainsRes.json();
-console.log('capital gain scrape to ',gainsData );
-let capital_gains;
-{
-  const statusKey = scenario.married ? 'married' : 'single';
+    // const gainsRes = await fetch('…/capital-gains');
+    // const gainsData = await gainsRes.json();
+    console.log('capital gain scrape to ',gainsData );
+    let capital_gains;
+    {
+        const statusKey = scenario.married ? 'married' : 'single';
 
-  // 1) pick & sort only the rows we care about
-  const rows = gainsData
-    .filter(r => r.filingStatus === statusKey)
-    .sort((a, b) => a.incomeThreshold - b.incomeThreshold);
+        // 1) pick & sort only the rows we care about
+        const rows = gainsData
+            .filter(r => r.filingStatus === statusKey)
+            .sort((a, b) => a.incomeThreshold - b.incomeThreshold);
 
-  // 2) for each distinct rate, remember its highest threshold
-  const maxByRate = rows.reduce((map, { rate, incomeThreshold }) => {
-    map[rate] = Math.max(map[rate] ?? 0, incomeThreshold);
-    return map;
-  }, {});
+        // 2) for each distinct rate, remember its highest threshold
+        const maxByRate = rows.reduce((map, { rate, incomeThreshold }) => {
+            map[rate] = Math.max(map[rate] ?? 0, incomeThreshold);
+            return map;
+        }, {});
 
-  // 3) get all rates sorted ascending
-  const rates = Object.keys(maxByRate)
-    .map(r => parseFloat(r))
-    .sort((a, b) => a - b);
+        // 3) get all rates sorted ascending
+        const rates = Object.keys(maxByRate)
+            .map(r => parseFloat(r))
+            .sort((a, b) => a - b);
 
-  // 4) build a bracket for each rate
-  capital_gains = rates.map((rate, idx) => {
-    const pct = rate * 100;
-    const min = idx === 0
-      ? 0
-      : maxByRate[rates[idx - 1]] + 1;
-    const max = maxByRate[rate];
-    return { percentage: pct, min, max };
-  });
+        // 4) build a bracket for each rate
+        capital_gains = rates.map((rate, idx) => {
+            const pct = rate * 100;
+            const min = idx === 0 ? 0 : maxByRate[rates[idx - 1]] + 1;
+            const max = maxByRate[rate];
+            return { percentage: pct, min, max };
+        });
 
-  // 5) ensure a final 20% bracket
-  const topRate = rates[rates.length - 1];
-  if (topRate < 0.20) {
-    // append a 20% bracket past the last known threshold
-    const prevMax = maxByRate[topRate];
-    capital_gains.push({
-      percentage: 20,
-      min:        prevMax + 1,
-      max:        Infinity
-    });
-  } else {
-    // JSON already had a 20% bracket — extend its top to Infinity
+        // 5) ensure a final 20% bracket
+        const topRate = rates[rates.length - 1];
+        if (topRate < 0.20) {
+            // append a 20% bracket past the last known threshold
+            const prevMax = maxByRate[topRate];
+            capital_gains.push({
+            percentage: 20,
+            min:        prevMax + 1,
+            max:        Infinity
+            });
+        } else {
+            // JSON already had a 20% bracket — extend its top to Infinity
+            capital_gains[capital_gains.length - 1].max = Infinity;
+        }
+    }
+
+    // 1) Sort by percentage (just in case):
+    capital_gains.sort((a,b) => a.percentage - b.percentage);
+
+    // 2) Recompute all but the last bracket max to be one less than the next bracket's min:
+    for (let i = 0; i < capital_gains.length - 1; i++) {
+        capital_gains[i].max = capital_gains[i + 1].min - 1;
+    }
+    // The last bracket stays at Infinity:
     capital_gains[capital_gains.length - 1].max = Infinity;
-  }
-}
-// 1) Sort by percentage (just in case):
-capital_gains.sort((a,b) => a.percentage - b.percentage);
 
-// 2) Recompute all but the last bracket max to be one less than the next bracket's min:
-for (let i = 0; i < capital_gains.length - 1; i++) {
-  capital_gains[i].max = capital_gains[i + 1].min - 1;
-}
-// The last bracket stays at Infinity:
-capital_gains[capital_gains.length - 1].max = Infinity;
-
-
-// now capital_gains ===
-// [
-//   { percentage: 0,  min:      0, max:   47025   },
-//   { percentage: 15, min:  47026, max:  518900  },
-//   { percentage: 20, min: 518901, max: Infinity }
-// ]
-
+    // now capital_gains ===
+    // [
+    //   { percentage: 0,  min:      0, max:   47025   },
+    //   { percentage: 15, min:  47026, max:  518900  },
+    //   { percentage: 20, min: 518901, max: Infinity }
+    // ]
   
-console.log('normalized capital_gains new:', capital_gains);
-console.log('scrape to work with fed',fedData);
-{
-    // We know fedData has 14 entries: first 7 = single, next 7 = married
-    const BRACKET_COUNT = 7;
+    console.log('normalized capital_gains new:', capital_gains);
+    console.log('scrape to work with fed',fedData);
+    {
+        // We know fedData has 14 entries: first 7 = single, next 7 = married
+        const BRACKET_COUNT = 7;
+    
+        //slice out exactly the 7 for each filing status
+        const singleRaw  = fedData.slice(0, BRACKET_COUNT);
+        const marriedRaw = fedData.slice(BRACKET_COUNT, BRACKET_COUNT * 2);
+    
+        //  pick the right raw chunk
+        const rawBrackets = scenario.married ? marriedRaw : singleRaw;
+    
+        //  hard‑code the tax percentages in order
+        const rates = [10, 12, 22, 24, 32, 35, 37];
+    
+        // 4) map into clean {percentage, min, max}
+        var federal_brackets = rawBrackets.map((entry, idx) => ({
+            percentage: rates[idx],
+            min: parseInt(entry.incomeRange, 10),
+            max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
+        }));
+    }
   
-    //slice out exactly the 7 for each filing status
-    const singleRaw  = fedData.slice(0, BRACKET_COUNT);
-    const marriedRaw = fedData.slice(BRACKET_COUNT, BRACKET_COUNT * 2);
-  
-    //  pick the right raw chunk
-    const rawBrackets = scenario.married ? marriedRaw : singleRaw;
-  
-    //  hard‑code the tax percentages in order
-    const rates = [10, 12, 22, 24, 32, 35, 37];
-  
-    // 4) map into clean {percentage, min, max}
-    var federal_brackets = rawBrackets.map((entry, idx) => ({
-      percentage: rates[idx],
-      min:        parseInt(entry.incomeRange, 10),
-      max:        entry.taxRate === 'And up'
-                   ? Infinity
-                   : parseInt(entry.taxRate, 10)
-    }));
-  }
-  
-console.log('new fed brack',federal_brackets);
+    console.log('new fed brack',federal_brackets);
   
     const rng = seed !== null ? mulberry32(seed) : Math.random;
 
