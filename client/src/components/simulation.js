@@ -166,23 +166,16 @@ export default function simulation({ scenario }) {
             }
         }
 
-        // Update Investment
-        for (const types of scenario.investmentTypes) {
-            if (types.random[0] !== 0) {
-                types.expectedAnnualReturn = sampleNormal(types.random[1], types.random[2]);
-            }
-            if (types.random[3] !== 0) {
-                types.expectedAnnualIncome = sampleNormal(types.random[4], types.random[5]);
-            }
-        }
         for (const investment of Investments) {
             const data = investment.investmentType;
+            const ear = getDistributionResult(data.expectedAnnualReturn);
+            const eai = getDistributionResult(data.expectedAnnualIncome);
             investment.value = Number(investment.value);
             investment.baseValue = Number(investment.baseValue);
             const prev = investment.value;
-            if (data.taxability && investment.taxStatus === "non-retirement") { curYearIncome += Number(data.expectedAnnualIncome); }
-            investment.value *= 1 + Number(data.expectedAnnualReturn) / 100;
-            investment.value += Number(data.expectedAnnualIncome);
+            if (data.taxability && investment.taxStatus === "non-retirement") { curYearIncome += Number(eai); }
+            investment.value *= 1 + Number(ear) / 100;
+            investment.value += Number(eai);
             const expense_ratio = (prev + investment.value) * Number(data.expenseRatio) / 2;
             investment.value -= expense_ratio;
         }
