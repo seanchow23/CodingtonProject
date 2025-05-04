@@ -6,6 +6,8 @@ import Shaded_Chart from './shaded_chart';
 import UnifiedStackedFinanceChart from './stacked_chart'; 
 import ScenarioList from './scenario_list';
 import InputField from "./input_field";
+import { runSimulation } from '../api/simulationApi';
+
 export default function SimulationPage() { 
 
     const [formData, setFormData] = useState({
@@ -44,13 +46,10 @@ export default function SimulationPage() {
       const newShade4  = [];
       const newShade5  = [];
       const newBar     = [];
-  
+    
       for (let i = 0; i < formData.num; i++) {
-        // await here so simResult is the actual array
-        const simResult = await simulation({
-          scenario: structuredClone(scenario)
-        });
-  
+        const simResult = await runSimulation(structuredClone(scenario));
+    
         newLine   .push(simResult[0]);
         newShade1 .push(simResult[1][0]);
         newShade2 .push(simResult[1][1]);
@@ -59,7 +58,7 @@ export default function SimulationPage() {
         newShade5 .push(simResult[1][4]);
         newBar    .push(simResult[2]);
       }
-  
+    
       setLine  (newLine);
       setShade1(newShade1);
       setShade2(newShade2);
@@ -68,8 +67,7 @@ export default function SimulationPage() {
       setShade5(newShade5);
       setBar   (newBar);
       setHasRun(true);
-    
-      };
+    };
     
 return (
     <div>

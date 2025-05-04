@@ -17,6 +17,7 @@ require('./scrapers/rmdscraper'); // assuming taxscraper exports a function too
 
 const userRoutes = require('./routes/user'); 
 const scenarioRoutes = require('./routes/scenario');
+const simulationRoutes = require('./routes/simulationRoutes');
 const investmentTypeRoutes = require('./routes/investmentType');
 const investmentRoutes = require('./routes/investment');
 const eventsRoutes = require('./routes/events');
@@ -83,6 +84,7 @@ app.use('/api/income', incomeRoutes);
 app.use('/api/invest', investRoutes);
 app.use('/api/rebalance', rebalanceRoutes);
 app.use('/api/distributions', distributionRoutes);
+app.use('/api/simulation', simulationRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
