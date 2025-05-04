@@ -1,13 +1,14 @@
-export default function simulation({ scenario }) {
+export default function simulation({ scenario, seed = null }) {
+    const rng = seed !== null ? mulberry32(seed) : Math.random;
 
     let user_life_expectancy = 0;
     let spouse_life_expectancy = 0;
     let inflation = 0;
 
     // Check and perform random sampling
-    user_life_expectancy = getDistributionResult(scenario.lifeExpectancyUser);
-    spouse_life_expectancy = getDistributionResult(scenario.lifeExpectancySpouse);
-    inflation = getDistributionResult(scenario.inflation);
+    user_life_expectancy = getDistributionResult(scenario.lifeExpectancyUser, null, rng);
+    spouse_life_expectancy = getDistributionResult(scenario.lifeExpectancySpouse, null, rng);
+    inflation = getDistributionResult(scenario.inflation, null, rng);
 
     const scenario_list = [structuredClone(scenario)];
     const output = [[], [[],[],[],[],[]], [[], [], []]];
@@ -68,8 +69,8 @@ export default function simulation({ scenario }) {
     let resolved = scenario.events.filter(event => !["starts-with", "starts-after"].includes(event.startYear.type));
 
     for (const event of resolved) {
-        event.startYear.value1 = getDistributionResult(event.startYear);
-        event.duration.value1 = getDistributionResult(event.duration);
+        event.startYear.value1 = getDistributionResult(event.startYear, null, rng);
+        event.duration.value1 = getDistributionResult(event.duration, null, rng);
     }
 
     let maxIterations = 100;
@@ -79,8 +80,8 @@ export default function simulation({ scenario }) {
             const dependencyId = event.startYear.event?._id?.toString?.() || event.startYear.event?.toString?.();
             const resolvedEvent = resolved.find(e => e._id.toString() === dependencyId);
             if (resolvedEvent) {
-                event.startYear.value1 = getDistributionResult(event.startYear, resolvedEvent);
-                event.duration.value1 = getDistributionResult(event.duration);
+                event.startYear.value1 = getDistributionResult(event.startYear, resolvedEvent, rng);
+                event.duration.value1 = getDistributionResult(event.duration, null, rng);
                 resolved.push(event);
                 unresolved = unresolved.filter(e => e._id.toString() !== event._id.toString());
             }
@@ -185,8 +186,8 @@ export default function simulation({ scenario }) {
 
         for (const investment of Investments) {
             const data = investment.investmentType;
-            const ear = getDistributionResult(data.expectedAnnualReturn);
-            const eai = getDistributionResult(data.expectedAnnualIncome);
+            const ear = getDistributionResult(data.expectedAnnualReturn, null, rng);
+            const eai = getDistributionResult(data.expectedAnnualIncome, null, rng);
             investment.value = Number(investment.value);
             investment.baseValue = Number(investment.baseValue);
             const prev = investment.value;
@@ -478,7 +479,7 @@ export default function simulation({ scenario }) {
             bracket.max = bracket.max * inflation;
         }
         scenario.annualLimit *= inflation;
-        inflation = getDistributionResult(scenario.inflation);
+        inflation = getDistributionResult(scenario.inflation, null, rng);
 
         // Subtract Life Expectancy
         life++;
@@ -510,23 +511,23 @@ export default function simulation({ scenario }) {
     return output;
 }
 
-function sampleNormal(mean, sd) {
+function sampleNormal(mean, sd, rng = Math.random) {
     let u = 0, v = 0;
-    while (u === 0) u = Math.random();
-    while (v === 0) v = Math.random();
+    while (u === 0) u = rng();
+    while (v === 0) v = rng();
     const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     return z * sd + mean;
 }
 
-function getDistributionResult(distribution, event = null) {
+function getDistributionResult(distribution, event = null, rng = Math.random) {
     if (distribution.type === "fixed") {
         return distribution.value1;
     } else if (distribution.type === "normal") {
-        return Math.floor(sampleNormal(distribution.value1, distribution.value2));
+        return Math.floor(sampleNormal(distribution.value1, distribution.value2, rng));
     } else if (distribution.type === "uniform") {
         const min = distribution.value1;
         const max = distribution.value2;
-        return Math.floor(Math.random() * (max - min) + min);
+        return Math.floor(rng() * (max - min) + min);
     } else if (distribution.type === "starts-with") {
         return event.startYear.value1;
     } else if (distribution.type === "starts-after") {
@@ -534,4 +535,13 @@ function getDistributionResult(distribution, event = null) {
     } else {
         return 0;
     }
+}
+
+function mulberry32(seed) {
+    return function () {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
 }
