@@ -95,6 +95,23 @@ export default function simulation({ scenario }) {
     const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
     const Investments = scenario.investments;
 
+    // Glide Calculation
+    for (const glideEvent of scenario.events.filter(event => event.type === 'invest' || event.type === 'rebalance').filter(event => event.glide)) {
+        const allocations = glideEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+        allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
+        const totalPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.finalPercentage, 0);
+        if (totalPercentage === 0) {
+            allocations.map(allocation => allocation.finalPercentage = 100 / allocations.length);
+        }
+        if (totalPercentage != 100) {
+            const scale_factor = 1 / (totalPercentage / 100);
+            allocations.map(allocation => allocation.finalPercentage *= scale_factor);
+        }
+        for (const allocation of allocations) {
+            allocation.glide = (allocation.finalPercentage - allocation.percentage) / user_life_expectancy;
+        }
+ }
+
     // Add to Output
     const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
     output[0].push(Number(scenario.financialGoal) <= total_asset);
@@ -105,7 +122,7 @@ export default function simulation({ scenario }) {
 
     let life = 0;
 
-    while (user_life_expectancy > life) {
+    while (life < user_life_expectancy) {
         var curYearIncome = 0;
         var curYearSS = 0;
         var curYearGains = 0;
@@ -356,21 +373,6 @@ export default function simulation({ scenario }) {
                 allocations.map(allocation => allocation.percentage *= scale_factor);
             }
 
-            // Glide Calculation
-            if (InvestEvent.glide) {
-                const totalPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.finalPercentage, 0);
-                if (totalPercentage === 0) {
-                    allocations.map(allocation => allocation.finalPercentage = 100 / allocations.length);
-                }
-                if (totalPercentage != 100) {
-                    const scale_factor = 1 / (totalPercentage / 100);
-                    allocations.map(allocation => allocation.finalPercentage *= scale_factor);
-                }
-                for (const allocation of allocations) {
-                    allocation.glide = (allocation.finalPercentage - allocation.percentage) / user_life_expectancy;
-                }
-            }
-
             InvestEvent.duration.value1 -= 1;
 
             const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
@@ -453,6 +455,11 @@ export default function simulation({ scenario }) {
                     }
                     alloc_investment.value += difference;
                 }
+            }
+
+            // Glide Path
+            for (const allocation of allocations) {
+                allocation.percentage += allocation.glide;
             }
         }
 
