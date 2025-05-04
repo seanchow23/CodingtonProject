@@ -39,34 +39,47 @@ export default function SimulationPage() {
 
 
     const handleRunSimulations = async () => {
-      const newLine    = [];
-      const newShade1  = [];
-      const newShade2  = [];
-      const newShade3  = [];
-      const newShade4  = [];
-      const newShade5  = [];
-      const newBar     = [];
+      const newLine = [];
+      const newShade1 = [];
+      const newShade2 = [];
+      const newShade3 = [];
+      const newShade4 = [];
+      const newShade5 = [];
+      const newBar = [];
     
-      for (let i = 0; i < formData.num; i++) {
-        const simResult = await runSimulation(structuredClone(scenario));
+      try {
+        const tasks = [];  // Array to store the promises for parallel execution
     
-        newLine   .push(simResult[0]);
-        newShade1 .push(simResult[1][0]);
-        newShade2 .push(simResult[1][1]);
-        newShade3 .push(simResult[1][2]);
-        newShade4 .push(simResult[1][3]);
-        newShade5 .push(simResult[1][4]);
-        newBar    .push(simResult[2]);
+        for (let i = 0; i < formData.num; i++) {
+          // Send the simulations concurrently (in parallel)
+          tasks.push(runSimulation(structuredClone(scenario)));
+        }
+    
+        // Wait for all simulations to complete
+        const results = await Promise.all(tasks);
+    
+        // Process the results after all simulations are done
+        results.forEach((simResult) => {
+          newLine.push(simResult[0]);
+          newShade1.push(simResult[1][0]);
+          newShade2.push(simResult[1][1]);
+          newShade3.push(simResult[1][2]);
+          newShade4.push(simResult[1][3]);
+          newShade5.push(simResult[1][4]);
+          newBar.push(simResult[2]);
+        });
+    
+        setLine(newLine);
+        setShade1(newShade1);
+        setShade2(newShade2);
+        setShade3(newShade3);
+        setShade4(newShade4);
+        setShade5(newShade5);
+        setBar(newBar);
+        setHasRun(true);
+      } catch (error) {
+        console.error('Error running simulations in parallel:', error);
       }
-    
-      setLine  (newLine);
-      setShade1(newShade1);
-      setShade2(newShade2);
-      setShade3(newShade3);
-      setShade4(newShade4);
-      setShade5(newShade5);
-      setBar   (newBar);
-      setHasRun(true);
     };
     
 return (
