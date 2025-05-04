@@ -63,44 +63,44 @@ export default function simulation({ scenario }) {
     var prev_federal_deductions = federal_deductions;
     var prev_capital_gains = capital_gains;
 
+    // Randomness in Event Duration/Start Year
+    let unresolved = scenario.events.filter(event => ["starts-with", "starts-after"].includes(event.startYear.type));   
+    let resolved = scenario.events.filter(event => !["starts-with", "starts-after"].includes(event.startYear.type));
+
+    for (const event of resolved) {
+        event.startYear.value1 = getDistributionResult(event.startYear);
+        event.duration.value1 = getDistributionResult(event.duration);
+    }
+
+    let maxIterations = 100;
+
+    while (unresolved.length > 0 && maxIterations-- > 0) {
+        for (const event of [...unresolved]) {
+            const dependencyId = event.startYear.event?._id?.toString?.() || event.startYear.event?.toString?.();
+            const resolvedEvent = resolved.find(e => e._id.toString() === dependencyId);
+            if (resolvedEvent) {
+                event.startYear.value1 = getDistributionResult(event.startYear, resolvedEvent);
+                event.duration.value1 = getDistributionResult(event.duration);
+                resolved.push(event);
+                unresolved = unresolved.filter(e => e._id.toString() !== event._id.toString());
+            }
+        }
+    }
+
+    if (maxIterations <= 0) {throw new Error("Circular or unresolved event dependency detected.");}
+
     // Extract Events and Strategies
     const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
     const IncomeEvents = scenario.events.filter(event => event.type === 'income');
     const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
     const Investments = scenario.investments;
 
-    // Randomness in Event Duration/Start Year
-    for (const event of IncomeEvents) {
-        if (event.random[0] === 1) {
-            event.startYear = Math.floor(sampleNormal(event.random[1], event.random[2]));
-        } else if (event.random[0] === 2) {
-            event.startYear = Math.floor(Math.random() * (event.random[2] - event.random[1]) + event.random[1]);
-        }
-        if (event.random[3] === 1) {
-            event.duration = Math.floor(sampleNormal(event.random[4], event.random[5]));
-        } else if (event.random[3] === 2) {
-            event.duration = Math.floor(Math.random() * (event.random[5] - event.random[4]) + event.random[4]);
-        }
-    }
-    for (const event of ExpenseEvents) {
-        if (event.random[0] === 1) {
-            event.startYear = Math.floor(sampleNormal(event.random[1], event.random[2]));
-        } else if (event.random[0] === 2) {
-            event.startYear = Math.floor(Math.random() * (event.random[2] - event.random[1]) + event.random[1]);
-        }
-        if (event.random[3] === 1) {
-            event.duration = Math.floor(sampleNormal(event.random[4], event.random[5]));
-        } else if (event.random[3] === 2) {
-            event.duration = Math.floor(Math.random() * (event.random[5] - event.random[4]) + event.random[4]);
-        }
-    }
-
     // Add to Output
     const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
     output[0].push(Number(scenario.financialGoal) <= total_asset);
     output[1].push([total_asset, 0, 0, 0, 0]);
-    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income').filter(event => event.startYear <= year)));
-    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear <= year)));
+    output[2][0].push(structuredClone(scenario.events.filter(event => event.type === 'income').filter(event => event.startYear.value1 <= year && event.duration.value1 > 0)));
+    output[2][1].push(structuredClone(scenario.events.filter(event => event.type === 'expense').filter(event => event.startYear.value1 <= year && event.duration.value1 > 0)));
     output[2][2].push(structuredClone(scenario.investments));
 
     let life = 0;
@@ -113,8 +113,8 @@ export default function simulation({ scenario }) {
 
         // Run Income Events
         for (const income of IncomeEvents) {
-            if (income.startYear <= year && income.duration > 0) {
-                income.duration -= 1;
+            if (income.startYear.value1 <= year && income.duration.value1 > 0) {
+                income.duration.value1 -= 1;
                 income.amount = Number(income.amount);
                 curYearIncome += income.amount;
                 if (income.ss) { curYearSS += income.amount; }
@@ -130,6 +130,7 @@ export default function simulation({ scenario }) {
         if (age > 120) { age = 120; }
         if (age >= 74 && Investments.find(investment => (investment.taxStatus === "pre-tax retirement"))) {
             const rmd = scenario.rmd;
+            rmd.map(inv => inv = Investments.find(investment => inv._id === investment._id));
             var total = rmd.reduce((sum, investment) => sum + Number(investment.value), 0);
             var withdrawal = total / rmd_distributions[age - 72];
 
@@ -144,7 +145,7 @@ export default function simulation({ scenario }) {
                         baseValue: 0,
                         taxStatus: "non-retirement"
                     };
-                    scenario.investments.push(recipient);
+                    Investments.push(recipient);
                 }
                 if (withdrawal < principle) {
                     curYearIncome += withdrawal;
@@ -191,7 +192,9 @@ export default function simulation({ scenario }) {
             const curYearFedTaxableIncome = curYearIncome - 0.15 * curYearSS;
             const tax_bracket = federal_brackets.find(bracket => bracket.max > curYearFedTaxableIncome - federal_deductions);
             var rc = tax_bracket.max - (curYearFedTaxableIncome - federal_deductions);
-            for (const investment of scenario.rothStrategy) {
+            const rothStrategy = scenario.rothStrategy;
+            rothStrategy.map(inv => inv = Investments.find(investment => inv._id === investment._id));
+            for (const investment of rothStrategy) {
                 const principle = Number(investment.value);
                 var recipient = scenario.investments.filter(investment => (investment.investmentType._id === investment.investmentType._id)).find(investment => (investment.taxStatus === "after-tax retirement"));
                 if (recipient === undefined) {
@@ -202,7 +205,7 @@ export default function simulation({ scenario }) {
                         baseValue: 0,
                         taxStatus: "after-tax retirement"
                     };
-                    scenario.investments.push(recipient);
+                    Investments.push(recipient);
                 }
                 if (rc < principle) {
                     curYearIncome += rc;
@@ -250,8 +253,8 @@ export default function simulation({ scenario }) {
         // Run Non-Discretionary Expense Events
         var non_discretionary = 0;
         for (const expense of ExpenseEvents.filter(event => event.discretionary === false)) {
-            if (expense.startYear <= year && expense.duration > 0) {
-                expense.duration -= 1;
+            if (expense.startYear.value1 <= year && expense.duration.value1 > 0) {
+                expense.duration.value1 -= 1;
                 expense.amount = Number(expense.amount);
                 non_discretionary += expense.amount;
                 expense.amount += Number(expense.change);
@@ -266,7 +269,9 @@ export default function simulation({ scenario }) {
         if (withdrawal_amount > 0) {
             CashInvestment.value = 0;
             CashInvestment.baseValue = 0;
-            for (const withdraw of scenario.withdrawalStrategy) {
+            const withdrawalStrategy = scenario.withdrawalStrategy;
+            withdrawalStrategy.map(withdraw => withdraw = Investments.find(investment => withdraw._id === investment._id));
+            for (const withdraw of withdrawalStrategy) {
                 const principle = Number(withdraw.value);
                 if (withdrawal_amount < principle) {
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += withdrawal_amount * ((principle - Number(withdraw.baseValue)) / principle); }
@@ -297,16 +302,18 @@ export default function simulation({ scenario }) {
 
         // Pay Discretionary Expense
         var discretionary = 0;
-        for (const expense of scenario.spendingStrategy) {
-            if (expense.startYear <= year && expense.duration > 0) {
-                expense.duration -= 1;
+        const spendingStrategy = scenario.spendingStrategy;
+        spendingStrategy.map(expense => expense = ExpenseEvents.find(event => expense._id === event._id));
+        for (const expense of spendingStrategy) {
+            if (expense.startYear.value1 <= year && expense.duration.value1 > 0) {
+                expense.duration.value1 -= 1;
                 expense.amount = Number(expense.amount);
                 discretionary += expense.amount;
                 expense.amount += Number(expense.change);
                 if (expense.inflation) { expense.amount *= (1 + (Number(inflation) / 100)); }
                 const expenseEvent = ExpenseEvents.find(event => event._id === expense._id);
                 expenseEvent.amount = expense.amount;
-                expenseEvent.duration = expense.duration;
+                expenseEvent.duration.value1 = expense.duration.value1;
             }
         }
 
@@ -314,7 +321,9 @@ export default function simulation({ scenario }) {
         if (withdrawal_amount > 0) {
             CashInvestment.value = 0;
             CashInvestment.baseValue = 0;
-            for (const withdraw of scenario.withdrawalStrategy) {
+            const withdrawalStrategy = scenario.withdrawalStrategy;
+            withdrawalStrategy.map(withdraw => withdraw = Investments.find(investment => withdraw._id === investment._id));
+            for (const withdraw of withdrawalStrategy) {
                 const principle = Number(withdraw.value);
                 if (withdrawal_amount < principle) {
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += withdrawal_amount * ((principle - Number(withdraw.baseValue)) / principle); }
@@ -339,7 +348,7 @@ export default function simulation({ scenario }) {
         }
 
         // Run Invest
-        const InvestEvent = scenario.events.find(event => event.type === 'invest' && event.startYear <= year && event.duration > 0);
+        const InvestEvent = scenario.events.find(event => event.type === 'invest' && event.startYear.value1 <= year && event.duration.value1 > 0);
         if (InvestEvent) {
             const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
             allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
@@ -369,7 +378,7 @@ export default function simulation({ scenario }) {
                 }
             }
 
-            InvestEvent.duration -= 1;
+            InvestEvent.duration.value1 -= 1;
 
             const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
             const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
@@ -404,7 +413,7 @@ export default function simulation({ scenario }) {
             }
         }
         
-        const RebalanceEvent = scenario.events.find(event => event.type === 'rebalance' && event.startYear <= year && event.duration > 0);
+        const RebalanceEvent = scenario.events.find(event => event.type === 'rebalance' && event.startYear.value1 <= year && event.duration.value1 > 0);
         if (RebalanceEvent) {
             const allocations = RebalanceEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
             allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
@@ -419,7 +428,7 @@ export default function simulation({ scenario }) {
                 allocations.map(allocation => allocation.percentage *= scale_factor);
             }
 
-            RebalanceEvent.duration -= 1;
+            RebalanceEvent.duration.value1 -= 1;
 
             const retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "after-tax retirement")
             const non_retirement_assets = allocations.filter(allocation => allocation.investment.taxStatus === "non-retirement")
@@ -489,8 +498,8 @@ export default function simulation({ scenario }) {
         output[1][2].push(payment + discretionary);
         output[1][3].push(curYearEarlyWithdrawals);
         output[1][4].push(discretionary / (discretionary + non_discretionary));
-        output[2][0].push(structuredClone(IncomeEvents.filter(event => event.startYear <= year)));
-        output[2][1].push(structuredClone(ExpenseEvents.filter(event => event.startYear <= year)));
+        output[2][0].push(structuredClone(IncomeEvents.filter(event => event.startYear.value1 <= year && event.duration.value1 > 0)));
+        output[2][1].push(structuredClone(ExpenseEvents.filter(event => event.startYear.value1 <= year && event.duration.value1 > 0)));
         output[2][2].push(structuredClone(Investments));
 
         const copy = structuredClone(scenario);
@@ -509,7 +518,7 @@ function sampleNormal(mean, sd) {
     return z * sd + mean;
 }
 
-function getDistributionResult(distribution) {
+function getDistributionResult(distribution, event = null) {
     if (distribution.type === "fixed") {
         return distribution.value1;
     } else if (distribution.type === "normal") {
@@ -519,9 +528,9 @@ function getDistributionResult(distribution) {
         const max = distribution.value2;
         return Math.floor(Math.random() * (max - min) + min);
     } else if (distribution.type === "starts-with") {
-        return distribution.event.startYear;
+        return event.startYear.value1;
     } else if (distribution.type === "starts-after") {
-        return distribution.event.startYear + distribution.event.duration + 1;
+        return event.startYear.value1 + event.duration.value1 + 1;
     } else {
         return 0;
     }

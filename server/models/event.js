@@ -4,9 +4,8 @@ var mongoose = require('mongoose');
 var EventSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, default: null },
-    startYear: { type: Number, required: true },
-    duration: { type: Number, required: true },
-    random: [{ type: Number }]
+    startYear: { type: mongoose.Schema.Types.ObjectId, ref: 'Distribution', required: true},
+    duration: { type: mongoose.Schema.Types.ObjectId, ref: 'Distribution', required: true},
 }, {
     discriminatorKey: 'type'
 });

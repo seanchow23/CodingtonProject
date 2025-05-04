@@ -158,31 +158,6 @@ export default function CreateScenario({ scenarios }) {
     const investmentResponse = await investmentApi.createInvestment(newInvestment);
     const createdInvestment = investmentResponse.data;
   
-    const newAllocation = {
-      investment: createdInvestment._id,
-      percentage: 0,
-      finalPercentage: 0,
-      glide: 0
-    };
-
-    const allocationResponse = await allocationApi.createAllocation(newAllocation);
-    const createdAllocation = allocationResponse.data;
-  
-    const newInvestEvent = {
-      type: "invest",
-      name: "Default Invest Event",
-      description: "",
-      startYear: new Date().getFullYear(),
-      duration: 1,
-      random: [0, 0, 0, 0, 0, 0],
-      allocations: [createdAllocation._id],
-      max: 0,
-      glide: false
-    };
-
-    const eventResponse = await eventsApi.createEvent(newInvestEvent);
-    const createdEvent = eventResponse.data;
-
     const lifeDistributionResponse = await distributionApi.createDistribution(formData.lifeExpectancyUser);
     const createdLifeDistribution = lifeDistributionResponse.data;
     const spouseDistributionResponse = await distributionApi.createDistribution(formData.lifeExpectancySpouse);
@@ -196,12 +171,12 @@ export default function CreateScenario({ scenarios }) {
       married: formData.married === true || formData.married === "true",
       birthYearUser: formData.birthYearUser,
       birthYearSpouse: formData.birthYearSpouse,
-      lifeExpectancyUser: createdLifeDistribution,
-      lifeExpectancySpouse: createdSpouseDistribution,
+      lifeExpectancyUser: createdLifeDistribution._id,
+      lifeExpectancySpouse: createdSpouseDistribution._id,
       investments: [createdInvestment._id],
       investmentTypes: [createdInvestmentType._id],
-      events: [createdEvent._id],
-      inflation: createdInflationDistribution,
+      events: [],
+      inflation: createdInflationDistribution._id,
       annualLimit: Number(formData.annualLimit),
       spendingStrategy: [],
       withdrawalStrategy: [createdInvestment._id],

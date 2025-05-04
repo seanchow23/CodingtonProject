@@ -151,8 +151,6 @@ export default function UnifiedStackedFinanceChart({ data, median }) {
         const events = categoryData[yearIndex] || [];
 
         for (const event of events) {
-          if (typeof event.duration === 'number' && event.duration === 0) continue;
-
           const name = valueExtractor.name(event);
           const value = valueExtractor.value(event);
 
@@ -175,7 +173,6 @@ export default function UnifiedStackedFinanceChart({ data, median }) {
         for (const simulation of simulations) {
           const events = simulation[categoryIndex]?.[i] || [];
           for (const event of events) {
-            if (typeof event.duration === 'number' && event.duration === 0) continue;
             const eventName = valueExtractor.name(event);
             if (eventName === name) {
               valuesAtYear.push(valueExtractor.value(event));
