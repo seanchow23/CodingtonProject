@@ -1,4 +1,4 @@
-export default async function simulation({ scenario, seed = null }) {
+async function simulation({ scenario, seed = null }) {
     // 1) Fetch all four endpoints in parallel
     const [dedRes, rmdRes, gainsRes, fedRes] = await Promise.all([
         fetch('http://localhost:5000/api/tax/deductions'),
@@ -87,13 +87,6 @@ export default async function simulation({ scenario, seed = null }) {
     }
     // The last bracket stays at Infinity:
     capital_gains[capital_gains.length - 1].max = Infinity;
-
-    // now capital_gains ===
-    // [
-    //   { percentage: 0,  min:      0, max:   47025   },
-    //   { percentage: 15, min:  47026, max:  518900  },
-    //   { percentage: 20, min: 518901, max: Infinity }
-    // ]
   
     console.log('normalized capital_gains new:', capital_gains);
     console.log('scrape to work with fed',fedData);
@@ -136,59 +129,6 @@ export default async function simulation({ scenario, seed = null }) {
     const output = [[], [[],[],[],[],[]], [[], [], []]];
 
     var year = 2025;
-
-    // // Get Taxes (need to connect to the scraper)
-    // var federal_brackets = [
-    //     { percentage: 10, min: 0, max: 11600 },
-    //     { percentage: 12, min: 11601, max: 47150 },
-    //     { percentage: 22, min: 47151, max: 100525 },
-    //     { percentage: 24, min: 100526, max: 191950 },
-    //     { percentage: 32, min: 191951, max: 243725 },
-    //     { percentage: 35, min: 243726, max: 609350 },
-    //     { percentage: 37, min: 609351, max: Infinity }
-    // ];
-
-    // console.log('here is federal_brackets for simulation', federal_brackets);
-    // var federal_deductions = 13850;
-    // console.log('here is federal_deductionss for simulation single', federal_deductions);
-
-    // var capital_gains = [
-    //     { percentage: 0, min: 0, max: 47025 },
-    //     { percentage: 15, min: 47026, max: 518900 },
-    //     { percentage: 20, min: 518901, max: Infinity }
-    // ]
-    // console.log('here is capital for simulation single', capital_gains);
-
-    // if (scenario.married === true) {
-    //     federal_brackets = [
-    //         { percentage: 10, min: 0, max: 23200 },
-    //         { percentage: 12, min: 23201, max: 94300 },
-    //         { percentage: 22, min: 94301, max: 201050 },
-    //         { percentage: 24, min: 201051, max: 383900 },
-    //         { percentage: 32, min: 383901, max: 487450 },
-    //         { percentage: 35, min: 487451, max: 731200 },
-    //         { percentage: 37, min: 731201, max: Infinity }
-    //     ];
-    //     console.log('here is federal_brackets for simulation when married', federal_brackets);
-
-    //     federal_deductions = 27700;
-    //     console.log('here is federal_deductions for simulation when married', federal_deductions );
-
-    //     capital_gains = [
-    //         { percentage: 0, min: 0, max: 94050 },
-    //         { percentage: 15, min: 94051, max: 583750 },
-    //         { percentage: 20, min: 583751, max: Infinity }
-    //     ]
-    //     console.log('here is capital_gains for simulation when married', capital_gains );
-
-    // }
-
-    // const rmd_distributions = [
-    //     27.4, 26.5, 25.5, 24.6, 23.7, 22.9, 22.0, 21.1, 20.2, 19.4, 18.5, 17.7, 16.8, 16.0, 
-    //     15.2, 14.4, 13.7, 12.9, 12.2, 11.5, 10.8, 10.1, 9.5, 8.9, 8.4, 7.8, 7.3, 6.8, 6.4, 6.0, 5.6, 
-    //     5.2, 4.9, 4.6, 4.3, 4.1, 3.9, 3.7, 3.5, 3.4, 3.3, 3.1, 3.0, 2.9, 2.8, 2.7, 2.5, 2.3, 2.0
-    // ];
-    // console.log('here is rmd dist', rmd_distributions);
 
     // Prev variables
     var prev_curYearIncome = 0;
@@ -646,8 +586,6 @@ export default async function simulation({ scenario, seed = null }) {
     return output;
 }
 
-  
-  
 function sampleNormal(mean, sd) {
     let u = 0, v = 0;
     while (u === 0) u = rng();
@@ -674,5 +612,4 @@ function getDistributionResult(distribution, event = null, rng = Math.random) {
     }
 }
 
-
-
+module.exports = simulation;
