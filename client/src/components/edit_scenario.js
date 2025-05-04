@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
-
+import * as scenarioApi from "../api/scenarioApi";
 export default function EditScenario({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
@@ -74,28 +74,47 @@ export default function EditScenario({ scenarios }) {
         }
     }
 
-    const submit = (e) => {
-        e.preventDefault();
-        const check = Object.keys(formData).find((key) => formData[key] < 0);
-        if (check) {
-            setError(`The ${check} field cannot have a negative value.`);
-            return;
-        }
-        const target = scenarios.find(s => s._id === scenario._id)
-        target.name = formData.name;
-        target.married = formData.married;
-        target.birthYearUser = formData.birthYearUser;
-        target.birthYearSpouse = formData.birthYearSpouse;
-        target.lifeExpectancyUser = formData.lifeExpectancyUser;
-        target.lifeExpectancySpouse = formData.lifeExpectancySpouse;
-        target.inflation = formData.inflation;
-        target.annualLimit = Number(formData.annualLimit);
-        target.rothOptimizer = formData.rothOptimizer,
-        target.financialGoal = Number(formData.financialGoal);
-        target.state = formData.state;
-        target.random = formData.random;
-        navigate(`/scenario/${target._id}`, { state: { scenario: target }});
+    const submit = async (e) => {
+      e.preventDefault();
+    
+      const check = Object.keys(formData).find((key) => formData[key] < 0);
+      if (check) {
+        setError(`The ${check} field cannot have a negative value.`);
+        return;
+      }
+    
+      const updatedScenario = {
+        name: formData.name,
+        married: formData.married,
+        birthYearUser: formData.birthYearUser,
+        birthYearSpouse: formData.birthYearSpouse,
+        lifeExpectancyUser: formData.lifeExpectancyUser,
+        lifeExpectancySpouse: formData.lifeExpectancySpouse,
+        inflation: formData.inflation,
+        annualLimit: Number(formData.annualLimit),
+        rothOptimizer: formData.rothOptimizer,
+        financialGoal: Number(formData.financialGoal),
+        state: formData.state,
+        random: formData.random
+      };
+    
+      try {
+        await scenarioApi.updateScenario(scenario._id, updatedScenario);
+      
+        // Fetch full updated scenario (populated)
+        const updatedFullScenario = await scenarioApi.getScenario(scenario._id);
+      
+        // Navigate with updated data
+        navigate(`/scenario/${scenario._id}`, {
+          state: { scenario: updatedFullScenario }
+        });
+      } catch (err) {
+        console.error("Failed to update scenario:", err);
+        setError("Scenario update failed.");
+      }
+      
     };
+    
 
     const states = [
         "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
