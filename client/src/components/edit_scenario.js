@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 import * as scenarioApi from "../api/scenarioApi";
+import { updateDistribution } from "../api/distributionApi";
 export default function EditScenario({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
@@ -88,9 +89,9 @@ export default function EditScenario({ scenarios }) {
         married: formData.married,
         birthYearUser: formData.birthYearUser,
         birthYearSpouse: formData.birthYearSpouse,
-        lifeExpectancyUser: formData.lifeExpectancyUser,
-        lifeExpectancySpouse: formData.lifeExpectancySpouse,
-        inflation: formData.inflation,
+        lifeExpectancyUser: formData.lifeExpectancyUser._id,
+        lifeExpectancySpouse: formData.lifeExpectancySpouse._id,
+        inflation: formData.inflation._id,
         annualLimit: Number(formData.annualLimit),
         rothOptimizer: formData.rothOptimizer,
         financialGoal: Number(formData.financialGoal),
@@ -99,6 +100,11 @@ export default function EditScenario({ scenarios }) {
       };
     
       try {
+        // Update Distribution in DB
+        await updateDistribution(formData.lifeExpectancyUser._id, formData.lifeExpectancyUser);
+        await updateDistribution(formData.lifeExpectancySpouse._id, formData.lifeExpectancySpouse);
+        await updateDistribution(formData.inflation._id, formData.inflation);
+
         await scenarioApi.updateScenario(scenario._id, updatedScenario);
       
         // Fetch full updated scenario (populated)

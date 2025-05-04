@@ -61,8 +61,8 @@ export default function EditInvestmentTypes({ scenarios }) {
     
         try {
           // Update Distribution in DB
-          await updateDistribution(investmentType.expectedAnnualReturn._id, investmentType.expectedAnnualReturn);
-          await updateDistribution(investmentType.expectedAnnualIncome._id, investmentType.expectedAnnualIncome);
+          await updateDistribution(formData.expectedAnnualReturn._id, formData.expectedAnnualReturn);
+          await updateDistribution(formData.expectedAnnualIncome._id, formData.expectedAnnualIncome);
 
           //  Update InvestmentType in DB
           await updateInvestmentType(investmentType._id, {

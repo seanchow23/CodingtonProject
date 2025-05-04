@@ -2,6 +2,9 @@ import React, { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "../input_field";
 import {AddIncomeEvent, AddExpenseEvent, AddInvestEvent, AddRebalanceEvent} from "./add_event";
+import { updateAllocation } from "../../api/allocationApi";
+import { updateDistribution } from "../../api/distributionApi";
+import { getScenario } from "../../api/scenarioApi";
 
 export default function EditEvent({ scenarios }) {
     const location = useLocation()
@@ -21,7 +24,6 @@ export default function EditEvent({ scenarios }) {
         inflation: event.inflation,
         ss: event.ss,
         discretionary: event.discretionary,
-        random: event.random,
         allocations: event.allocations,
         max: event.max,
         glide: event.glide
@@ -53,43 +55,98 @@ export default function EditEvent({ scenarios }) {
     const handleRandom = (e) => {
         const { name, value } = e.target;
         if (name === "random_year") {
-            setFormData({ ...formData, random: [Number(value), formData.random[1], formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, startYear: { ...formData.startYear, type: value } });
         } else if (name === "v1") {
-            setFormData({ ...formData, random: [formData.random[0], Number(value), formData.random[2], formData.random[3], formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, startYear: { ...formData.startYear, value1: Number(value) } });
         } else if (name === "v2") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], Number(value), formData.random[3], formData.random[4], formData.random[5]] });
-        } else if (name === "random_duration") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], Number(value), formData.random[4], formData.random[5]] });
+            setFormData({ ...formData, startYear: { ...formData.startYear, value2: Number(value) } });
         } else if (name === "v3") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], Number(value), formData.random[5]] });
+            setFormData({ ...formData, startYear: { ...formData.startYear, event: value } });
+        } else if (name === "random_duration") {
+            setFormData({ ...formData, duration: { ...formData.duration, type: value } });
         } else if (name === "v4") {
-            setFormData({ ...formData, random: [formData.random[0], formData.random[1], formData.random[2], formData.random[3], formData.random[4], Number(value)] });
+            setFormData({ ...formData, duration: { ...formData.duration, value1: Number(value) } });
+        } else if (name === "v5") {
+            setFormData({ ...formData, duration: { ...formData.duration, value2: Number(value) } });
+        } else if (name == "startYear") {
+            setFormData({ ...formData, startYear: { ...formData.startYear, value1: Number(value) } });
+        } else if (name == "duration") {
+            setFormData({ ...formData, duration: { ...formData.duration, value1: Number(value) } });
         }
     }
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
         const check = Object.keys(formData).find((key) => formData[key] < 0);
         if (check) {
             setError(`The ${check} field cannot have a negative value.`);
             return;
         }
-        const target_event = target.events.find(e => e._id === event._id);
-        target_event.name = formData.name;
-        target_event.description = formData.description;
-        target_event.startYear = formData.startYear;
-        target_event.duration = Number(formData.duration);
-        if (formData.type != "invest") {
-            target_event.amount = Number(formData.amount);
-            target_event.change = Number(formData.change);
-            target_event.inflation = Number(formData.inflation);
-            target_event.random = formData.random;
-            if (formData.type == "income") { target_event.ss = formData.ss; }
-            else { target_event.discretionary = formData.discretionary; }
+
+        await updateDistribution(formData.startYear._id, formData.startYear);
+        await updateDistribution(formData.duration._id, formData.duration);
+
+        // Construct event object based on type
+        let baseEvent = {
+            type: formData.type,
+            name: formData.name,
+            description: formData.description,
+            startYear: formData.startYear._id,
+            duration: formData.duration._id,
+        };
+
+        // Update allocation array
+        if (formData.type === "invest" || formData.type === "rebalance") {
+            const updatedAllocations = await Promise.all(
+                formData.allocations.map(async (allocation) => {
+                    const response = await updateAllocation(allocation._id, allocation);
+                    return response.data._id;
+                })
+            );
+            baseEvent = {
+                ...baseEvent,
+                glide: formData.glide,
+                allocations: updatedAllocations,
+            };
+        }
+        
+        let eventData;
+        
+        if (formData.type === "income") {
+            eventData = {
+                ...baseEvent,
+                amount: Number(formData.amount),
+                change: Number(formData.change),
+                inflation: formData.inflation,
+                ss: formData.ss,
+            };
+        } else if (formData.type === "expense") {
+            eventData = {
+                ...baseEvent,
+                amount: Number(formData.amount),
+                change: Number(formData.change),
+                inflation: formData.inflation,
+                discretionary: formData.discretionary,
+            };
+        } else if (formData.type === "invest") {
+            eventData = {
+                ...baseEvent,
+                max: Number(formData.max),
+            };
+        } else if (formData.type === "rebalance") {
+            eventData = {...baseEvent,};
         } else {
-            target_event.allocations = formData.allocations;
-            target_event.max = Number(formData.max);
-            target_event.glide = formData.glide;
+            setError("Invalid event type.");
+            return;
+        }
+        
+        try {
+            await eventApi.updateEvent(event._id, eventData);
+            const freshScenario = await getScenario(target._id);
+            navigate(`/scenario/${target._id}`, { state: { scenario: freshScenario } });
+        } catch (err) {
+            console.error("Failed to create event:", err);
+            setError("Failed to create event.");
         }
         navigate(`/scenario/${target._id}`, { state: { scenario: target }});
     };
@@ -97,47 +154,62 @@ export default function EditEvent({ scenarios }) {
     return (
         <div id = "add_event">
             <form onSubmit={submit}>
+                <label htmlFor="type">Select Event Type*</label>
+                <input type="radio" name="type" value="income" onChange={handleRadioChange} required/> Income
+                <input type="radio" name="type" value="expense" onChange={handleRadioChange} /> Expense
+                <input type="radio" name="type" value="invest" onChange={handleRadioChange} /> Invest
+                <input type="radio" name="type" value="rebalance" onChange={handleRadioChange} /> Rebalance
+
                 <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Event Name</InputField>
 
                 <label htmlFor="description">Description</label>
                 <textarea type="text" id="description" name="description" value={formData.description} onChange={handleInputChange}></textarea>
 
-                {formData.random[0] === 0 && <InputField id="startYear" type="number" value={formData.startYear} onChange={handleInputChange}>Start Year</InputField>}
+                {formData.startYear.type === "fixed" && <InputField id="startYear" type="number" value={formData.startYear.value1} onChange={handleRandom}>Start Year</InputField>}
                 <div style={{ display: 'flex', gap: '10px'}}>
                     <label htmlFor="random_year" style={{ minWidth: '180px', marginTop: '10px' }}>Start Year Sampling</label>
-                    <select name="random_year" value={formData.random[0]} onChange={handleRandom}>
-                        <option value={0}>Fixed</option>
-                        <option value={1}>Normal Distribution</option>
-                        <option value={2}>Uniform Distribution</option>
+                    <select name="random_year" value={formData.startYear.type} onChange={handleRandom}>
+                        <option value={"fixed"}>Fixed</option>
+                        <option value={"normal"}>Normal Distribution</option>
+                        <option value={"uniform"}>Uniform Distribution</option>
+                        <option value={"starts-with"}>Start With</option>
+                        <option value={"starts-after"}>Start After</option>
                     </select>
                 </div>
-                {formData.random[0] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <label htmlFor="v1" style={{ marginBottom: '20px' }}>{formData.random[0] === 1 ? "Mean" : "Min"}</label>
-                    <input type="number" name="v1" value={formData.random[1]} onChange={handleRandom} required />
-                    <label htmlFor="v2" style={{ marginBottom: '20px' }}>{formData.random[0] === 1 ? "Standard Deviation" : "Max"}</label>
-                    <input type="number" name="v2" value={formData.random[2]} onChange={handleRandom} required />
+                {(formData.startYear.type === "normal" || formData.startYear.type === "uniform") && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="v1" style={{ marginBottom: '20px' }}>{formData.startYear.type === "normal" ? "Mean" : "Min"}</label>
+                    <input type="number" name="v1" value={formData.startYear.value1} onChange={handleRandom} required />
+                    <label htmlFor="v2" style={{ marginBottom: '20px' }}>{formData.startYear.type === "normal" ? "Standard Deviation" : "Max"}</label>
+                    <input type="number" name="v2" value={formData.startYear.value2} onChange={handleRandom} required />
+                </div>}
+                {(formData.startYear.type === "starts-with" || formData.startYear.type === "starts-after") && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="v3">Choose Event</label>
+                    <select name="v3" value={formData.startYear.event || ""} onChange={handleRandom}>
+                        <option value="">--Select Event--</option>
+                        {scenario.events.map((event, index) => (<option key={index} value={event._id}>{event.name}</option>))}
+                    </select>
                 </div>}
 
-                {formData.random[3] === 0 && <InputField id="duration" type="number" value={formData.duration} onChange={handleInputChange}>Duration (Years)</InputField>}
+                {formData.duration.type === "fixed" && <InputField id="duration" type="number" value={formData.duration.value1} onChange={handleRandom}>Duration (Years)</InputField>}
                 <div style={{ display: 'flex', gap: '10px'}}>
                     <label htmlFor="random_duration" style={{ minWidth: '180px', marginTop: '10px' }}>Duration Sampling</label>
-                    <select name="random_duration" value={formData.random[3]} onChange={handleRandom}>
-                        <option value={0}>Fixed</option>
-                        <option value={1}>Normal Distribution</option>
-                        <option value={2}>Uniform Distribution</option>
+                    <select name="random_duration" value={formData.duration.type} onChange={handleRandom}>
+                        <option value={"fixed"}>Fixed</option>
+                        <option value={"normal"}>Normal Distribution</option>
+                        <option value={"uniform"}>Uniform Distribution</option>
                     </select>
                 </div>
-                {formData.random[3] !== 0 && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <label htmlFor="v3" style={{ marginBottom: '20px' }}>{formData.random[3] === 1 ? "Mean" : "Min"}</label>
-                    <input type="number" name="v3" value={formData.random[4]} onChange={handleRandom} required />
-                    <label htmlFor="v4" style={{ marginBottom: '20px' }}>{formData.random[3] === 1 ? "Standard Deviation" : "Max"}</label>
-                    <input type="number" name="v4" value={formData.random[5]} onChange={handleRandom} required />
+                {formData.duration.type !== "fixed" && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="v4" style={{ marginBottom: '20px' }}>{formData.duration.type === "normal" ? "Mean" : "Min"}</label>
+                    <input type="number" name="v4" value={formData.duration.value1} onChange={handleRandom} required />
+                    <label htmlFor="v5" style={{ marginBottom: '20px' }}>{formData.duration.type === "normal" ? "Standard Deviation" : "Max"}</label>
+                    <input type="number" name="v5" value={formData.duration.value2} onChange={handleRandom} required />
                 </div>}
 
                 {formData.type === "income" && <AddIncomeEvent formData={formData} onChange={handleInputChange} />}
                 {formData.type === "expense" && <AddExpenseEvent formData={formData} onChange={handleInputChange} />}
-                {formData.type === "invest" && <AddInvestEvent formData={formData} onChange={handleAllocationChange} scenario={target}/>}
-                {formData.type === "rebalance" && <AddRebalanceEvent formData={formData} onChange={handleAllocationChange} scenario={target}/>}
+                {formData.type === "invest" && <AddInvestEvent formData={formData} onChange={handleAllocationChange} scenario={scenario}/>}
+                {formData.type === "rebalance" && <AddRebalanceEvent formData={formData} onChange={handleAllocationChange} scenario={scenario}/>}
 
                 <button type="submit">Submit</button>
                 {error && <div className="error">{error}</div>}

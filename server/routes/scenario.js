@@ -142,9 +142,18 @@ router.get('/:id', async (req, res) => {
 // ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
-    const updatedScenario = await Scenario.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedScenario) return res.status(404).json({ error: 'Scenario not found' });
-    res.json(updatedScenario);
+    const updatedScenario = await Scenario.findByIdAndUpdate(
+      req.params.id, 
+      { $set: req.body }, 
+      { new: true } // This returns the updated document
+    );
+
+    if (!updatedScenario) {
+      return res.status(404).json({ error: 'Scenario not found' });
+    }
+
+    res.json({ success: true, updatedScenario });
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

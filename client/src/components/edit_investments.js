@@ -33,14 +33,13 @@ export default function EditInvestments({ scenarios }) {
 
         try {
             // 1. Update the investment in the backend
-            const updatedInvestment = await investmentApi.updateInvestment(investment._id, {
-                ...investment,
+            await investmentApi.updateInvestment(investment._id, {
                 value: Number(formData.value),
                 baseValue: Number(formData.value),
                 taxStatus: formData.taxStatus,
             });
 
-            // 2. Update the parent scenario with the updated investment
+            // 2. Find the parent scenario with the updated investment
             const target = scenarios.find((s) =>
                 s.investments.find((i) => i._id === investment._id)
             );
@@ -49,15 +48,6 @@ export default function EditInvestments({ scenarios }) {
                 setError("Scenario not found for this investment.");
                 return;
             }
-
-            const updatedScenario = {
-                ...target,
-                investments: target.investments.map((i) =>
-                    i._id === updatedInvestment._id ? updatedInvestment : i
-                ),
-            };
-
-            await updateScenario(target._id, updatedScenario);
 
             // 3. Refetch the scenario from backend to ensure fresh state
             const freshScenario = await getScenario(target._id);
