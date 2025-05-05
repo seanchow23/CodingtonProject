@@ -22,7 +22,7 @@ function getLogFilenames(user) {
 
   const base = `${user || 'anonymous'}_${filenameTimestamp}`;
   const dir = path.join(__dirname, 'logs');
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   return {
     csv: path.join(dir, `${base}.csv`),
@@ -34,15 +34,19 @@ class CsvLogger {
   constructor(filename) {
     this.filename = filename;
     this.rows = [];
+
+    // Ensure directory exists
+    const dir = path.dirname(filename);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   }
 
   logYear(year, values) {
     this.rows.push([year, ...values]);
   }
 
-  flush(values) {
+  flush(headers) {
     if (!fs.existsSync(this.filename)) {
-      const headerLine = ['Year', ...values].join(',') + '\n';
+      const headerLine = ['Year', ...headers].join(',') + '\n';
       const dataLines = this.rows.map(row => row.join(',')).join('\n') + '\n';
       fs.writeFileSync(this.filename, headerLine + dataLines);
     }
@@ -52,13 +56,20 @@ class CsvLogger {
 class EventLogger {
   constructor(filename) {
     this.filename = filename;
-    if (!fs.existsSync(this.filename)) { fs.writeFileSync(this.filename, `Simulation Event Log\n\n`); }
+
+    // Ensure directory exists
+    const dir = path.dirname(filename);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    // Initialize file with header if it doesn't exist
+    if (!fs.existsSync(this.filename)) {
+      fs.writeFileSync(this.filename, `Simulation Event Log\n\n`);
+    }
   }
 
   logEvent(year, type, amount, name) {
     const line = `Year: ${year}, Type: ${type}, Amount: ${amount}, Name: ${name}\n`;
     fs.appendFileSync(this.filename, line);
-    if (!fs.existsSync(this.filename)) { fs.appendFileSync(this.filename, line); }
   }
 }
 

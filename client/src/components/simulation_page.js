@@ -31,6 +31,8 @@ export default function SimulationPage() {
     median: false
   });
   
+  const [message, setMessage] = useState("");
+  
   function simulateProbabilityEdited(scenarios) {
     return scenarios.map((scenario) => {
       const runs = [];
@@ -76,7 +78,18 @@ export default function SimulationPage() {
     }
   }, [oneDResults]);
 
-  const handleRunSimulations = async () => {
+  const handleRunSimulations = async (scenario, handle) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/tax/state');
+      const data = await res.json();
+      const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+      if (!data[stateKey]) {
+        handle(`Warning: No tax data found for ${scenario.state}, simulation will ignore state tax!`)
+      }
+    } catch (err) {
+      console.error('Error fetching state tax data:', err);
+    }
+
     const newLine = [];
     const newShade1 = [];
     const newShade2 = [];
@@ -131,8 +144,19 @@ export default function SimulationPage() {
           onChange={handleInputChange}
           style={{ width: '100px', marginRight: '10px' }}
         />
-        <button onClick={handleRunSimulations}>Run Simulations</button>
+        <button onClick={() => handleRunSimulations(originalScenario, setMessage)}>Run Simulations</button>
       </div>)}
+      {message && <p style={{ 
+          backgroundColor: '#fff3cd', 
+          color: '#856404', 
+          padding: '10px 15px', 
+          border: '1px solid #ffeeba', 
+          borderRadius: '4px',
+          fontWeight: 'bold',
+          marginTop: '10px'
+      }}>
+          {message}
+      </p>}
       {hasRun && (<div>
             <h3>Ran {formData.num} simulations</h3>
             <h4>Probability of Success</h4>
