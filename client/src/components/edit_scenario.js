@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
+import * as scenarioApi from "../api/scenarioApi";
+import * as userApi from "../api/userApi";
+import { updateDistribution } from "../api/distributionApi";
 
 export default function EditScenario({ scenarios }) {
     const location = useLocation()
@@ -74,28 +77,62 @@ export default function EditScenario({ scenarios }) {
         }
     }
 
-    const submit = (e) => {
-        e.preventDefault();
-        const check = Object.keys(formData).find((key) => formData[key] < 0);
-        if (check) {
-            setError(`The ${check} field cannot have a negative value.`);
-            return;
+    const submit = async (e) => {
+      e.preventDefault();
+    
+      const check = Object.keys(formData).find((key) => formData[key] < 0);
+      if (check) {
+        setError(`The ${check} field cannot have a negative value.`);
+        return;
+      }
+    
+      const updatedScenario = {
+        name: formData.name,
+        married: formData.married,
+        birthYearUser: formData.birthYearUser,
+        birthYearSpouse: formData.birthYearSpouse,
+        lifeExpectancyUser: formData.lifeExpectancyUser._id,
+        lifeExpectancySpouse: formData.lifeExpectancySpouse._id,
+        inflation: formData.inflation._id,
+        annualLimit: Number(formData.annualLimit),
+        rothOptimizer: formData.rothOptimizer,
+        financialGoal: Number(formData.financialGoal),
+        state: formData.state,
+        random: formData.random
+      };
+    
+      try {
+        // Update Distribution in DB
+        await updateDistribution(formData.lifeExpectancyUser._id, formData.lifeExpectancyUser);
+        await updateDistribution(formData.lifeExpectancySpouse._id, formData.lifeExpectancySpouse);
+        await updateDistribution(formData.inflation._id, formData.inflation);
+
+        await scenarioApi.updateScenario(scenario._id, updatedScenario);
+      
+        // Fetch full updated scenario (populated)
+        const updatedFullScenario = await scenarioApi.getScenario(scenario._id);
+
+        // If user is not logged in, update it in localStorage
+        const user = await userApi.getCurrentUser().catch(() => null);
+        if (!user) {
+          const localScenarios = JSON.parse(localStorage.getItem("localScenarios")) || [];
+          const updatedList = localScenarios.map(s =>
+            s._id === updatedFullScenario._id ? updatedFullScenario : s
+          );
+          localStorage.setItem("localScenarios", JSON.stringify(updatedList));
         }
-        const target = scenarios.find(s => s._id === scenario._id)
-        target.name = formData.name;
-        target.married = formData.married;
-        target.birthYearUser = formData.birthYearUser;
-        target.birthYearSpouse = formData.birthYearSpouse;
-        target.lifeExpectancyUser = formData.lifeExpectancyUser;
-        target.lifeExpectancySpouse = formData.lifeExpectancySpouse;
-        target.inflation = formData.inflation;
-        target.annualLimit = Number(formData.annualLimit);
-        target.rothOptimizer = formData.rothOptimizer,
-        target.financialGoal = Number(formData.financialGoal);
-        target.state = formData.state;
-        target.random = formData.random;
-        navigate(`/scenario/${target._id}`, { state: { scenario: target }});
+      
+        // Navigate with updated data
+        navigate(`/scenario/${scenario._id}`, {
+          state: { scenario: updatedFullScenario }
+        });
+      } catch (err) {
+        console.error("Failed to update scenario:", err);
+        setError("Scenario update failed.");
+      }
+      
     };
+    
 
     const states = [
         "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",

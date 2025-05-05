@@ -37,7 +37,7 @@ router.get('/unpopulated/:id', async (req, res) => {
 // ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Event.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
     if (!updated) return res.status(404).json({ error: 'Event not found' });
     res.json(updated);
   } catch (err) {

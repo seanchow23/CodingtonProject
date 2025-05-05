@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api/investment-types',
+  baseURL: `${process.env.REACT_APP_API_URL}/api/investment-types`,
   withCredentials: true,
 });
 

@@ -1,0 +1,30 @@
+{
+  "new_york": {
+    "filing_statuses": {
+      "single": [
+        {
+          "min": 0,
+          "max": 8500,
+          "rate": 0.04
+        },
+        {
+          "min": 8501,
+          "max": 11700,
+          "rate": 0.045
+        }
+      ],
+      "married": [
+        {
+          "min": 0,
+          "max": 17150,
+          "rate": 0.04
+        },
+        {
+          "min": 17151,
+          "max": 23600,
+          "rate": 0.045
+        }
+      ]
+    }
+  }
+}

@@ -9,6 +9,8 @@ import InputField from "./input_field";
 import { useNavigate} from 'react-router-dom';
 import MultiLineProbabilityChart from './multi_line_probability';
 import MultiLineMedianInvestmentChart from './multi_line_median';
+import { runSimulation } from '../api/simulationApi';
+
 export default function SimulationPage() { 
   const location = useLocation();
   const navigate = useNavigate();
@@ -73,17 +75,28 @@ export default function SimulationPage() {
     }
   }, [oneDResults]);
 
-  const handleRunSimulations = () => {
-      const newLine = [] 
-      const newShade1 = []
-      const newShade2 = []
-      const newShade3 = []
-      const newShade4 = []
-      const newShade5 = []
+    const handleRunSimulations = async () => {
+      const newLine = [];
+      const newShade1 = [];
+      const newShade2 = [];
+      const newShade3 = [];
+      const newShade4 = [];
+      const newShade5 = [];
       const newBar = [];
-
-      for (let i = 0; i < formData.num; i++) {
-          simResult = simulation({ scenario: structuredClone(baseScenario) });
+    
+      try {
+        const tasks = [];  // Array to store the promises for parallel execution
+    
+        for (let i = 0; i < formData.num; i++) {
+          // Send the simulations concurrently (in parallel)
+          tasks.push(runSimulation(structuredClone(scenario)));
+        }
+    
+        // Wait for all simulations to complete
+        const results = await Promise.all(tasks);
+    
+        // Process the results after all simulations are done
+        results.forEach((simResult) => {
           newLine.push(simResult[0]);
           newShade1.push(simResult[1][0]);
           newShade2.push(simResult[1][1]);
@@ -91,7 +104,7 @@ export default function SimulationPage() {
           newShade4.push(simResult[1][3]);
           newShade5.push(simResult[1][4]);
           newBar.push(simResult[2]);
-      }
+      });
       setLine(newLine);
       setShade1(newShade1);
       setShade2(newShade2);
@@ -100,7 +113,9 @@ export default function SimulationPage() {
       setShade5(newShade5);
       setBar(newBar);
       setHasRun(true);
-      //setBaseScenario(structuredClone(scenario))
+      } catch (error) {
+        console.error('Error running simulations in parallel:', error);
+      }
     };
     
 return (

@@ -1,28 +1,64 @@
-export default async function simulation({ scenario, seed = null }) {
+async function simulation({ scenario, seed = null, csvLogger = null, eventLogger = null }) {
+  
+    // First check if state tax data exists
+    let stateDataAvailable = false;
+    let allStates = {};
+  
     // 1) Fetch all four endpoints in parallel
-    const [dedRes, rmdRes, gainsRes, fedRes] = await Promise.all([
+    const [dedRes, rmdRes, gainsRes, fedRes, ] = await Promise.all([
         fetch('http://localhost:5000/api/tax/deductions'),
         fetch('http://localhost:5000/api/tax/rmd-table'),
         fetch('http://localhost:5000/api/tax/capital-gains'),
-        fetch('http://localhost:5000/api/tax/federal')
+        fetch('http://localhost:5000/api/tax/federal'),
     ]);
-  
+
     // 2) Parse JSON
-    const [dedData, rmdTable, gainsData, fedData] = await Promise.all([
+    const [dedData, rmdTable, gainsData, fedData,] = await Promise.all([
         dedRes.json(),
         rmdRes.json(),
         gainsRes.json(),
         fedRes.json()
     ]);
+
+    try {
+        const response = await fetch('http://localhost:5000/api/tax/state');
+        const stateTaxData = await response.json();
+    
+        const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+        const stateData = stateTaxData[stateKey];
+    
+        if (stateData && stateData.filing_statuses) {
+          const filingStatus = scenario.married ? 'married' : 'single';
+          const brackets = stateData.filing_statuses[filingStatus];
+    
+          const stateTax = brackets.map(({ min, max, rate }) => ({
+            min,
+            max,
+            percentage: rate * 100
+          }));
+    
+          console.log(`State tax brackets for ${scenario.state}:`, stateTax);
+        } else {
+          console.warn(`No tax brackets found for state: ${scenario.state}`);
+        }
+      } catch (error) {
+        console.error('Error fetching state tax data:', error);
+      }
     
     // --- standard deduction ---
-    const deductionEntry = dedData.find(e =>
-      scenario.married
-        ? e.filingStatus.includes('Married filing jointly')
-        : e.filingStatus.includes('Single')
-    );
-    var federal_deductions = deductionEntry?.standardDeduction ?? 0;
+    // const deductionEntry = dedData.find(e =>
+    //   scenario.married
+    //     ? e.filingStatus.includes('Married filing jointly')
+    //     : e.filingStatus.includes('Single')
+    // );
+
+    var federal_deductions = dedData.find(e => e.filingStatus.includes('Single'))?.standardDeduction ?? 0;
+    var federal_deductions_married = dedData.find(e => e.filingStatus.includes('Married filing jointly'))?.standardDeduction ?? 0;
+
+    // var federal_deductions = deductionEntry?.standardDeduction ?? 0;
     console.log('here is federal_deductionss for simulation single', federal_deductions);
+    console.log('here is federal_deductionss for simulation married', federal_deductions_married);
+
 
     // --- RMD distributions ---
     const rmd_distributions = rmdTable
@@ -33,93 +69,100 @@ export default async function simulation({ scenario, seed = null }) {
 
     // const gainsRes = await fetch('…/capital-gains');
     // const gainsData = await gainsRes.json();
+
+
+
+
     console.log('capital gain scrape to ',gainsData );
-    let capital_gains;
-    {
-        const statusKey = scenario.married ? 'married' : 'single';
+   
+var capital_gains = gainsData["single"]
+  .map(br => ({ ...br }))
+  .sort((a, b) => a.percentage - b.percentage);
+for (let i = 0; i < capital_gains.length - 1; i++) {
+  capital_gains[i].max = capital_gains[i + 1].min - 1;
+}
+capital_gains[capital_gains.length - 1].max = Infinity;
 
-        // 1) pick & sort only the rows we care about
-        const rows = gainsData
-            .filter(r => r.filingStatus === statusKey)
-            .sort((a, b) => a.incomeThreshold - b.incomeThreshold);
+const capital_gains_married = gainsData["married"]
+  .map(br => ({ ...br }))
+  .sort((a, b) => a.percentage - b.percentage);
+for (let i = 0; i < capital_gains_married.length - 1; i++) {
+  capital_gains_married[i].max = capital_gains_married[i + 1].min - 1;
+}
+capital_gains_married[capital_gains_married.length - 1].max = Infinity;
 
-        // 2) for each distinct rate, remember its highest threshold
-        const maxByRate = rows.reduce((map, { rate, incomeThreshold }) => {
-            map[rate] = Math.max(map[rate] ?? 0, incomeThreshold);
-            return map;
-        }, {});
 
-        // 3) get all rates sorted ascending
-        const rates = Object.keys(maxByRate)
-            .map(r => parseFloat(r))
-            .sort((a, b) => a - b);
 
-        // 4) build a bracket for each rate
-        capital_gains = rates.map((rate, idx) => {
-            const pct = rate * 100;
-            const min = idx === 0 ? 0 : maxByRate[rates[idx - 1]] + 1;
-            const max = maxByRate[rate];
-            return { percentage: pct, min, max };
-        });
-
-        // 5) ensure a final 20% bracket
-        const topRate = rates[rates.length - 1];
-        if (topRate < 0.20) {
-            // append a 20% bracket past the last known threshold
-            const prevMax = maxByRate[topRate];
-            capital_gains.push({
-            percentage: 20,
-            min:        prevMax + 1,
-            max:        Infinity
-            });
-        } else {
-            // JSON already had a 20% bracket — extend its top to Infinity
-            capital_gains[capital_gains.length - 1].max = Infinity;
-        }
-    }
-
-    // 1) Sort by percentage (just in case):
-    capital_gains.sort((a,b) => a.percentage - b.percentage);
-
-    // 2) Recompute all but the last bracket max to be one less than the next bracket's min:
-    for (let i = 0; i < capital_gains.length - 1; i++) {
-        capital_gains[i].max = capital_gains[i + 1].min - 1;
-    }
-    // The last bracket stays at Infinity:
-    capital_gains[capital_gains.length - 1].max = Infinity;
-
-    // now capital_gains ===
-    // [
-    //   { percentage: 0,  min:      0, max:   47025   },
-    //   { percentage: 15, min:  47026, max:  518900  },
-    //   { percentage: 20, min: 518901, max: Infinity }
-    // ]
+// {
+//   // pick the right bracket‐set in one go
+//   const statusKey = scenario.married ? 'married' : 'single';
+//   capital_gains = gainsData[statusKey].map(br => ({ ...br }));
   
-    console.log('normalized capital_gains new:', capital_gains);
+//   // sort by percentage just in case
+//   capital_gains.sort((a, b) => a.percentage - b.percentage);
+
+//   // ensure every bracket except the last has max = next.min - 1
+//   for (let i = 0; i < capital_gains.length - 1; i++) {
+//     capital_gains[i].max = capital_gains[i + 1].min - 1;
+//   }
+//   // last bracket goes to Infinity
+//   capital_gains[capital_gains.length - 1].max = Infinity;
+// }
+
+console.log('single capital_gains :', capital_gains);
+console.log('married capital_gains :', capital_gains_married);
+
+
+
+
+
+
     console.log('scrape to work with fed',fedData);
-    {
-        // We know fedData has 14 entries: first 7 = single, next 7 = married
-        const BRACKET_COUNT = 7;
+    // {
+    //     // We know fedData has 14 entries: first 7 = single, next 7 = married
+    //     const BRACKET_COUNT = 7;
     
-        //slice out exactly the 7 for each filing status
-        const singleRaw  = fedData.slice(0, BRACKET_COUNT);
-        const marriedRaw = fedData.slice(BRACKET_COUNT, BRACKET_COUNT * 2);
+    //     //slice out exactly the 7 for each filing status
+    //     const singleRaw  = fedData.slice(0, BRACKET_COUNT);
+    //     const marriedRaw = fedData.slice(BRACKET_COUNT, BRACKET_COUNT * 2);
     
-        //  pick the right raw chunk
-        const rawBrackets = scenario.married ? marriedRaw : singleRaw;
+    //     //  pick the right raw chunk
+    //     const rawBrackets = scenario.married ? marriedRaw : singleRaw;
     
-        //  hard‑code the tax percentages in order
-        const rates = [10, 12, 22, 24, 32, 35, 37];
+    //     //  hard‑code the tax percentages in order
+    //     const rates = [10, 12, 22, 24, 32, 35, 37];
     
-        // 4) map into clean {percentage, min, max}
-        var federal_brackets = rawBrackets.map((entry, idx) => ({
-            percentage: rates[idx],
-            min: parseInt(entry.incomeRange, 10),
-            max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
-        }));
-    }
+    //     // 4) map into clean {percentage, min, max}
+    //     var federal_brackets = rawBrackets.map((entry, idx) => ({
+    //         percentage: rates[idx],
+    //         min: parseInt(entry.incomeRange, 10),
+    //         max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
+    //     }));
+    // }
+
+    const BRACKET_COUNT = 7;
+
+    const singleRaw = fedData.slice(0, BRACKET_COUNT);
+    const marriedRaw = fedData.slice(BRACKET_COUNT, BRACKET_COUNT * 2);
+    const rates = [10, 12, 22, 24, 32, 35, 37];
+    
+    var federal_brackets = singleRaw.map((entry, idx) => ({
+      percentage: rates[idx],
+      min: parseInt(entry.incomeRange, 10),
+      max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
+    }));
+    
+    var federal_brackets_married = marriedRaw.map((entry, idx) => ({
+      percentage: rates[idx],
+      min: parseInt(entry.incomeRange, 10),
+      max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
+    }));
+
+
   
-    console.log('new fed brack',federal_brackets);
+    console.log('new fed brack for single',federal_brackets);
+    console.log('new fed brack for married',federal_brackets_married);
+
   
     const rng = seed !== null ? mulberry32(seed) : Math.random;
 
@@ -136,59 +179,6 @@ export default async function simulation({ scenario, seed = null }) {
     const output = [[], [[],[],[],[],[]], [[], [], []]];
 
     var year = 2025;
-
-    // // Get Taxes (need to connect to the scraper)
-    // var federal_brackets = [
-    //     { percentage: 10, min: 0, max: 11600 },
-    //     { percentage: 12, min: 11601, max: 47150 },
-    //     { percentage: 22, min: 47151, max: 100525 },
-    //     { percentage: 24, min: 100526, max: 191950 },
-    //     { percentage: 32, min: 191951, max: 243725 },
-    //     { percentage: 35, min: 243726, max: 609350 },
-    //     { percentage: 37, min: 609351, max: Infinity }
-    // ];
-
-    // console.log('here is federal_brackets for simulation', federal_brackets);
-    // var federal_deductions = 13850;
-    // console.log('here is federal_deductionss for simulation single', federal_deductions);
-
-    // var capital_gains = [
-    //     { percentage: 0, min: 0, max: 47025 },
-    //     { percentage: 15, min: 47026, max: 518900 },
-    //     { percentage: 20, min: 518901, max: Infinity }
-    // ]
-    // console.log('here is capital for simulation single', capital_gains);
-
-    // if (scenario.married === true) {
-    //     federal_brackets = [
-    //         { percentage: 10, min: 0, max: 23200 },
-    //         { percentage: 12, min: 23201, max: 94300 },
-    //         { percentage: 22, min: 94301, max: 201050 },
-    //         { percentage: 24, min: 201051, max: 383900 },
-    //         { percentage: 32, min: 383901, max: 487450 },
-    //         { percentage: 35, min: 487451, max: 731200 },
-    //         { percentage: 37, min: 731201, max: Infinity }
-    //     ];
-    //     console.log('here is federal_brackets for simulation when married', federal_brackets);
-
-    //     federal_deductions = 27700;
-    //     console.log('here is federal_deductions for simulation when married', federal_deductions );
-
-    //     capital_gains = [
-    //         { percentage: 0, min: 0, max: 94050 },
-    //         { percentage: 15, min: 94051, max: 583750 },
-    //         { percentage: 20, min: 583751, max: Infinity }
-    //     ]
-    //     console.log('here is capital_gains for simulation when married', capital_gains );
-
-    // }
-
-    // const rmd_distributions = [
-    //     27.4, 26.5, 25.5, 24.6, 23.7, 22.9, 22.0, 21.1, 20.2, 19.4, 18.5, 17.7, 16.8, 16.0, 
-    //     15.2, 14.4, 13.7, 12.9, 12.2, 11.5, 10.8, 10.1, 9.5, 8.9, 8.4, 7.8, 7.3, 6.8, 6.4, 6.0, 5.6, 
-    //     5.2, 4.9, 4.6, 4.3, 4.1, 3.9, 3.7, 3.5, 3.4, 3.3, 3.1, 3.0, 2.9, 2.8, 2.7, 2.5, 2.3, 2.0
-    // ];
-    // console.log('here is rmd dist', rmd_distributions);
 
     // Prev variables
     var prev_curYearIncome = 0;
@@ -246,7 +236,9 @@ export default async function simulation({ scenario, seed = null }) {
         for (const allocation of allocations) {
             allocation.glide = (allocation.finalPercentage - allocation.percentage) / user_life_expectancy;
         }
- }
+    }
+
+    if (csvLogger) { csvLogger.logYear(year, Investments.map(inv => inv.value)); }
 
     // Add to Output
     const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
@@ -267,6 +259,7 @@ export default async function simulation({ scenario, seed = null }) {
         // Run Income Events
         for (const income of IncomeEvents) {
             if (income.startYear.value1 <= year && income.duration.value1 > 0) {
+                if (eventLogger) { eventLogger.logEvent(year, "Income", income.amount, income.name); }
                 income.duration.value1 -= 1;
                 income.amount = Number(income.amount);
                 curYearIncome += income.amount;
@@ -301,6 +294,11 @@ export default async function simulation({ scenario, seed = null }) {
                     Investments.push(recipient);
                 }
                 if (withdrawal < principle) {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "RMD: pre-tax retirement", -withdrawal, name);
+                        eventLogger.logEvent(year, "RMD: non-retirement", withdrawal, name);
+                    }
                     curYearIncome += withdrawal;
                     recipient.value += withdrawal;
                     recipient.baseValue += withdrawal;
@@ -309,6 +307,11 @@ export default async function simulation({ scenario, seed = null }) {
                     withdrawal = 0;
                     break;
                 } else {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "RMD: pre-tax retirement", -principle, name);
+                        eventLogger.logEvent(year, "RMD: non-retirement", principle, name);
+                    }
                     curYearIncome += principle;
                     recipient.value += principle;
                     recipient.baseValue += principle;
@@ -354,6 +357,11 @@ export default async function simulation({ scenario, seed = null }) {
                     Investments.push(recipient);
                 }
                 if (rc < principle) {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "Roth: pre-tax retirement", -rc, name);
+                        eventLogger.logEvent(year, "Roth: after-tax retirement", rc, name);
+                    }
                     curYearIncome += rc;
                     recipient.value += rc;
                     recipient.baseValue += rc;
@@ -362,6 +370,11 @@ export default async function simulation({ scenario, seed = null }) {
                     rc = 0;
                     break;
                 } else {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "Roth: pre-tax retirement", -principle, name);
+                        eventLogger.logEvent(year, "Roth: after-tax retirement", principle, name);
+                    }
                     curYearIncome += principle;
                     recipient.value += principle;
                     recipient.baseValue += principle;
@@ -396,10 +409,17 @@ export default async function simulation({ scenario, seed = null }) {
 
         var early_withdrawal_tax = curYearEarlyWithdrawals * 0.1;
 
+        if (eventLogger) {
+            if (federal_tax > 0) { eventLogger.logEvent(year, "Tax", federal_tax, "Federal Income"); }
+            if (capital_gains_tax > 0) { eventLogger.logEvent(year, "Tax", capital_gains_tax, "Capital Gains"); }
+            if (early_withdrawal_tax > 0) { eventLogger.logEvent(year, "Tax", early_withdrawal_tax, "Early Withdrawal"); }
+        }
+
         // Run Non-Discretionary Expense Events
         var non_discretionary = 0;
         for (const expense of ExpenseEvents.filter(event => event.discretionary === false)) {
             if (expense.startYear.value1 <= year && expense.duration.value1 > 0) {
+                if (eventLogger) { eventLogger.logEvent(year, "Expense (Non-Discretionary)", expense.amount, expense.name); }
                 expense.duration.value1 -= 1;
                 expense.amount = Number(expense.amount);
                 non_discretionary += expense.amount;
@@ -420,6 +440,7 @@ export default async function simulation({ scenario, seed = null }) {
             for (const withdraw of withdrawalStrategy) {
                 const principle = Number(withdraw.value);
                 if (withdrawal_amount < principle) {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, withdrawal_amount, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += withdrawal_amount * ((principle - Number(withdraw.baseValue)) / principle); }
                     else if (age < 59) { curYearEarlyWithdrawals += withdrawal_amount; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += withdrawal_amount; }
@@ -428,6 +449,7 @@ export default async function simulation({ scenario, seed = null }) {
                     withdrawal_amount = 0;
                     break;
                 } else {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, principle, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += principle - Number(withdraw.baseValue); }
                     else if (age < 59) { curYearEarlyWithdrawals += principle; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += principle; }
@@ -436,9 +458,10 @@ export default async function simulation({ scenario, seed = null }) {
                     withdrawal_amount -= principle;
                 }
             }
-        } else {
+        } else if (payment > 0) {
             CashInvestment.baseValue -= payment;
             CashInvestment.value -= payment;
+            if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: non-retirement", payment, "Cash"); }
         }
 
         if (withdrawal_amount > 0) {
@@ -452,6 +475,7 @@ export default async function simulation({ scenario, seed = null }) {
         spendingStrategy.map(expense => expense = ExpenseEvents.find(event => expense._id === event._id));
         for (const expense of spendingStrategy) {
             if (expense.startYear.value1 <= year && expense.duration.value1 > 0) {
+                if (eventLogger) { eventLogger.logEvent(year, "Expense (Discretionary)", expense.amount, expense.name); }
                 expense.duration.value1 -= 1;
                 expense.amount = Number(expense.amount);
                 discretionary += expense.amount;
@@ -472,6 +496,7 @@ export default async function simulation({ scenario, seed = null }) {
             for (const withdraw of withdrawalStrategy) {
                 const principle = Number(withdraw.value);
                 if (withdrawal_amount < principle) {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, withdrawal_amount, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += withdrawal_amount * ((principle - Number(withdraw.baseValue)) / principle); }
                     else if (age < 59) { curYearEarlyWithdrawals += withdrawal_amount; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += withdrawal_amount; }
@@ -480,6 +505,7 @@ export default async function simulation({ scenario, seed = null }) {
                     withdrawal_amount = 0;
                     break;
                 } else {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, principle, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += principle - Number(withdraw.baseValue); }
                     else if (age < 59) { curYearEarlyWithdrawals += principle; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += principle; }
@@ -488,9 +514,10 @@ export default async function simulation({ scenario, seed = null }) {
                     withdrawal_amount -= principle;
                 }
             }
-        } else {
+        } else if (discretionary > 0) {
             CashInvestment.baseValue -= discretionary;
             CashInvestment.value -= discretionary;
+            if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: non-retirement", discretionary, "Cash"); }
         }
 
         // Run Invest
@@ -535,6 +562,7 @@ export default async function simulation({ scenario, seed = null }) {
                     }
                     alloc_investment.value += sum;
                     alloc_investment.baseValue += sum;
+                    if (eventLogger && sum !== 0) { eventLogger.logEvent(year, "Invest Event: " + InvestEvent.name, sum, alloc_investment.investmentType.name); }
                 }
             }
 
@@ -577,6 +605,7 @@ export default async function simulation({ scenario, seed = null }) {
                         alloc_investment.baseValue *= (1 - (-difference / alloc_investment.value));
                     }
                     alloc_investment.value += difference;
+                    if (eventLogger) { eventLogger.logEvent(year, "Rebalance Event: " + RebalanceEvent.name, difference, alloc_investment.investmentType.name); }
                 }
             }
             for (const allocation of non_retirement_assets) {
@@ -590,6 +619,7 @@ export default async function simulation({ scenario, seed = null }) {
                         alloc_investment.baseValue *= (1 - (-difference / alloc_investment.value));
                     }
                     alloc_investment.value += difference;
+                    if (eventLogger) { eventLogger.logEvent(year, "Rebalance Event: " + RebalanceEvent.name, difference, alloc_investment.investmentType.name); }
                 }
             }
 
@@ -625,6 +655,8 @@ export default async function simulation({ scenario, seed = null }) {
         prev_curYearGains = curYearGains;
         prev_curYearEarlyWithdrawals = curYearEarlyWithdrawals;
         year += 1;
+
+        if (csvLogger) { csvLogger.logYear(year, Investments.map(inv => inv.value)); }
         
         // Add to Output
         const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);
@@ -643,11 +675,11 @@ export default async function simulation({ scenario, seed = null }) {
         scenario_list.push(copy);
     }
 
+    if (csvLogger) { csvLogger.flush(Investments.map(inv => inv.investmentType.name)); }
+
     return output;
 }
 
-  
-  
 function sampleNormal(mean, sd) {
     let u = 0, v = 0;
     while (u === 0) u = rng();
@@ -674,5 +706,4 @@ function getDistributionResult(distribution, event = null, rng = Math.random) {
     }
 }
 
-
-
+module.exports = simulation;

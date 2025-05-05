@@ -22,8 +22,7 @@ router.get('/:id', async (req, res) => {
 // ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await Investment.findByIdAndUpdate(req.params.id, req.body, { new: true })
-      .populate('investmentType'); //  populate added here
+    const updated = await Investment.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
     if (!updated) return res.status(404).json({ error: 'Investment not found' });
     res.json(updated);
   } catch (err) {

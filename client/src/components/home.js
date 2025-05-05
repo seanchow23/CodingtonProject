@@ -1,11 +1,11 @@
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./navBar";
-import ScenarioList from "./scenario_list.js"
+import ScenarioList from "./scenario_list.js";
 import Scenario from "./scenario.js";
-import { Route, Routes } from "react-router-dom"
-import Login from "./login.js"
-import UserProfile from "./user_profile.js"
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
+import Login from "./login.js";
+import UserProfile from "./user_profile.js";
+
 
 import CreateScenario from "./create_scenario";
 import CreateInvestmentTypes from "./create_investment_type.js";
@@ -18,13 +18,52 @@ import EditEvent from "./event_series/edit_event.js";
 import SimulationPage from "./simulation_page.js";
 import ChartTest from "./chart_test.js"
 import OneDExplorePage from './oneDExplorePage.js';
+import ChartTest from "./chart_test.js";
+import * as userApi from "../api/userApi";
+import * as scenarioApi from "../api/scenarioApi";
+
 function Home() {
-  const scenarios = []; // here if the user is logged in check if the user has any scenarios already created,
-  //if they do show that otherwise show empty list
+  const [scenarios, setScenarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation(); 
+
+  useEffect(() => {
+    const fetchScenarios = async () => {
+      setLoading(true);
+
+      try {
+        const { data: user } = await userApi.getCurrentUser();
+
+        if (user && user._id) {
+          const allScenarioIds = [...user.scenarios, ...user.sharedScenarios];
+          const scenarioFetches = allScenarioIds.map(id => scenarioApi.getScenario(id));
+          const scenarioResponses = await Promise.all(scenarioFetches);
+          const scenarioList = scenarioResponses.map(res => res);
+          setScenarios(scenarioList);
+        } else {
+          throw new Error("No user");
+        }
+
+      } catch (err) {
+        // Not logged in — fallback to localStorage
+        const local = localStorage.getItem("localScenarios");
+        const parsed = local ? JSON.parse(local) : [];
+        setScenarios(parsed);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchScenarios();
+  }, [location.pathname]);
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div className="home-container">
       <Navbar />
+
         <main className="home-main">
           <Routes>
             <Route path="/" element={<ScenarioList scenarios={scenarios} simulate={false}/>} />
@@ -44,9 +83,9 @@ function Home() {
             <Route path="/explore/:id" element={<OneDExplorePage />} />
           </Routes>
         </main>
+
     </div>
   );
-};
+}
 
-export default Home
-
+export default Home;

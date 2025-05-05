@@ -98,6 +98,27 @@ app.get('/api/tax/capital-gains', (req, res) => {
   }
 });
 
+app.get('/api/tax/rmd-table', (req, res) => {
+  const file = path.join(__dirname, 'data/rmd_uniform_table.json');
+  try {
+    const data = fs.readFileSync(file, 'utf8');
+    res.json(JSON.parse(data));
+  } catch {
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+app.get('/api/tax/state', (req, res) => {
+  const file = path.join(__dirname, 'data/state_tax_data.json');
+  try {
+    const data = fs.readFileSync(file, 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error) {
+    console.error('Failed to read state tax data:', error.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 
 // const scenarioRoutes = require('./routes/scenario');
 // const userRoutes = require('./routes/user');
