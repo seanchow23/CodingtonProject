@@ -4,7 +4,7 @@ import Plot from 'react-plotly.js';
 export default function Line_Chart({ data }) {
   const startYear = 2025;
   const simulations = data;
-
+  
   const maxYears = Math.max(...simulations.map(sim => sim.length));
   const years = Array.from({ length: maxYears }, (_, i) => startYear + i);
 
