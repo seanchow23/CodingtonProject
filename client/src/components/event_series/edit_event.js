@@ -5,6 +5,7 @@ import {AddIncomeEvent, AddExpenseEvent, AddInvestEvent, AddRebalanceEvent} from
 import { updateAllocation } from "../../api/allocationApi";
 import { updateDistribution } from "../../api/distributionApi";
 import { getScenario } from "../../api/scenarioApi";
+import * as eventApi from "../../api/eventsApi"
 
 export default function EditEvent({ scenarios }) {
     const location = useLocation()
@@ -141,6 +142,7 @@ export default function EditEvent({ scenarios }) {
         }
         
         try {
+            console.log(eventData)
             await eventApi.updateEvent(event._id, eventData);
             const freshScenario = await getScenario(target._id);
             navigate(`/scenario/${target._id}`, { state: { scenario: freshScenario } });

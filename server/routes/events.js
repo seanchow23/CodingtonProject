@@ -37,7 +37,23 @@ router.get('/unpopulated/:id', async (req, res) => {
 // ----------------------------------------------------
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await Event.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    let updated;
+    switch (req.body.type) {
+      case 'income':
+        updated = await Income.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        break;
+      case 'expense':
+        updated = await Expense.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        break;
+      case 'invest':
+        updated = await Invest.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        break;
+      case 'rebalance':
+        updated = await Rebalance.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+        break;
+      default:
+        updated = await Event.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    }
     if (!updated) return res.status(404).json({ error: 'Event not found' });
     res.json(updated);
   } catch (err) {
