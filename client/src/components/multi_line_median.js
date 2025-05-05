@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 
 export default function MultiLineMedianInvestmentChart({ investmentRuns, paramValues }) {
   const startYear = 2025;
-
+  console.log(investmentRuns);
   const numYears = Math.max(...investmentRuns.map(run =>
     Math.max(...run.map(sim => sim.length))
   ));
