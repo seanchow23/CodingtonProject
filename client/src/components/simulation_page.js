@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import simulation from './simulation'; // renamed to avoid conflict
+import { useLocation, useNavigate } from 'react-router-dom';
+import simulation from './simulation'; // fallback simulation logic
 import Line_Chart from './line_chart';
 import Shaded_Chart from './shaded_chart';
 import UnifiedStackedFinanceChart from './stacked_chart'; 
 import ScenarioList from './scenario_list';
 import InputField from "./input_field";
-import { useNavigate} from 'react-router-dom';
 import MultiLineProbabilityChart from './multi_line_probability';
 import MultiLineMedianInvestmentChart from './multi_line_median';
 import { runSimulation } from '../api/simulationApi';
 
-export default function SimulationPage() { 
+export default function SimulationPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -27,41 +26,16 @@ export default function SimulationPage() {
     totalIncome: false,
     totalExpenseTax: false,
     earlyWithdrawlTax: false,
-    discretionaryExpenses:false,
+    discretionaryExpenses: false,
     median: false
   });
-  
-  function simulateProbabilityEdited(scenarios) {
-    return scenarios.map((scenario) => {
-      const runs = [];
-      for (let i = 0; i < formData.num; i++) {
-        runs.push(simulation({ scenario: structuredClone(scenario) })[0]); // probability array
-      }
-      return runs;
-    });
-  }
 
-  function simulateInvestmentSeries(scenarios) {
-    return scenarios.map((scenario) => {
-      const series = [];
-      for (let i = 0; i < formData.num; i++) {
-        const sim = simulation({ scenario: structuredClone(scenario) });
-        series.push(sim[1][0]);  // assuming [1][0] = total investments per year
-      }
-      return series;
-    });
-  }
+  const [hasRun, setHasRun] = useState(false); // ✅ moved up here
+  const [baseScenario] = useState(() => structuredClone(originalScenario)); // locked base
+  const [editedScenarios, setEditedScenarios] = useState([]);
+  const [multiLineProbData, setMultiLineProbData] = useState([]);
+  const [multiLineInvestData, setMultiLineInvestData] = useState([]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({...formData, [name]: type === "checkbox" ? checked : value});
-  };
-
-  const [baseScenario] = useState(() => structuredClone(originalScenario)); // always unmodified
-  const [editedScenarios, setEditedScenarios] = useState([]); 
-
-  var simResult = null;
-  const [hasRun, setHasRun] = useState(false);
   const [line, setLine] = useState([]);
   const [shade1, setShade1] = useState([]);
   const [shade2, setShade2] = useState([]);
@@ -76,6 +50,46 @@ export default function SimulationPage() {
     }
   }, [oneDResults]);
 
+  useEffect(() => {
+    if (hasRun && oneDResults && oneDParam) {
+      simulateProbabilityEdited(oneDResults).then(setMultiLineProbData);
+      simulateInvestmentSeries(oneDResults).then(setMultiLineInvestData);
+    }
+  }, [hasRun, oneDResults, oneDParam, formData.num]);
+
+  async function simulateProbabilityEdited(scenarios) {
+    const allResults = await Promise.all(
+      scenarios.map(async (scenario) => {
+        const runs = [];
+        for (let i = 0; i < formData.num; i++) {
+          runs.push(runSimulation(structuredClone(scenario)));
+        }
+        const results = await Promise.all(runs);
+        return results.map((r) => r[0]); // true/false arrays
+      })
+    );
+    return allResults;
+  }
+
+  async function simulateInvestmentSeries(scenarios) {
+    const allResults = await Promise.all(
+      scenarios.map(async (scenario) => {
+        const runs = [];
+        for (let i = 0; i < formData.num; i++) {
+          runs.push(runSimulation(structuredClone(scenario)));
+        }
+        const results = await Promise.all(runs);
+        return results.map((r) => r[1][0]); // total investments per year
+      })
+    );
+    return allResults;
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+  };
+
   const handleRunSimulations = async () => {
     const newLine = [];
     const newShade1 = [];
@@ -84,19 +98,15 @@ export default function SimulationPage() {
     const newShade4 = [];
     const newShade5 = [];
     const newBar = [];
-    
+
     try {
-      const tasks = [];  // Array to store the promises for parallel execution
-    
+      const tasks = [];
       for (let i = 0; i < formData.num; i++) {
-        // Send the simulations concurrently (in parallel)
         tasks.push(runSimulation(structuredClone(originalScenario)));
       }
-    
-      // Wait for all simulations to complete
+
       const results = await Promise.all(tasks);
-    
-      // Process the results after all simulations are done
+
       results.forEach((simResult) => {
         newLine.push(simResult[0]);
         newShade1.push(simResult[1][0]);
@@ -106,6 +116,7 @@ export default function SimulationPage() {
         newShade5.push(simResult[1][4]);
         newBar.push(simResult[2]);
       });
+
       setLine(newLine);
       setShade1(newShade1);
       setShade2(newShade2);
@@ -114,59 +125,75 @@ export default function SimulationPage() {
       setShade5(newShade5);
       setBar(newBar);
       setHasRun(true);
-      } catch (error) {
-        console.error('Error running simulations in parallel:', error);
-      }
-    };
-    
+    } catch (error) {
+      console.error('Error running simulations in parallel:', error);
+    }
+  };
+
   return (
     <div>
-      {!hasRun && (<div>
-        <h2>Enter number of simulations</h2>
-        <input
-          type="number"
-          name="num"
-          min={1}
-          value={formData.num}
-          onChange={handleInputChange}
-          style={{ width: '100px', marginRight: '10px' }}
-        />
-        <button onClick={handleRunSimulations}>Run Simulations</button>
-      </div>)}
-      {hasRun && (<div>
-            <h3>Ran {formData.num} simulations</h3>
-            <h4>Probability of Success</h4>
-            <Line_Chart data={line} />
-            <h4>Total Assets</h4>
-            <InputField id="totalInvestment" type="checkbox" checked={formData.totalInvestment} onChange={handleInputChange}>Total Investment</InputField>
-            {formData.totalInvestment &&<Shaded_Chart data={shade1} />}
-            <InputField id="totalIncome" type="checkbox" checked={formData.totalIncome} onChange={handleInputChange}>Total Income</InputField>
-            {formData.totalIncome &&<Shaded_Chart data={shade2} />}
-            <InputField id="totalExpenseTax" type="checkbox" checked={formData.totalExpenseTax} onChange={handleInputChange}>Total Expenses with Tax</InputField>
-            {formData.totalExpenseTax &&<Shaded_Chart data={shade3} />}
-            <InputField id="earlyWithdrawlTax" type="checkbox" checked={formData.earlyWithdrawlTax} onChange={handleInputChange}>Early Withdrawl Tax</InputField>
-            {formData.earlyWithdrawlTax &&<Shaded_Chart data={shade4} />}
-            <InputField id="discretionaryExpenses" type="checkbox" checked={formData.discretionaryExpenses} onChange={handleInputChange}>Discretionary Expenses</InputField>
-            {formData.discretionaryExpenses &&<Shaded_Chart data={shade5} />}
-            <h4>Value of Events/Investments</h4>
-            <InputField id="median" type="checkbox" checked={formData.median} onChange={handleInputChange}>Use Median</InputField>
-            <UnifiedStackedFinanceChart data={bar}  median={formData.median}/>
-            <button onClick={() =>navigate(`/explore/${baseScenario._id}`, {state: { scenario: structuredClone(baseScenario) },})}
-            style={{ marginTop: '30px', padding: '10px 20px', fontSize: '16px' }}>One-Dimensional Parameter Exploration</button>
-            {oneDResults && oneDParam && (
+      {!hasRun ? (
+        <div>
+          <h2>Enter number of simulations</h2>
+          <input
+            type="number"
+            name="num"
+            min={1}
+            value={formData.num}
+            onChange={handleInputChange}
+            style={{ width: '100px', marginRight: '10px' }}
+          />
+          <button onClick={handleRunSimulations}>Run Simulations</button>
+        </div>
+      ) : (
+        <div>
+          <h3>Ran {formData.num} simulations</h3>
+          <h4>Probability of Success</h4>
+          <Line_Chart data={line} />
+          <h4>Total Assets</h4>
+          <InputField id="totalInvestment" type="checkbox" checked={formData.totalInvestment} onChange={handleInputChange}>Total Investment</InputField>
+          {formData.totalInvestment && <Shaded_Chart data={shade1} />}
+          <InputField id="totalIncome" type="checkbox" checked={formData.totalIncome} onChange={handleInputChange}>Total Income</InputField>
+          {formData.totalIncome && <Shaded_Chart data={shade2} />}
+          <InputField id="totalExpenseTax" type="checkbox" checked={formData.totalExpenseTax} onChange={handleInputChange}>Total Expenses with Tax</InputField>
+          {formData.totalExpenseTax && <Shaded_Chart data={shade3} />}
+          <InputField id="earlyWithdrawlTax" type="checkbox" checked={formData.earlyWithdrawlTax} onChange={handleInputChange}>Early Withdrawl Tax</InputField>
+          {formData.earlyWithdrawlTax && <Shaded_Chart data={shade4} />}
+          <InputField id="discretionaryExpenses" type="checkbox" checked={formData.discretionaryExpenses} onChange={handleInputChange}>Discretionary Expenses</InputField>
+          {formData.discretionaryExpenses && <Shaded_Chart data={shade5} />}
+          <h4>Value of Events/Investments</h4>
+          <InputField id="median" type="checkbox" checked={formData.median} onChange={handleInputChange}>Use Median</InputField>
+          <UnifiedStackedFinanceChart data={bar} median={formData.median} />
+
+          <button
+            onClick={() =>
+              navigate(`/explore/${baseScenario._id}`, {
+                state: { scenario: structuredClone(baseScenario) }
+              })
+            }
+            style={{ marginTop: '30px', padding: '10px 20px', fontSize: '16px' }}
+          >
+            One-Dimensional Parameter Exploration
+          </button>
+
+          {oneDResults && oneDParam && (
             <>
+              {multiLineProbData.length > 0 && (
                 <MultiLineProbabilityChart
-                  simulationsList={simulateProbabilityEdited(oneDResults)}
+                  simulationsList={multiLineProbData}
                   parameterValues={oneDParam.values}
                 />
+              )}
+              {multiLineInvestData.length > 0 && (
                 <MultiLineMedianInvestmentChart
-                  investmentRuns={simulateInvestmentSeries(oneDResults)}
+                  investmentRuns={multiLineInvestData}
                   paramValues={oneDParam.values}
                 />
-              </>    
+              )}
+            </>
           )}
         </div>
-        )}
+      )}
     </div>
-    );
+  );
 }
