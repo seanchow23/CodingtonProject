@@ -10,7 +10,6 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         fetch('http://localhost:5000/api/tax/rmd-table'),
         fetch('http://localhost:5000/api/tax/capital-gains'),
         fetch('http://localhost:5000/api/tax/federal'),
-
     ]);
 
     // 2) Parse JSON
@@ -356,10 +355,10 @@ console.log('normalized capital_gains new:', capital_gains);
 
         var early_withdrawal_tax = curYearEarlyWithdrawals * 0.1;
 
-        if (eventLogger) { 
-            eventLogger.logEvent(year, "Tax", federal_tax, "Federal Income");
-            eventLogger.logEvent(year, "Tax", capital_gains_tax, "Capital Gains");
-            eventLogger.logEvent(year, "Tax", early_withdrawal_tax, "Early Withdrawal");
+        if (eventLogger) {
+            if (federal_tax > 0) { eventLogger.logEvent(year, "Tax", federal_tax, "Federal Income"); }
+            if (capital_gains_tax > 0) { eventLogger.logEvent(year, "Tax", capital_gains_tax, "Capital Gains"); }
+            if (early_withdrawal_tax > 0) { eventLogger.logEvent(year, "Tax", early_withdrawal_tax, "Early Withdrawal"); }
         }
 
         // Run Non-Discretionary Expense Events
@@ -405,7 +404,7 @@ console.log('normalized capital_gains new:', capital_gains);
                     withdrawal_amount -= principle;
                 }
             }
-        } else {
+        } else if (payment > 0) {
             CashInvestment.baseValue -= payment;
             CashInvestment.value -= payment;
             if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: non-retirement", payment, "Cash"); }
@@ -461,7 +460,7 @@ console.log('normalized capital_gains new:', capital_gains);
                     withdrawal_amount -= principle;
                 }
             }
-        } else {
+        } else if (discretionary > 0) {
             CashInvestment.baseValue -= discretionary;
             CashInvestment.value -= discretionary;
             if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: non-retirement", discretionary, "Cash"); }
@@ -621,6 +620,8 @@ console.log('normalized capital_gains new:', capital_gains);
         copy._id = Math.floor(Math.random() * 1000) + 1000;
         scenario_list.push(copy);
     }
+
+    if (csvLogger) { csvLogger.flush(Investments.map(inv => inv.investmentType.name)); }
 
     return output;
 }

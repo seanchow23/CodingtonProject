@@ -1,10 +1,8 @@
 const { parentPort } = require('worker_threads');
 const simulation = require('./simulation');
-const { CsvLogger, EventLogger, getLogFilenames } = require('./loggers');
+const { CsvLogger, EventLogger, getLogFilenames } = require('./log_utils');
 
-let isFirstSimulation = true;
-
-parentPort.on('message', async ({ scenario, seed, user }) => {
+parentPort.on('message', async ({ scenario, seed, user, isFirstSimulation }) => {
   try {
     let csvLogger = null;
     let eventLogger = null;
@@ -13,7 +11,6 @@ parentPort.on('message', async ({ scenario, seed, user }) => {
       const { csv, log } = getLogFilenames(user || 'anonymous');
       csvLogger = new CsvLogger(csv);
       eventLogger = new EventLogger(log);
-      isFirstSimulation = false;
     }
 
     const result = await simulation({ scenario, seed, csvLogger, eventLogger });
