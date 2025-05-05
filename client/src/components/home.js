@@ -17,6 +17,7 @@ import EditInvestments from "./edit_investments.js";
 import EditEvent from "./event_series/edit_event.js";
 import SimulationPage from "./simulation_page.js";
 import ChartTest from "./chart_test.js"
+import OneDExplorePage from './oneDExplorePage.js';
 function Home() {
   const scenarios = []; // here if the user is logged in check if the user has any scenarios already created,
   //if they do show that otherwise show empty list
@@ -40,6 +41,7 @@ function Home() {
             <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
             <Route path="/simulation/:id" element={<SimulationPage/>} />
             <Route path="/chart-test" element={<ChartTest />} />
+            <Route path="/explore/:id" element={<OneDExplorePage />} />
           </Routes>
         </main>
     </div>
