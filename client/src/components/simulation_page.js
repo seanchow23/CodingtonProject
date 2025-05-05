@@ -14,22 +14,22 @@ import { runSimulation } from '../api/simulationApi';
 export default function SimulationPage() { 
   const location = useLocation();
   const navigate = useNavigate();
-  // const { scenario: originalScenario } = location.state;
-  // const returnedEdited = location.state?.editedScenario;
+
   const {
     scenario: originalScenario,
     oneDResults,
     oneDParam
   } = location.state || {};
+
   const [formData, setFormData] = useState({
-        num: 10,
-        totalInvestment: false,
-        totalIncome: false,
-        totalExpenseTax: false,
-        earlyWithdrawlTax: false,
-        discretionaryExpenses:false,
-        median: false
-      });
+    num: 10,
+    totalInvestment: false,
+    totalIncome: false,
+    totalExpenseTax: false,
+    earlyWithdrawlTax: false,
+    discretionaryExpenses:false,
+    median: false
+  });
   
   function simulateProbabilityEdited(scenarios) {
     return scenarios.map((scenario) => {
@@ -53,12 +53,13 @@ export default function SimulationPage() {
   }
 
   const handleInputChange = (e) => {
-      const { name, value, type, checked } = e.target;
-      setFormData({...formData, [name]: type === "checkbox" ? checked : value});
+    const { name, value, type, checked } = e.target;
+    setFormData({...formData, [name]: type === "checkbox" ? checked : value});
   };
+
   const [baseScenario] = useState(() => structuredClone(originalScenario)); // always unmodified
   const [editedScenarios, setEditedScenarios] = useState([]); 
-  //const { scenario } = location.state;
+
   var simResult = null;
   const [hasRun, setHasRun] = useState(false);
   const [line, setLine] = useState([]);
@@ -75,35 +76,35 @@ export default function SimulationPage() {
     }
   }, [oneDResults]);
 
-    const handleRunSimulations = async () => {
-      const newLine = [];
-      const newShade1 = [];
-      const newShade2 = [];
-      const newShade3 = [];
-      const newShade4 = [];
-      const newShade5 = [];
-      const newBar = [];
+  const handleRunSimulations = async () => {
+    const newLine = [];
+    const newShade1 = [];
+    const newShade2 = [];
+    const newShade3 = [];
+    const newShade4 = [];
+    const newShade5 = [];
+    const newBar = [];
     
-      try {
-        const tasks = [];  // Array to store the promises for parallel execution
+    try {
+      const tasks = [];  // Array to store the promises for parallel execution
     
-        for (let i = 0; i < formData.num; i++) {
-          // Send the simulations concurrently (in parallel)
-          tasks.push(runSimulation(structuredClone(scenario)));
-        }
+      for (let i = 0; i < formData.num; i++) {
+        // Send the simulations concurrently (in parallel)
+        tasks.push(runSimulation(structuredClone(originalScenario)));
+      }
     
-        // Wait for all simulations to complete
-        const results = await Promise.all(tasks);
+      // Wait for all simulations to complete
+      const results = await Promise.all(tasks);
     
-        // Process the results after all simulations are done
-        results.forEach((simResult) => {
-          newLine.push(simResult[0]);
-          newShade1.push(simResult[1][0]);
-          newShade2.push(simResult[1][1]);
-          newShade3.push(simResult[1][2]);
-          newShade4.push(simResult[1][3]);
-          newShade5.push(simResult[1][4]);
-          newBar.push(simResult[2]);
+      // Process the results after all simulations are done
+      results.forEach((simResult) => {
+        newLine.push(simResult[0]);
+        newShade1.push(simResult[1][0]);
+        newShade2.push(simResult[1][1]);
+        newShade3.push(simResult[1][2]);
+        newShade4.push(simResult[1][3]);
+        newShade5.push(simResult[1][4]);
+        newBar.push(simResult[2]);
       });
       setLine(newLine);
       setShade1(newShade1);
@@ -118,10 +119,9 @@ export default function SimulationPage() {
       }
     };
     
-return (
+  return (
     <div>
-    {!hasRun && (
-      <div>
+      {!hasRun && (<div>
         <h2>Enter number of simulations</h2>
         <input
           type="number"
@@ -132,10 +132,8 @@ return (
           style={{ width: '100px', marginRight: '10px' }}
         />
         <button onClick={handleRunSimulations}>Run Simulations</button>
-      </div>
-    )}
-        {hasRun && (
-        <div>
+      </div>)}
+      {hasRun && (<div>
             <h3>Ran {formData.num} simulations</h3>
             <h4>Probability of Success</h4>
             <Line_Chart data={line} />

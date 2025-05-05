@@ -154,12 +154,6 @@ export default function EditEvent({ scenarios }) {
     return (
         <div id = "add_event">
             <form onSubmit={submit}>
-                <label htmlFor="type">Select Event Type*</label>
-                <input type="radio" name="type" value="income" onChange={handleRadioChange} required/> Income
-                <input type="radio" name="type" value="expense" onChange={handleRadioChange} /> Expense
-                <input type="radio" name="type" value="invest" onChange={handleRadioChange} /> Invest
-                <input type="radio" name="type" value="rebalance" onChange={handleRadioChange} /> Rebalance
-
                 <InputField id="name" type="text" value={formData.name} onChange={handleInputChange}>Event Name</InputField>
 
                 <label htmlFor="description">Description</label>
