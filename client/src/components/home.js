@@ -28,25 +28,33 @@ function Home() {
   const location = useLocation(); 
 
   useEffect(() => {
-    const fetchUserScenarios = async () => {
+    const fetchScenarios = async () => {
+      setLoading(true);
+
       try {
         const { data: user } = await userApi.getCurrentUser();
-        const allScenarioIds = [...user.scenarios, ...user.sharedScenarios];
 
-        const scenarioFetches = allScenarioIds.map(id => scenarioApi.getScenario(id));
-        const scenarioResponses = await Promise.all(scenarioFetches);
-        const scenarioList = scenarioResponses; // 
+        if (user && user._id) {
+          const allScenarioIds = [...user.scenarios, ...user.sharedScenarios];
+          const scenarioFetches = allScenarioIds.map(id => scenarioApi.getScenario(id));
+          const scenarioResponses = await Promise.all(scenarioFetches);
+          const scenarioList = scenarioResponses.map(res => res);
+          setScenarios(scenarioList);
+        } else {
+          throw new Error("No user");
+        }
 
-        setScenarios(scenarioList);
       } catch (err) {
-        console.error("User not logged in or failed to load scenarios:", err);
-        setScenarios([]); // show empty list or redirect to login
+        // Not logged in — fallback to localStorage
+        const local = localStorage.getItem("localScenarios");
+        const parsed = local ? JSON.parse(local) : [];
+        setScenarios(parsed);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserScenarios();
+    fetchScenarios();
   }, [location.pathname]);
 
   if (loading) return <p>Loading...</p>;
