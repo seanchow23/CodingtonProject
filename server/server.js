@@ -51,7 +51,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://your-vercel-app.vercel.app'
+    'client-3mu09djwk-denny-lins-projects.vercel.app'
   ],
   credentials: true
 }));
