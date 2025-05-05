@@ -1,11 +1,15 @@
 import React from "react"
 import { useNavigate } from 'react-router-dom';
 
+  
 const ScenarioList = ({ scenarios, simulate }) => {
     const navigate = useNavigate();
     const handleScenarioClick = (scenario) => {navigate(`/scenario/${scenario._id}`, { state: { scenario } });};
     const handleCreateScenarioClick = () => {navigate(`/scenario/create`);};
     const handleChartTestClick = () => {navigate(`/chart-test`);};
+    const handleImportClick = () => {
+        navigate('/import-scenario');
+      };
     return (<div className="scenario-list">
         <div className="home-header">
             <h1 className="home-title">Scenarios</h1>
@@ -19,6 +23,8 @@ const ScenarioList = ({ scenarios, simulate }) => {
             </div>))
         }
         <button className="create-button"  onClick={handleChartTestClick}>Charts</button>
+        <button className="import-button" onClick={handleImportClick}>Import Scenario</button>
+
     </div>);
 }
 
