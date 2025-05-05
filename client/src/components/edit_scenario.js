@@ -21,6 +21,7 @@ export default function EditScenario({ scenarios }) {
         inflation: scenario.inflation,
         annualLimit: scenario.annualLimit,
         rothOptimizer: scenario.rothOptimizer,
+        rothYears: scenario.rothYears,
         financialGoal: scenario.financialGoal,
         state: scenario.state,
         random: scenario.random,
@@ -34,6 +35,15 @@ export default function EditScenario({ scenarios }) {
     };
 
     const handleRadioChange = (e) => {setFormData({ ...formData, married: e.target.value });};
+
+    const handleRoth = (e) => {
+      const { name, value } = e.target;
+      if (name === "roth_start") {
+        setFormData({ ...formData, rothYears: [value, formData.rothYears[1]] });
+      } else if (name === "roth_end") {
+        setFormData({ ...formData, rothYears: [formData.rothYears[0], value] });
+      }
+    }
 
     const handleRandom = (e) => {
         const { name, value } = e.target;
@@ -96,6 +106,7 @@ export default function EditScenario({ scenarios }) {
         inflation: formData.inflation._id,
         annualLimit: Number(formData.annualLimit),
         rothOptimizer: formData.rothOptimizer,
+        rothYears: formData.rothYears,
         financialGoal: Number(formData.financialGoal),
         state: formData.state,
         random: formData.random
@@ -207,6 +218,13 @@ export default function EditScenario({ scenarios }) {
                 <InputField id="annualLimit" type="number" value={formData.annualLimit} onChange={handleInputChange}>Annual Contribution Limit ($)</InputField>
 
                 <InputField id="rothOptimizer" type="checkbox" checked={formData.rothOptimizer} onChange={handleInputChange}>Roth Optimizer</InputField>
+                {formData.rothOptimizer && <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <label htmlFor="roth_start" style={{ marginBottom: '20px' }}>Roth Start Year</label>
+                    <input type="number" name="roth_start" value={formData.rothYears[0]} onChange={handleRoth} required />
+                    <label htmlFor="roth_end" style={{ marginBottom: '20px' }}>Roth End Year</label>
+                    <input type="number" name="roth_end" value={formData.rothYears[1]} onChange={handleRoth} required />
+                </div>}
+                
                 <InputField id="financialGoal" type="number" value={formData.financialGoal} onChange={handleInputChange}>Financial Goal ($)</InputField>
 
                 <label htmlFor="state">State of Residence</label>
