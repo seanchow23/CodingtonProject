@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import InputField from "./input_field";
 import * as scenarioApi from "../api/scenarioApi";
+import * as userApi from "../api/userApi";
+
 export default function EditScenario({ scenarios }) {
     const location = useLocation()
     const navigate = useNavigate();
@@ -103,6 +105,16 @@ export default function EditScenario({ scenarios }) {
       
         // Fetch full updated scenario (populated)
         const updatedFullScenario = await scenarioApi.getScenario(scenario._id);
+
+        // If user is not logged in, update it in localStorage
+        const user = await userApi.getCurrentUser().catch(() => null);
+        if (!user) {
+          const localScenarios = JSON.parse(localStorage.getItem("localScenarios")) || [];
+          const updatedList = localScenarios.map(s =>
+            s._id === updatedFullScenario._id ? updatedFullScenario : s
+          );
+          localStorage.setItem("localScenarios", JSON.stringify(updatedList));
+        }
       
         // Navigate with updated data
         navigate(`/scenario/${scenario._id}`, {
