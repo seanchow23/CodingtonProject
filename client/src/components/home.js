@@ -18,7 +18,6 @@ import EditEvent from "./event_series/edit_event.js";
 import SimulationPage from "./simulation_page.js";
 import ChartTest from "./chart_test.js"
 import OneDExplorePage from './oneDExplorePage.js';
-import ChartTest from "./chart_test.js";
 import * as userApi from "../api/userApi";
 import * as scenarioApi from "../api/scenarioApi";
 

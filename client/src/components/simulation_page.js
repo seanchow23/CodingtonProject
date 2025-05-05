@@ -89,7 +89,7 @@ export default function SimulationPage() {
     
         for (let i = 0; i < formData.num; i++) {
           // Send the simulations concurrently (in parallel)
-          tasks.push(runSimulation(structuredClone(scenario)));
+          tasks.push(runSimulation(structuredClone(originalScenario)));
         }
     
         // Wait for all simulations to complete
