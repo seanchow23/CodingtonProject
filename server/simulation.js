@@ -1,10 +1,9 @@
-async function simulation({ scenario, seed = null }) {
-
-   // First check if state tax data exists
-let stateDataAvailable = false;
-let allStates = {};
-
-
+async function simulation({ scenario, seed = null, csvLogger = null, eventLogger = null }) {
+  
+    // First check if state tax data exists
+    let stateDataAvailable = false;
+    let allStates = {};
+  
     // 1) Fetch all four endpoints in parallel
     const [dedRes, rmdRes, gainsRes, fedRes, ] = await Promise.all([
         fetch('http://localhost:5000/api/tax/deductions'),
@@ -184,7 +183,9 @@ console.log('normalized capital_gains new:', capital_gains);
         for (const allocation of allocations) {
             allocation.glide = (allocation.finalPercentage - allocation.percentage) / user_life_expectancy;
         }
- }
+    }
+
+    if (csvLogger) { csvLogger.logYear(year, Investments.map(inv => inv.value)); }
 
     // Add to Output
     const total_asset = scenario.investments.reduce((sum, investment) => sum + investment.value, 0);
@@ -205,6 +206,7 @@ console.log('normalized capital_gains new:', capital_gains);
         // Run Income Events
         for (const income of IncomeEvents) {
             if (income.startYear.value1 <= year && income.duration.value1 > 0) {
+                if (eventLogger) { eventLogger.logEvent(year, "Income", income.amount, income.name); }
                 income.duration.value1 -= 1;
                 income.amount = Number(income.amount);
                 curYearIncome += income.amount;
@@ -239,6 +241,11 @@ console.log('normalized capital_gains new:', capital_gains);
                     Investments.push(recipient);
                 }
                 if (withdrawal < principle) {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "RMD: pre-tax retirement", -withdrawal, name);
+                        eventLogger.logEvent(year, "RMD: non-retirement", withdrawal, name);
+                    }
                     curYearIncome += withdrawal;
                     recipient.value += withdrawal;
                     recipient.baseValue += withdrawal;
@@ -247,6 +254,11 @@ console.log('normalized capital_gains new:', capital_gains);
                     withdrawal = 0;
                     break;
                 } else {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "RMD: pre-tax retirement", -principle, name);
+                        eventLogger.logEvent(year, "RMD: non-retirement", principle, name);
+                    }
                     curYearIncome += principle;
                     recipient.value += principle;
                     recipient.baseValue += principle;
@@ -292,6 +304,11 @@ console.log('normalized capital_gains new:', capital_gains);
                     Investments.push(recipient);
                 }
                 if (rc < principle) {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "Roth: pre-tax retirement", -rc, name);
+                        eventLogger.logEvent(year, "Roth: after-tax retirement", rc, name);
+                    }
                     curYearIncome += rc;
                     recipient.value += rc;
                     recipient.baseValue += rc;
@@ -300,6 +317,11 @@ console.log('normalized capital_gains new:', capital_gains);
                     rc = 0;
                     break;
                 } else {
+                    if (eventLogger) { 
+                        const name = investment.investmentType.name;
+                        eventLogger.logEvent(year, "Roth: pre-tax retirement", -principle, name);
+                        eventLogger.logEvent(year, "Roth: after-tax retirement", principle, name);
+                    }
                     curYearIncome += principle;
                     recipient.value += principle;
                     recipient.baseValue += principle;
@@ -334,10 +356,17 @@ console.log('normalized capital_gains new:', capital_gains);
 
         var early_withdrawal_tax = curYearEarlyWithdrawals * 0.1;
 
+        if (eventLogger) { 
+            eventLogger.logEvent(year, "Tax", federal_tax, "Federal Income");
+            eventLogger.logEvent(year, "Tax", capital_gains_tax, "Capital Gains");
+            eventLogger.logEvent(year, "Tax", early_withdrawal_tax, "Early Withdrawal");
+        }
+
         // Run Non-Discretionary Expense Events
         var non_discretionary = 0;
         for (const expense of ExpenseEvents.filter(event => event.discretionary === false)) {
             if (expense.startYear.value1 <= year && expense.duration.value1 > 0) {
+                if (eventLogger) { eventLogger.logEvent(year, "Expense (Non-Discretionary)", expense.amount, expense.name); }
                 expense.duration.value1 -= 1;
                 expense.amount = Number(expense.amount);
                 non_discretionary += expense.amount;
@@ -358,6 +387,7 @@ console.log('normalized capital_gains new:', capital_gains);
             for (const withdraw of withdrawalStrategy) {
                 const principle = Number(withdraw.value);
                 if (withdrawal_amount < principle) {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, withdrawal_amount, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += withdrawal_amount * ((principle - Number(withdraw.baseValue)) / principle); }
                     else if (age < 59) { curYearEarlyWithdrawals += withdrawal_amount; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += withdrawal_amount; }
@@ -366,6 +396,7 @@ console.log('normalized capital_gains new:', capital_gains);
                     withdrawal_amount = 0;
                     break;
                 } else {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, principle, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += principle - Number(withdraw.baseValue); }
                     else if (age < 59) { curYearEarlyWithdrawals += principle; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += principle; }
@@ -377,6 +408,7 @@ console.log('normalized capital_gains new:', capital_gains);
         } else {
             CashInvestment.baseValue -= payment;
             CashInvestment.value -= payment;
+            if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: non-retirement", payment, "Cash"); }
         }
 
         if (withdrawal_amount > 0) {
@@ -390,6 +422,7 @@ console.log('normalized capital_gains new:', capital_gains);
         spendingStrategy.map(expense => expense = ExpenseEvents.find(event => expense._id === event._id));
         for (const expense of spendingStrategy) {
             if (expense.startYear.value1 <= year && expense.duration.value1 > 0) {
+                if (eventLogger) { eventLogger.logEvent(year, "Expense (Discretionary)", expense.amount, expense.name); }
                 expense.duration.value1 -= 1;
                 expense.amount = Number(expense.amount);
                 discretionary += expense.amount;
@@ -410,6 +443,7 @@ console.log('normalized capital_gains new:', capital_gains);
             for (const withdraw of withdrawalStrategy) {
                 const principle = Number(withdraw.value);
                 if (withdrawal_amount < principle) {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, withdrawal_amount, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += withdrawal_amount * ((principle - Number(withdraw.baseValue)) / principle); }
                     else if (age < 59) { curYearEarlyWithdrawals += withdrawal_amount; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += withdrawal_amount; }
@@ -418,6 +452,7 @@ console.log('normalized capital_gains new:', capital_gains);
                     withdrawal_amount = 0;
                     break;
                 } else {
+                    if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: " + withdraw.taxStatus, principle, withdrawal.investmentType.name); }
                     if (withdraw.taxStatus === "non-retirement") { curYearGains += principle - Number(withdraw.baseValue); }
                     else if (age < 59) { curYearEarlyWithdrawals += principle; }
                     if (withdraw.taxStatus === "pre-tax retirement") { curYearIncome += principle; }
@@ -429,6 +464,7 @@ console.log('normalized capital_gains new:', capital_gains);
         } else {
             CashInvestment.baseValue -= discretionary;
             CashInvestment.value -= discretionary;
+            if (eventLogger) { eventLogger.logEvent(year, "Withdrawal: non-retirement", discretionary, "Cash"); }
         }
 
         // Run Invest
@@ -473,6 +509,7 @@ console.log('normalized capital_gains new:', capital_gains);
                     }
                     alloc_investment.value += sum;
                     alloc_investment.baseValue += sum;
+                    if (eventLogger && sum !== 0) { eventLogger.logEvent(year, "Invest Event: " + InvestEvent.name, sum, alloc_investment.investmentType.name); }
                 }
             }
 
@@ -515,6 +552,7 @@ console.log('normalized capital_gains new:', capital_gains);
                         alloc_investment.baseValue *= (1 - (-difference / alloc_investment.value));
                     }
                     alloc_investment.value += difference;
+                    if (eventLogger) { eventLogger.logEvent(year, "Rebalance Event: " + RebalanceEvent.name, difference, alloc_investment.investmentType.name); }
                 }
             }
             for (const allocation of non_retirement_assets) {
@@ -528,6 +566,7 @@ console.log('normalized capital_gains new:', capital_gains);
                         alloc_investment.baseValue *= (1 - (-difference / alloc_investment.value));
                     }
                     alloc_investment.value += difference;
+                    if (eventLogger) { eventLogger.logEvent(year, "Rebalance Event: " + RebalanceEvent.name, difference, alloc_investment.investmentType.name); }
                 }
             }
 
@@ -563,6 +602,8 @@ console.log('normalized capital_gains new:', capital_gains);
         prev_curYearGains = curYearGains;
         prev_curYearEarlyWithdrawals = curYearEarlyWithdrawals;
         year += 1;
+
+        if (csvLogger) { csvLogger.logYear(year, Investments.map(inv => inv.value)); }
         
         // Add to Output
         const total_asset = Investments.reduce((sum, investment) => sum + investment.value, 0);
