@@ -1,19 +1,50 @@
 async function simulation({ scenario, seed = null, csvLogger = null, eventLogger = null }) {
+  
+    // First check if state tax data exists
+    let stateDataAvailable = false;
+    let allStates = {};
+  
     // 1) Fetch all four endpoints in parallel
-    const [dedRes, rmdRes, gainsRes, fedRes] = await Promise.all([
+    const [dedRes, rmdRes, gainsRes, fedRes, ] = await Promise.all([
         fetch('http://localhost:5000/api/tax/deductions'),
         fetch('http://localhost:5000/api/tax/rmd-table'),
         fetch('http://localhost:5000/api/tax/capital-gains'),
-        fetch('http://localhost:5000/api/tax/federal')
+        fetch('http://localhost:5000/api/tax/federal'),
+
     ]);
-  
+
     // 2) Parse JSON
-    const [dedData, rmdTable, gainsData, fedData] = await Promise.all([
+    const [dedData, rmdTable, gainsData, fedData,] = await Promise.all([
         dedRes.json(),
         rmdRes.json(),
         gainsRes.json(),
         fedRes.json()
     ]);
+
+    try {
+        const response = await fetch('http://localhost:5000/api/tax/state');
+        const stateTaxData = await response.json();
+    
+        const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+        const stateData = stateTaxData[stateKey];
+    
+        if (stateData && stateData.filing_statuses) {
+          const filingStatus = scenario.married ? 'married' : 'single';
+          const brackets = stateData.filing_statuses[filingStatus];
+    
+          const stateTax = brackets.map(({ min, max, rate }) => ({
+            min,
+            max,
+            percentage: rate * 100
+          }));
+    
+          console.log(`State tax brackets for ${scenario.state}:`, stateTax);
+        } else {
+          console.warn(`No tax brackets found for state: ${scenario.state}`);
+        }
+      } catch (error) {
+        console.error('Error fetching state tax data:', error);
+      }
     
     // --- standard deduction ---
     const deductionEntry = dedData.find(e =>
@@ -34,61 +65,27 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     // const gainsRes = await fetch('…/capital-gains');
     // const gainsData = await gainsRes.json();
     console.log('capital gain scrape to ',gainsData );
-    let capital_gains;
-    {
-        const statusKey = scenario.married ? 'married' : 'single';
-
-        // 1) pick & sort only the rows we care about
-        const rows = gainsData
-            .filter(r => r.filingStatus === statusKey)
-            .sort((a, b) => a.incomeThreshold - b.incomeThreshold);
-
-        // 2) for each distinct rate, remember its highest threshold
-        const maxByRate = rows.reduce((map, { rate, incomeThreshold }) => {
-            map[rate] = Math.max(map[rate] ?? 0, incomeThreshold);
-            return map;
-        }, {});
-
-        // 3) get all rates sorted ascending
-        const rates = Object.keys(maxByRate)
-            .map(r => parseFloat(r))
-            .sort((a, b) => a - b);
-
-        // 4) build a bracket for each rate
-        capital_gains = rates.map((rate, idx) => {
-            const pct = rate * 100;
-            const min = idx === 0 ? 0 : maxByRate[rates[idx - 1]] + 1;
-            const max = maxByRate[rate];
-            return { percentage: pct, min, max };
-        });
-
-        // 5) ensure a final 20% bracket
-        const topRate = rates[rates.length - 1];
-        if (topRate < 0.20) {
-            // append a 20% bracket past the last known threshold
-            const prevMax = maxByRate[topRate];
-            capital_gains.push({
-            percentage: 20,
-            min:        prevMax + 1,
-            max:        Infinity
-            });
-        } else {
-            // JSON already had a 20% bracket — extend its top to Infinity
-            capital_gains[capital_gains.length - 1].max = Infinity;
-        }
-    }
-
-    // 1) Sort by percentage (just in case):
-    capital_gains.sort((a,b) => a.percentage - b.percentage);
-
-    // 2) Recompute all but the last bracket max to be one less than the next bracket's min:
-    for (let i = 0; i < capital_gains.length - 1; i++) {
-        capital_gains[i].max = capital_gains[i + 1].min - 1;
-    }
-    // The last bracket stays at Infinity:
-    capital_gains[capital_gains.length - 1].max = Infinity;
+   
+    let capital_gains = [];
+{
+  // pick the right bracket‐set in one go
+  const statusKey = scenario.married ? 'married' : 'single';
+  capital_gains = gainsData[statusKey].map(br => ({ ...br }));
   
-    console.log('normalized capital_gains new:', capital_gains);
+  // sort by percentage just in case
+  capital_gains.sort((a, b) => a.percentage - b.percentage);
+
+  // ensure every bracket except the last has max = next.min - 1
+  for (let i = 0; i < capital_gains.length - 1; i++) {
+    capital_gains[i].max = capital_gains[i + 1].min - 1;
+  }
+  // last bracket goes to Infinity
+  capital_gains[capital_gains.length - 1].max = Infinity;
+}
+
+console.log('normalized capital_gains new:', capital_gains);
+
+
     console.log('scrape to work with fed',fedData);
     {
         // We know fedData has 14 entries: first 7 = single, next 7 = married

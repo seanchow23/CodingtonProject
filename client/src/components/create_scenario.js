@@ -196,6 +196,13 @@ export default function CreateScenario({ scenarios }) {
 
     const createdScenario = await createScenario(newScenario);
     const populatedScenario = await getScenario(createdScenario._id); // fetch with populated data
+
+    if (!user) {
+      const localScenarios = JSON.parse(localStorage.getItem("localScenarios")) || [];
+      localScenarios.push(populatedScenario);
+      localStorage.setItem("localScenarios", JSON.stringify(localScenarios));
+    }
+    
     sessionStorage.removeItem('temporaryScenario');
     addScenario(populatedScenario);
   };
