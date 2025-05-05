@@ -108,24 +108,17 @@ app.get('/api/tax/rmd-table', (req, res) => {
   }
 });
 
-app.get('/api/tax/state/:state', (req, res) => {
-  const stateName = req.params.state.toLowerCase();
-  const filePath = path.join(__dirname, 'data', 'state_tax_data.json');
-
+app.get('/api/tax/state', (req, res) => {
+  const file = path.join(__dirname, 'data/state_tax_data.json');
   try {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const taxData = JSON.parse(fileContent);
-
-    if (!taxData[stateName]) {
-      return res.status(404).json({ message: 'State not found in tax data.' });
-    }
-
-    res.json(taxData[stateName]);
+    const data = fs.readFileSync(file, 'utf8');
+    res.json(JSON.parse(data));
   } catch (error) {
-    console.error('Error reading state tax data:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error('Failed to read state tax data:', error.message);
+    res.status(500).send("Internal Server Error");
   }
 });
+
 
 // const scenarioRoutes = require('./routes/scenario');
 // const userRoutes = require('./routes/user');
