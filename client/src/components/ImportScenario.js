@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const ImportScenario = () => {
+const ImportScenario = ({ setScenarios }) => {
   
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ const ImportScenario = () => {
     setLoading(true);
     
     try {
-      // The URL was incorrect - fix it to point to your backend server
+      // Send the file to the backend for import
       const response = await axios.post(
         'http://localhost:5000/api/scenarios/import',
         formData,
@@ -40,8 +40,37 @@ const ImportScenario = () => {
         }
       );
       
-      // Navigate to the new scenario
-      navigate(`/scenario/${response.data._id}`, { state: { scenario: response.data } });
+      const importedScenario = response.data;
+      
+      // Add the imported scenario to the list of scenarios in the app's state
+      // This is what was missing before - we need to update the parent component's state
+      if (setScenarios) {
+        setScenarios(prevScenarios => [...prevScenarios, importedScenario]);
+      }
+      
+      // Save to local storage if user is not logged in
+      try {
+        const user = await axios.get('http://localhost:5000/auth/user', { 
+          withCredentials: true 
+        });
+        
+        if (!user.data) {
+          const localScenarios = JSON.parse(localStorage.getItem("localScenarios")) || [];
+          localScenarios.push(importedScenario);
+          localStorage.setItem("localScenarios", JSON.stringify(localScenarios));
+        }
+      } catch (err) {
+        // User not logged in, save to localStorage
+        const localScenarios = JSON.parse(localStorage.getItem("localScenarios")) || [];
+        localScenarios.push(importedScenario);
+        localStorage.setItem("localScenarios", JSON.stringify(localScenarios));
+      }
+      
+      // Navigate to the new scenario with the proper state
+      navigate(`/scenario/${importedScenario._id}`, { 
+        state: { scenario: importedScenario } 
+      });
+      
     } catch (err) {
       console.error('Error importing scenario:', err);
       setError(err.response?.data?.error || 'Failed to import scenario');

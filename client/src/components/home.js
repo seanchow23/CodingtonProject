@@ -81,7 +81,7 @@ function Home() {
             <Route path="/simulation/:id" element={<SimulationPage/>} />
             <Route path="/chart-test" element={<ChartTest />} />
             <Route path="/explore/:id" element={<OneDExplorePage />} />
-            <Route path="/import-scenario" element={<ImportScenario />} />
+            <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />
 
         </Routes>
         </main>
