@@ -58,6 +58,8 @@ export default function Scenario() {
                 {scenario.inflation.type === "uniform" && <p>Sampled Inflation, Min [{scenario.inflation.value1}], Max [{scenario.inflation.value2}]</p>}
                 <p>Annual Contribution Limit: ${scenario.annualLimit}</p>
                 <p>Roth Optimizer: {scenario.rothOptimizer === true ? "Active" : "Inactive"}</p>
+                {scenario.rothOptimizer && scenario.lifeExpectancyUser.type === 'fixed' && <p>---- Start Year: {scenario.rothYears[0]} - End Year: {scenario.rothYears[1]} ----</p>}
+                {scenario.rothOptimizer && scenario.lifeExpectancyUser.type !== 'fixed' && <p>---- Start Year: {scenario.rothYears[0]} ----</p>}
                 {scenario.sharing !== "" && <p>Shared With: {scenario.sharing}</p>}
                 <p>Financial Goal: ${scenario.financialGoal}</p>
                 <p>State: {scenario.state}</p>
@@ -128,7 +130,6 @@ export default function Scenario() {
                     ))}
                 </ul>  
                 {scenario.rothOptimizer && <h3>Roth Optimizer Strategy</h3>}
-                {scenario.rothOptimizer && <p>Start Year: {scenario.rothYears[0]} - End Year: {scenario.rothYears[1]}</p>}
             </div>
             <div className="button_div">
                 <button className="edit-button" onClick={createInvestmentType}>Add Investment Type</button>

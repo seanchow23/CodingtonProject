@@ -1,9 +1,6 @@
 async function simulation({ scenario, seed = null, csvLogger = null, eventLogger = null }) {
-  
-    // First check if state tax data exists
-    let stateDataAvailable = false;
-    let allStates = {};
-  
+
+    // TAXES
     // 1) Fetch all four endpoints in parallel
     const [dedRes, rmdRes, gainsRes, fedRes, ] = await Promise.all([
         fetch('http://localhost:5000/api/tax/deductions'),
@@ -20,6 +17,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         fedRes.json()
     ]);
 
+    // Getting state taxes
     try {
         const response = await fetch('http://localhost:5000/api/tax/state');
         const stateTaxData = await response.json();
@@ -41,24 +39,16 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         } else {
           console.warn(`No tax brackets found for state: ${scenario.state}`);
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error fetching state tax data:', error);
-      }
-    
-    // --- standard deduction ---
-    // const deductionEntry = dedData.find(e =>
-    //   scenario.married
-    //     ? e.filingStatus.includes('Married filing jointly')
-    //     : e.filingStatus.includes('Single')
-    // );
+    }
 
+    // Getting Deductions
     var federal_deductions = dedData.find(e => e.filingStatus.includes('Single'))?.standardDeduction ?? 0;
     var federal_deductions_married = dedData.find(e => e.filingStatus.includes('Married filing jointly'))?.standardDeduction ?? 0;
 
-    // var federal_deductions = deductionEntry?.standardDeduction ?? 0;
     console.log('here is federal_deductionss for simulation single', federal_deductions);
     console.log('here is federal_deductionss for simulation married', federal_deductions_married);
-
 
     // --- RMD distributions ---
     const rmd_distributions = rmdTable
@@ -67,78 +57,30 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         .map  (item => item.divisor);                       // pull out just the number
     console.log('here is rmd dist new', rmd_distributions);
 
-    // const gainsRes = await fetch('…/capital-gains');
-    // const gainsData = await gainsRes.json();
-
-
-
-
+    // Capital Gains
     console.log('capital gain scrape to ',gainsData );
    
-var capital_gains = gainsData["single"]
-  .map(br => ({ ...br }))
-  .sort((a, b) => a.percentage - b.percentage);
-for (let i = 0; i < capital_gains.length - 1; i++) {
-  capital_gains[i].max = capital_gains[i + 1].min - 1;
-}
-capital_gains[capital_gains.length - 1].max = Infinity;
+    var capital_gains = gainsData["single"]
+        .map(br => ({ ...br }))
+        .sort((a, b) => a.percentage - b.percentage);
+    for (let i = 0; i < capital_gains.length - 1; i++) {
+        capital_gains[i].max = capital_gains[i + 1].min - 1;
+    }
+    capital_gains[capital_gains.length - 1].max = Infinity;
 
-const capital_gains_married = gainsData["married"]
-  .map(br => ({ ...br }))
-  .sort((a, b) => a.percentage - b.percentage);
-for (let i = 0; i < capital_gains_married.length - 1; i++) {
-  capital_gains_married[i].max = capital_gains_married[i + 1].min - 1;
-}
-capital_gains_married[capital_gains_married.length - 1].max = Infinity;
+    const capital_gains_married = gainsData["married"]
+        .map(br => ({ ...br }))
+        .sort((a, b) => a.percentage - b.percentage);
+    for (let i = 0; i < capital_gains_married.length - 1; i++) {
+        capital_gains_married[i].max = capital_gains_married[i + 1].min - 1;
+    }
+    capital_gains_married[capital_gains_married.length - 1].max = Infinity;
 
+    console.log('single capital_gains :', capital_gains);
+    console.log('married capital_gains :', capital_gains_married);
 
-
-// {
-//   // pick the right bracket‐set in one go
-//   const statusKey = scenario.married ? 'married' : 'single';
-//   capital_gains = gainsData[statusKey].map(br => ({ ...br }));
-  
-//   // sort by percentage just in case
-//   capital_gains.sort((a, b) => a.percentage - b.percentage);
-
-//   // ensure every bracket except the last has max = next.min - 1
-//   for (let i = 0; i < capital_gains.length - 1; i++) {
-//     capital_gains[i].max = capital_gains[i + 1].min - 1;
-//   }
-//   // last bracket goes to Infinity
-//   capital_gains[capital_gains.length - 1].max = Infinity;
-// }
-
-console.log('single capital_gains :', capital_gains);
-console.log('married capital_gains :', capital_gains_married);
-
-
-
-
-
-
+    // Federal Income 
     console.log('scrape to work with fed',fedData);
-    // {
-    //     // We know fedData has 14 entries: first 7 = single, next 7 = married
-    //     const BRACKET_COUNT = 7;
-    
-    //     //slice out exactly the 7 for each filing status
-    //     const singleRaw  = fedData.slice(0, BRACKET_COUNT);
-    //     const marriedRaw = fedData.slice(BRACKET_COUNT, BRACKET_COUNT * 2);
-    
-    //     //  pick the right raw chunk
-    //     const rawBrackets = scenario.married ? marriedRaw : singleRaw;
-    
-    //     //  hard‑code the tax percentages in order
-    //     const rates = [10, 12, 22, 24, 32, 35, 37];
-    
-    //     // 4) map into clean {percentage, min, max}
-    //     var federal_brackets = rawBrackets.map((entry, idx) => ({
-    //         percentage: rates[idx],
-    //         min: parseInt(entry.incomeRange, 10),
-    //         max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
-    //     }));
-    // }
 
     const BRACKET_COUNT = 7;
 
@@ -158,12 +100,10 @@ console.log('married capital_gains :', capital_gains_married);
       max: entry.taxRate === 'And up' ? Infinity : parseInt(entry.taxRate, 10)
     }));
 
-
-  
     console.log('new fed brack for single',federal_brackets);
     console.log('new fed brack for married',federal_brackets_married);
+    // END TAXES
 
-  
     const rng = seed !== null ? mulberry32(seed) : Math.random;
 
     let user_life_expectancy = 0;
