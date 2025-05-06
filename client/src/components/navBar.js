@@ -4,10 +4,10 @@ import { Link, useMatch, useResolvedPath } from "react-router-dom"
 export default function Navbar() {
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-title">App Name</Link>
+      <Link to="/" className="navbar-title">Financial Planner</Link>
       <div className="navbar-buttons">
         <NavLink to="/user_profile">Profile</NavLink>
-        <NavLink to="/login">Login</NavLink>
+        <NavLink to="/login">Login/Logout</NavLink>
       </div>
     </nav>
   );

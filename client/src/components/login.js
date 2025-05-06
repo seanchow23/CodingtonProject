@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import '../stylesheets/login.css';
 
 function Login() {
   const [user, setUser] = useState(null);
@@ -24,17 +25,20 @@ function Login() {
   };
 
   return (
-    <div>
-      {user ? (
-        <>
-          <h2>Welcome, {user.displayName}</h2>
-          <button onClick={logout}>Logout</button>
-        </>
-      ) : (
-        <button onClick={login}>Login with Google</button>
-      )}
+    <div className="login-container">
+      <div className="login-card">
+        {user ? (
+          <>
+            <h2>Welcome, {user.username}</h2>
+            <button onClick={logout}>Logout</button>
+          </>
+        ) : (
+          <button onClick={login}>Login with Google</button>
+        )}
+      </div>
     </div>
   );
+  
 }
 
 export default Login;
