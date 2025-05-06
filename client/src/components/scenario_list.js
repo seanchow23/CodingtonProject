@@ -10,7 +10,10 @@ const ScenarioList = ({ scenarios, simulate }) => {
     return (<div className="scenario-list">
         <div className="home-header">
             <h1 className="home-title">Scenarios</h1>
-            {!simulate && <button className="create-button"  onClick={handleCreateScenarioClick}>+ Create Scenario</button>}
+            <div style={{ display: 'flex', gap: '10px' }}>
+                {!simulate && <button className="create-button"  onClick={handleCreateScenarioClick}>+ Create Scenario</button>}
+                {!simulate && <button className="create-button" onClick={handleImportClick}>Import Scenario</button>}
+            </div>
         </div>
         {scenarios.map((scenario, index) => (
             <div key={scenario._id} className="scenario-card" onClick={() => handleScenarioClick(scenario)}>
@@ -19,8 +22,6 @@ const ScenarioList = ({ scenarios, simulate }) => {
                 </h2>
             </div>))
         }
-        <button className="import-button" onClick={handleImportClick}>Import Scenario</button>
-
     </div>);
 }
 
