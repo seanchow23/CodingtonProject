@@ -57,9 +57,7 @@ app.use(express.json());
 
 // Enable CORS to allow client (frontend) to talk to server
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CLIENT_URL  // Vercel frontend URL
-    : 'http://localhost:3000',  // Localhost for development
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 
