@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Create an axios instance with proper configuration
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  baseURL: process.env.REACT_APP_API_URL,
   withCredentials: true,
   timeout: 30000, // 30 second timeout for simulations
 });
@@ -163,20 +163,16 @@ function ensureDistribution(scenario, propName) {
  * Run a simulation with a given scenario and seed
  * Preprocesses the scenario to prevent common simulation failures
  */
-
-
-export async function runSimulation(scenario, seed = null, user = null) {
+export async function runSimulation(scenario, seed = null) {
   try {
     // Process the scenario to ensure it's valid for simulation
     const processedScenario = preprocessScenario(scenario);
     
     console.log("Running simulation with processed scenario:", processedScenario.name);
     
-
-    const response = await API.post('/simulation', {
-      scenario,
-      seed,
-      user
+    const response = await API.post('/api/simulation', {
+      scenario: processedScenario,
+      seed
     });
 
     const data = response.data;
