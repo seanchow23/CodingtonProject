@@ -125,3 +125,7 @@ scrapeRMDUniformTable();
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+console.log(process.env.NODE_ENV === 'production')
+console.log(process.env.NODE_ENV)
+console.log(process.env.CLIENT_URL)
