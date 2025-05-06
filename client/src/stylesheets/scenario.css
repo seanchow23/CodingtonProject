@@ -283,3 +283,10 @@ form > div {
 .details_div {
     margin-left: 20px;
 }
+
+.edit-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+ 

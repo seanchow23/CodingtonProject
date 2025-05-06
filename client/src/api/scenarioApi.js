@@ -1,13 +1,35 @@
 import axios from 'axios';
 
+
 const API = axios.create({
   baseURL: `${process.env.REACT_APP_API_URL}/api/scenarios`,
   withCredentials: true,
 });
 
+
 // -----------------------------
 // Scenario CRUD
 // -----------------------------
+
+
+//share a scenario with anothe user
+export const shareScenario = async (scenarioId, data) => {
+  try{
+    console.log("request recieved at the share scenario");
+    const response = await API.post(`/${scenarioId}/share`, data);
+    return response.data;
+  } catch (error){
+    console.error("Error sharing scenario: ", error);
+    throw error;
+  }
+};
+
+
+// delete all scenario with user null
+export const deleteAnonymousScenarios = async () => {
+  return await API.delete('/cleanup/anonymous');
+};
+
 
 // Create a new scenario (user is optional)
 export const createScenario = async (data) => {
@@ -22,6 +44,7 @@ export const createScenario = async (data) => {
   }
 };
 
+
 // Get one scenario by ID
 export const getScenario = async (id) => {
   try {
@@ -32,6 +55,7 @@ export const getScenario = async (id) => {
     throw error;
   }
 };
+
 
 // Get unpopulated scenario by ID
 export const getScenarioUnpop = async (id) => {
@@ -44,6 +68,7 @@ export const getScenarioUnpop = async (id) => {
   }
 };
 
+
 // Update a scenario
 export const updateScenario = async (id, data) => {
   try {
@@ -54,6 +79,7 @@ export const updateScenario = async (id, data) => {
     throw error;
   }
 };
+
 
 // Delete a scenario
 export const deleteScenario = async (id) => {
@@ -66,6 +92,7 @@ export const deleteScenario = async (id) => {
   }
 };
 
+
 // Get all scenarios (optional/debugging/admin)
 export const getAllScenarios = async () => {
   try {
@@ -76,3 +103,6 @@ export const getAllScenarios = async () => {
     throw error;
   }
 };
+
+
+

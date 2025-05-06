@@ -697,6 +697,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     }
 
     if (csvLogger) { csvLogger.flush(Investments.map(inv => inv.investmentType.name)); }
+    if (eventLogger) { eventLogger.flush(); }
 
     return output;
 }

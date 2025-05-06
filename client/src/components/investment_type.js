@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 
-const InvestmentType = ({ investmentType }) => {
+const InvestmentType = ({ investmentType, canEdit }) => {
     const navigate = useNavigate();
     const editInvestmentType = () => {navigate(`/scenario/edit_investment_type/${investmentType._id}`, { state: { investmentType } });};
 
@@ -41,7 +41,7 @@ const InvestmentType = ({ investmentType }) => {
                 </p>
             )}
             <p>{investmentType.taxability ? 'Taxable' : 'Not Taxable'}</p>
-            <button className="edit-button" onClick={editInvestmentType}>Edit</button>
+            <button className="edit-button" onClick={editInvestmentType} disabled={!canEdit}>Edit</button>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 
-const Rebalance = ({ event }) => {
+const Rebalance = ({ event, canEdit}) => {
     const navigate = useNavigate();
     const editEvent = () => {navigate(`/scenario/edit_event/${event._id}`, { state: { event } });};
 
@@ -27,7 +27,7 @@ const Rebalance = ({ event }) => {
                     </ul>
                 ))}
 
-            <button className="edit-button" onClick={editEvent}>Edit</button>
+            <button className="edit-button" onClick={editEvent} disabled={!canEdit} >Edit</button>
         </div>
     );
 };

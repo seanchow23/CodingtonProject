@@ -28,14 +28,38 @@ function Home() {
   const navigate = useNavigate();
   const location = useLocation(); 
 
+  let username = null;
+
+  useEffect(() => {
+    const isPageReload =
+      window.performance?.navigation?.type === 1 || // legacy
+      window.performance?.getEntriesByType("navigation")[0]?.type === "reload"; // modern
+  
+    if (!isPageReload) return;
+  
+    const cleanupAnonymous = async () => {
+      try {
+        console.log("💥 Refresh detected — cleaning up anonymous scenarios");
+        await scenarioApi.deleteAnonymousScenarios();
+        sessionStorage.removeItem("temporaryScenarioIds");
+        sessionStorage.removeItem("sessionScenarios");
+        
+      } catch (err) {
+        console.warn("❌ Failed to clean up anonymous scenarios:", err);
+      }
+    };
+  
+    cleanupAnonymous();
+  }, []);
+  
   useEffect(() => {
     const fetchScenarios = async () => {
       setLoading(true);
-
       try {
         const { data: user } = await userApi.getCurrentUser();
-
+  
         if (user && user._id) {
+          username = user.username;
           const allScenarioIds = [...user.scenarios, ...user.sharedScenarios];
           const scenarioFetches = allScenarioIds.map(id => scenarioApi.getScenario(id));
           const scenarioResponses = await Promise.all(scenarioFetches);
@@ -44,44 +68,41 @@ function Home() {
         } else {
           throw new Error("No user");
         }
-
       } catch (err) {
-        // Not logged in — fallback to localStorage
-        const local = localStorage.getItem("localScenarios");
-        const parsed = local ? JSON.parse(local) : [];
-        setScenarios(parsed);
+        // Guest user fallback (don't delete anything here!)
+        const localScenarios = JSON.parse(localStorage.getItem("localScenarios")) || [];
+        setScenarios(localScenarios);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchScenarios();
-  }, [location.pathname]);
-
+  }, [location.pathname]); // ✅ This triggers on every in-app route change
+  
   if (loading) return <p>Loading...</p>;
 
   return (
     <div className="home-container">
       <Navbar />
-
-        <main className="home-main">
-          <Routes>
-            <Route path="/" element={<ScenarioList scenarios={scenarios} simulate={false}/>} />
-            <Route path="/scenario/:id" element={<Scenario/>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/user_profile" element={<UserProfile />} />
-            <Route path="/scenario/create" element={<CreateScenario scenarios={scenarios}/>} />
-            <Route path="/scenario/create_investment_type/:id" element={<CreateInvestmentTypes scenarios={scenarios}/>} />
-            <Route path="/scenario/create_investment/:id" element={<CreateInvestments scenarios={scenarios}/>} />
-            <Route path="/scenario/create_event/:id" element={<CreateEvent scenarios={scenarios}/>} />
-            <Route path="/scenario/edit/:id" element={<EditScenario scenarios={scenarios}/>} />
-            <Route path="/scenario/edit_investment_type/:id" element={<EditInvestmentTypes scenarios={scenarios}/>} />
-            <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios}/>} />
-            <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
-            <Route path="/simulation/:id" element={<SimulationPage/>} />
-            <Route path="/explore/:id" element={<OneDExplorePage />} />
-            <Route path="/explore2/:id" element={<TwoDExplorePage />} />
-            <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />
+      <main className="home-main">
+        <Routes>
+          <Route path="/" element={<ScenarioList scenarios={scenarios} simulate={false} />} />
+          <Route path="/scenario/:id" element={<Scenario />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/user_profile" element={<UserProfile />} />
+          <Route path="/scenario/create" element={<CreateScenario scenarios={scenarios} />} />
+          <Route path="/scenario/create_investment_type/:id" element={<CreateInvestmentTypes scenarios={scenarios} />} />
+          <Route path="/scenario/create_investment/:id" element={<CreateInvestments scenarios={scenarios} />} />
+          <Route path="/scenario/create_event/:id" element={<CreateEvent scenarios={scenarios} />} />
+          <Route path="/scenario/edit/:id" element={<EditScenario scenarios={scenarios} />} />
+          <Route path="/scenario/edit_investment_type/:id" element={<EditInvestmentTypes scenarios={scenarios} />} />
+          <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios} />} />
+          <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios} />} />
+          <Route path="/simulation/:id" element={<SimulationPage user={username}/>} />
+          <Route path="/explore/:id" element={<OneDExplorePage />} />
+          <Route path="/explore2/:id" element={<TwoDExplorePage />} />
+          <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />
         </Routes>
         </main>
 

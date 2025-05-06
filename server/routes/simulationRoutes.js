@@ -3,13 +3,11 @@ const { Worker } = require('worker_threads');
 const path = require('path');
 const router = express.Router();
 
-let isFirstSimulation = true;
-
-function runSimulationInWorker(scenario, seed) {
+function runSimulationInWorker(scenario, seed, user = null) {
   return new Promise((resolve, reject) => {
     const worker = new Worker(path.resolve(__dirname, '../simulationWorker.js'));
 
-    worker.postMessage({ scenario, seed, isFirstSimulation });
+    worker.postMessage({ scenario, seed, user });
 
     worker.on('message', (msg) => {
       if (msg.success) resolve(msg.result);
@@ -22,15 +20,13 @@ function runSimulationInWorker(scenario, seed) {
         reject(new Error(`Worker stopped with exit code ${code}`));
       }
     });
-
-    if (isFirstSimulation) {isFirstSimulation = false;}
   });
 }
 
 router.post('/', async (req, res) => {
   try {
-    const { scenario, seed } = req.body;
-    const result = await runSimulationInWorker(scenario, seed);
+    const { scenario, seed, user } = req.body;
+    const result = await runSimulationInWorker(scenario, seed, user);
     res.json({ success: true, result });
   } catch (error) {
     console.error('Simulation error:', error);
