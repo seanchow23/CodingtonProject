@@ -7,7 +7,480 @@ require('../models/investmentType');
 require('../models/event');
 require('../models/expense');
 
+// Add this to your server/routes/scenario.js file
 
+const yaml = require('js-yaml');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const mongoose = require('mongoose');
+
+// Setup multer for temporary file storage
+const upload = multer({ dest: 'uploads/' });
+
+// Route for importing a YAML scenario
+router.post('/import', upload.single('yamlFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const filePath = req.file.path;
+    
+    // Read and parse the YAML file
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const scenarioData = yaml.load(fileContent);
+    
+    // Process the YAML data to convert it to our database schema format
+    const processedScenario = await processYamlScenario(scenarioData, req.user);
+    
+    // Return the fully populated scenario
+    const populatedScenario = await Scenario.findById(processedScenario._id)
+      .populate({
+        path: 'investmentTypes',
+        populate: [
+          { path: 'expectedAnnualReturn' },
+          { path: 'expectedAnnualIncome' }
+        ]
+      })
+      .populate({
+        path: 'investments',
+        populate: { path: 'investmentType' }
+      })
+      .populate({
+        path: 'events',
+        populate: [
+          {
+            path: 'startYear',
+            populate: { path: 'event' }
+          },
+          {
+            path: 'duration',
+            populate: { path: 'event' }
+          }
+        ]
+      })
+      .populate({
+        path: 'spendingStrategy',
+        model: 'expense'
+      })
+      .populate({
+        path: 'withdrawalStrategy',
+        populate: { path: 'investmentType' }
+      })
+      .populate({
+        path: 'rmd',
+        populate: { path: 'investmentType' }
+      })
+      .populate({
+        path: 'rothStrategy',
+        populate: { path: 'investmentType' }
+      })
+      .populate('lifeExpectancyUser')
+      .populate('lifeExpectancySpouse')
+      .populate('inflation')
+      .populate('user');
+
+    // Load additional nested data
+    await Promise.all(
+      populatedScenario.events
+        .filter(event => event.type === 'invest' || event.type === 'rebalance')
+        .map(event =>
+          event.populate({
+            path: 'allocations',
+            populate: {
+              path: 'investment',
+              populate: {
+                path: 'investmentType'
+              }
+            }
+          })
+        )
+    );
+
+    // Clean up the temp file
+    fs.unlinkSync(filePath);
+    
+    res.status(201).json(populatedScenario);
+    
+  } catch (error) {
+    console.error('Import error:', error);
+    res.status(500).json({ error: 'Failed to import scenario: ' + error.message });
+  }
+});
+
+// Export route for downloading a scenario as YAML
+router.get('/export/:id', async (req, res) => {
+  try {
+    const scenario = await Scenario.findById(req.params.id)
+      .populate({
+        path: 'investmentTypes',
+        populate: [
+          { path: 'expectedAnnualReturn' },
+          { path: 'expectedAnnualIncome' }
+        ]
+      })
+      .populate({
+        path: 'investments',
+        populate: { path: 'investmentType' }
+      })
+      .populate({
+        path: 'events',
+        populate: [
+          { path: 'startYear' },
+          { path: 'duration' },
+          { path: 'allocations' }
+        ]
+      })
+      .populate('lifeExpectancyUser')
+      .populate('lifeExpectancySpouse')
+      .populate('inflation');
+    
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found' });
+    }
+    
+    // Convert to YAML format
+    const yamlData = convertToYamlFormat(scenario);
+    const yamlString = yaml.dump(yamlData);
+    
+    // Set headers for file download
+    res.setHeader('Content-Type', 'application/x-yaml');
+    res.setHeader('Content-Disposition', `attachment; filename="${scenario.name}.yaml"`);
+    
+    res.send(yamlString);
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    res.status(500).json({ error: 'Failed to export scenario' });
+  }
+});
+
+// Helper function to process YAML scenario data
+async function processYamlScenario(yamlData, user) {
+  const Distribution = mongoose.model('Distribution');
+  const InvestmentType = mongoose.model('InvestmentType');
+  const Investment = mongoose.model('Investment');
+  const Event = mongoose.model('Event');
+  const Income = mongoose.model('income');
+  const Expense = mongoose.model('expense');
+  const Invest = mongoose.model('invest');
+  const Rebalance = mongoose.model('rebalance');
+  const Allocation = mongoose.model('Allocation');
+  
+  // Create base scenario structure
+  const newScenario = new Scenario({
+    name: yamlData.name || 'Imported Scenario',
+    married: yamlData.maritalStatus === 'couple',
+    user: user ? user._id : null,
+    // Other base fields...
+  });
+  
+  // Process birth years
+  if (yamlData.birthYears && yamlData.birthYears.length > 0) {
+    newScenario.birthYearUser = yamlData.birthYears[0];
+    if (yamlData.birthYears.length > 1) {
+      newScenario.birthYearSpouse = yamlData.birthYears[1];
+    }
+  }
+  
+  // Process life expectancy distributions
+  if (yamlData.lifeExpectancy && yamlData.lifeExpectancy.length > 0) {
+    const userExpectancy = yamlData.lifeExpectancy[0];
+    const userDistribution = new Distribution({
+      type: userExpectancy.type,
+      value1: userExpectancy.value || userExpectancy.mean || userExpectancy.lower,
+      value2: userExpectancy.stdev || userExpectancy.upper
+    });
+    await userDistribution.save();
+    newScenario.lifeExpectancyUser = userDistribution._id;
+    
+    if (yamlData.lifeExpectancy.length > 1) {
+      const spouseExpectancy = yamlData.lifeExpectancy[1];
+      const spouseDistribution = new Distribution({
+        type: spouseExpectancy.type,
+        value1: spouseExpectancy.value || spouseExpectancy.mean || spouseExpectancy.lower,
+        value2: spouseExpectancy.stdev || spouseExpectancy.upper
+      });
+      await spouseDistribution.save();
+      newScenario.lifeExpectancySpouse = spouseDistribution._id;
+    }
+  }
+  
+  // Process inflation
+  const inflationDist = new Distribution({
+    type: 'fixed',
+    value1: yamlData.inflationAssumption?.value || 0.03,
+    value2: 0
+  });
+  await inflationDist.save();
+  newScenario.inflation = inflationDist._id;
+  
+  // Process investment types
+  const investmentTypeMap = {};
+  if (yamlData.investmentTypes && yamlData.investmentTypes.length > 0) {
+    newScenario.investmentTypes = [];
+    
+    for (const typeData of yamlData.investmentTypes) {
+      // Create return distribution
+      const returnDist = new Distribution({
+        type: typeData.returnDistribution.type,
+        value1: typeData.returnDistribution.value || typeData.returnDistribution.mean || typeData.returnDistribution.lower,
+        value2: typeData.returnDistribution.stdev || typeData.returnDistribution.upper
+      });
+      await returnDist.save();
+      
+      // Create income distribution
+      const incomeDist = new Distribution({
+        type: typeData.incomeDistribution.type,
+        value1: typeData.incomeDistribution.value || typeData.incomeDistribution.mean || typeData.incomeDistribution.lower,
+        value2: typeData.incomeDistribution.stdev || typeData.incomeDistribution.upper
+      });
+      await incomeDist.save();
+      
+      // Create investment type
+      const newType = new InvestmentType({
+        name: typeData.name,
+        description: typeData.description,
+        expectedAnnualReturn: returnDist._id,
+        expenseRatio: typeData.expenseRatio,
+        expectedAnnualIncome: incomeDist._id,
+        taxability: typeData.taxability
+      });
+      await newType.save();
+      
+      newScenario.investmentTypes.push(newType._id);
+      investmentTypeMap[typeData.name] = newType;
+    }
+  }
+  
+  // Process investments
+  const investmentMap = {};
+  if (yamlData.investments && yamlData.investments.length > 0) {
+    newScenario.investments = [];
+    
+    for (const invData of yamlData.investments) {
+      const investmentType = investmentTypeMap[invData.investmentType];
+      if (!investmentType) {
+        console.warn(`Investment type ${invData.investmentType} not found`);
+        continue;
+      }
+      
+      const newInvestment = new Investment({
+        investmentType: investmentType._id,
+        value: invData.value,
+        baseValue: invData.value,
+        taxStatus: invData.taxStatus
+      });
+      await newInvestment.save();
+      
+      newScenario.investments.push(newInvestment._id);
+      investmentMap[invData.id] = newInvestment;
+    }
+  }
+  
+  // Process event series
+  if (yamlData.eventSeries && yamlData.eventSeries.length > 0) {
+    newScenario.events = [];
+    const eventMap = {};
+    
+    // First pass - create base events
+    for (const eventData of yamlData.eventSeries) {
+      let startYearDist, durationDist;
+      
+      // Create start year distribution
+      if (eventData.start.type === 'startWith' || eventData.start.type === 'startAfter') {
+        // Will need a second pass to link these up
+        startYearDist = new Distribution({
+          type: eventData.start.type === 'startWith' ? 'starts-with' : 'starts-after',
+          value1: 0,
+          value2: 0
+        });
+      } else {
+        startYearDist = new Distribution({
+          type: eventData.start.type,
+          value1: eventData.start.value || eventData.start.mean || eventData.start.lower,
+          value2: eventData.start.stdev || eventData.start.upper
+        });
+      }
+      await startYearDist.save();
+      
+      // Create duration distribution
+      durationDist = new Distribution({
+        type: eventData.duration.type,
+        value1: eventData.duration.value || eventData.duration.mean || eventData.duration.lower,
+        value2: eventData.duration.stdev || eventData.duration.upper
+      });
+      await durationDist.save();
+      
+      let newEvent;
+      
+      // Create different event types
+      switch (eventData.type) {
+        case 'income':
+          newEvent = new Income({
+            name: eventData.name,
+            description: '',
+            startYear: startYearDist._id,
+            duration: durationDist._id,
+            amount: eventData.initialAmount,
+            change: eventData.changeDistribution.value || eventData.changeDistribution.mean || 0,
+            inflation: eventData.inflationAdjusted,
+            ss: eventData.socialSecurity
+          });
+          break;
+          
+        case 'expense':
+          newEvent = new Expense({
+            name: eventData.name,
+            description: '',
+            startYear: startYearDist._id,
+            duration: durationDist._id,
+            amount: eventData.initialAmount,
+            change: eventData.changeDistribution.value || eventData.changeDistribution.mean || 0,
+            inflation: eventData.inflationAdjusted,
+            discretionary: eventData.discretionary
+          });
+          break;
+          
+        case 'invest':
+          newEvent = new Invest({
+            name: eventData.name,
+            description: '',
+            startYear: startYearDist._id,
+            duration: durationDist._id,
+            max: eventData.maxCash || 1000,
+            glide: eventData.glidePath || false,
+            allocations: [] // Will be populated in second pass
+          });
+          break;
+          
+        case 'rebalance':
+          newEvent = new Rebalance({
+            name: eventData.name,
+            description: '',
+            startYear: startYearDist._id,
+            duration: durationDist._id,
+            glide: false,
+            allocations: [] // Will be populated in second pass
+          });
+          break;
+      }
+      
+      if (newEvent) {
+        await newEvent.save();
+        newScenario.events.push(newEvent._id);
+        eventMap[eventData.name] = newEvent;
+        
+        // Add to appropriate strategies
+        if (eventData.type === 'expense' && eventData.discretionary) {
+          if (!newScenario.spendingStrategy) newScenario.spendingStrategy = [];
+          newScenario.spendingStrategy.push(newEvent._id);
+        }
+      }
+    }
+    
+    // Second pass - handle linked events and allocations
+    for (const eventData of yamlData.eventSeries) {
+      const currentEvent = eventMap[eventData.name];
+      
+      // Link dependent events
+      if (eventData.start.type === 'startWith' || eventData.start.type === 'startAfter') {
+        const dependentEventName = eventData.start.eventSeries;
+        const dependentEvent = eventMap[dependentEventName];
+        
+        if (dependentEvent) {
+          const startYearDist = await Distribution.findById(currentEvent.startYear);
+          startYearDist.event = dependentEvent._id;
+          await startYearDist.save();
+        }
+      }
+      
+      // Handle allocations for invest/rebalance events
+      if ((eventData.type === 'invest' || eventData.type === 'rebalance') && 
+          (eventData.assetAllocation || eventData.assetAllocation2)) {
+        
+        // Create allocations
+        for (const [investId, percentage] of Object.entries(eventData.assetAllocation)) {
+          const investment = investmentMap[investId];
+          if (!investment) continue;
+          
+          let finalPercentage = percentage;
+          if (eventData.glidePath && eventData.assetAllocation2) {
+            finalPercentage = eventData.assetAllocation2[investId] || percentage;
+          }
+          
+          const newAllocation = new Allocation({
+            investment: investment._id,
+            percentage: percentage * 100, // Convert from decimal to percentage
+            finalPercentage: finalPercentage * 100,
+            glide: 0 // Calculated during simulation
+          });
+          
+          await newAllocation.save();
+          
+          // Add to event
+          await mongoose.model(eventData.type).findByIdAndUpdate(
+            currentEvent._id,
+            { $push: { allocations: newAllocation._id } }
+          );
+        }
+      }
+    }
+  }
+  
+  // Process strategies
+  if (yamlData.expenseWithdrawalStrategy) {
+    newScenario.withdrawalStrategy = yamlData.expenseWithdrawalStrategy.map(id => 
+      investmentMap[id] ? investmentMap[id]._id : null
+    ).filter(id => id !== null);
+  }
+  
+  if (yamlData.RMDStrategy) {
+    newScenario.rmd = yamlData.RMDStrategy.map(id => 
+      investmentMap[id] ? investmentMap[id]._id : null
+    ).filter(id => id !== null);
+  }
+  
+  if (yamlData.RothConversionStrategy) {
+    newScenario.rothStrategy = yamlData.RothConversionStrategy.map(id => 
+      investmentMap[id] ? investmentMap[id]._id : null
+    ).filter(id => id !== null);
+  }
+  
+  // Set other fields
+  newScenario.annualLimit = yamlData.afterTaxContributionLimit || 0;
+  newScenario.rothOptimizer = yamlData.RothConversionOpt || false;
+  newScenario.rothYears = [yamlData.RothConversionStart || 2050, yamlData.RothConversionEnd || 2060];
+  newScenario.financialGoal = yamlData.financialGoal || 0;
+  newScenario.state = yamlData.residenceState || '';
+  
+  // Save the scenario
+  await newScenario.save();
+  
+  // If the user is logged in, add scenario to user's list
+  if (user) {
+    await mongoose.model('User').findByIdAndUpdate(
+      user._id,
+      { $push: { scenarios: newScenario._id } }
+    );
+  }
+  
+  return newScenario;
+}
+
+// Helper function to convert scenario to YAML format
+function convertToYamlFormat(scenario) {
+  // Implementation goes here based on YAML format spec
+  // This would be the reverse of processYamlScenario
+  
+  // Return YAML compatible object
+  return {
+    name: scenario.name,
+    maritalStatus: scenario.married ? 'couple' : 'individual',
+    // ... other fields formatted according to YAML spec
+  };
+}
 
 // ----------------------------------------------------
 // GET /api/scenarios/user/:userId
