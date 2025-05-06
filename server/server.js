@@ -47,9 +47,10 @@ require('./models/expense');
 
 const PORT = 5000; // use 5000 for targeting Google OAuth callback
 
+const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 // set up connection to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
