@@ -29,6 +29,34 @@ export default function SimulationPage() {
     discretionaryExpenses: false,
     median: false
   });
+  
+  const [message, setMessage] = useState("");
+  
+  function simulateProbabilityEdited(scenarios) {
+    return scenarios.map((scenario) => {
+      const runs = [];
+      for (let i = 0; i < formData.num; i++) {
+        runs.push(simulation({ scenario: structuredClone(scenario) })[0]); // probability array
+      }
+      return runs;
+    });
+  }
+
+  function simulateInvestmentSeries(scenarios) {
+    return scenarios.map((scenario) => {
+      const series = [];
+      for (let i = 0; i < formData.num; i++) {
+        const sim = simulation({ scenario: structuredClone(scenario) });
+        series.push(sim[1][0]);  // assuming [1][0] = total investments per year
+      }
+      return series;
+    });
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({...formData, [name]: type === "checkbox" ? checked : value});
+  };
 
   const [hasRun, setHasRun] = useState(false); // ✅ moved up here
   const [baseScenario] = useState(() => structuredClone(originalScenario)); // locked base
@@ -90,7 +118,17 @@ export default function SimulationPage() {
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
-  const handleRunSimulations = async () => {
+  const handleRunSimulations = async (scenario, handle) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/tax/state');
+      const data = await res.json();
+      const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+      if (!data[stateKey]) {
+        handle(`Warning: No tax data found for ${scenario.state}, simulation will ignore state tax!`)
+      }
+    } catch (err) {
+      console.error('Error fetching state tax data:', err);
+    }
     const newLine = [];
     const newShade1 = [];
     const newShade2 = [];
@@ -132,6 +170,17 @@ export default function SimulationPage() {
 
   return (
     <div>
+      {message && <p style={{ 
+          backgroundColor: '#fff3cd', 
+          color: '#856404', 
+          padding: '10px 15px', 
+          border: '1px solid #ffeeba', 
+          borderRadius: '4px',
+          fontWeight: 'bold',
+          marginTop: '10px'
+      }}>
+          {message}
+      </p>}
       {!hasRun ? (
         <div>
           <h2>Enter number of simulations</h2>
