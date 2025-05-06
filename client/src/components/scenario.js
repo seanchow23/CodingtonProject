@@ -10,10 +10,7 @@ import { getScenario } from "../api/scenarioApi";
 import * as scenarioApi from "../api/scenarioApi";
 import * as userApi from "../api/userApi";
 
-const exportScenario = () => {
-  // Directly trigger a file download by creating a link to the export endpoint
-  window.open(`${process.env.REACT_APP_API_URL}/api/scenarios/export/${scenario._id}`, '_blank');
-};
+
 
 export default function Scenario() {
   const location = useLocation();
@@ -31,7 +28,31 @@ export default function Scenario() {
   const [shareError, setShareError] = useState('');
   const [shareSuccess, setShareSuccess] = useState('');
 
+  const exportScenario = () => {
+    if (!scenario || !scenario._id) {
+      console.error("Cannot export: no scenario or scenario ID");
+      return;
+    }
+    
+    // Set up a direct download by creating a link to the export endpoint
+    const exportUrl = `${process.env.REACT_APP_API_URL}/api/scenarios/export/${scenario._id}`;
+    
+    // Create a hidden anchor element to trigger the download
+    const downloadLink = document.createElement('a');
+    downloadLink.href = exportUrl;
+    downloadLink.download = `${scenario.name || 'scenario'}.yaml`;
+    
+    // Append to the document, click it, and then remove it
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
+  
   useEffect(() => {
+    
+
+
     async function fetchData() {
       try {
         const scenarioData = await getScenario(initialScenario._id);
