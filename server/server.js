@@ -2,28 +2,20 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
-const app = require('./app');
+const multer = require('multer');
+const app = require('./app');  // This imports app with all routes
 
-require('dotenv').config();
-require('./auth');
+require('./scrapers/taxscraper'); // assuming taxscraper exports a function too
+require('./scrapers/standardDeductions'); // assuming taxscraper exports a function too
+require('./scrapers/capital_gains'); // assuming taxscraper exports a function too
+require('./scrapers/rmdscraper'); // assuming taxscraper exports a function too
 
-// Models
-require('./models/user');
-require('./models/scenario');
-require('./models/investment');
-require('./models/investmentType');
-require('./models/event');
-require('./models/expense');
 
-// Scrapers
-require('./scrapers/taxscraper');
-require('./scrapers/standardDeductions');
-require('./scrapers/capital_gains');
-require('./scrapers/rmdscraper');
 
-// Routes
-const userRoutes = require('./routes/user');
+const userRoutes = require('./routes/user'); 
 const scenarioRoutes = require('./routes/scenario');
 const simulationRoutes = require('./routes/simulationRoutes');
 const investmentTypeRoutes = require('./routes/investmentType');
@@ -34,40 +26,60 @@ const expenseRoutes = require('./routes/expense');
 const incomeRoutes = require('./routes/income');
 const investRoutes = require('./routes/invest');
 const rebalanceRoutes = require('./routes/rebalance');
-const distributionRoutes = require('./routes/distribution');
+const distributionRoutes = require('./routes/distribution');// server/server.js
+// Add these lines after your other route declarations
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI, {
+const scenarioExportRoutes = require('./routes/exportScenario');
+const scenarioImportRoutes = require('./routes/scenarioImport');
+
+app.use('/api/scenarios/export', scenarioExportRoutes);
+app.use('/api/scenarios/import', scenarioImportRoutes);
+
+require('dotenv').config();
+require('./auth'); // auth config file
+
+require('./models/user');
+require('./models/scenario');
+require('./models/investment');
+require('./models/investmentType');
+require('./models/event');
+require('./models/expense'); 
+
+const PORT = 5000; // use 5000 for targeting Google OAuth callback
+
+
+// set up connection to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
 .then(() => console.log("MongoDB connected"))
 .catch((err) => console.error("MongoDB connection error:", err));
 
-// Middleware
+
 app.use(express.json());
 
-// CORS config for both local and Vercel frontend
+
+// enable CORS to allow client (frontend) to talk to server
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'client-3mu09djwk-denny-lins-projects.vercel.app'
-  ],
+  origin: 'http://localhost:3000',
   credentials: true
 }));
 
-// Session middleware
+// set up session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
 
-// Passport
+
+
+// initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
+// use user routes
 app.use('/api/users', userRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/investment-types', investmentTypeRoutes);
@@ -81,15 +93,14 @@ app.use('/api/rebalance', rebalanceRoutes);
 app.use('/api/distributions', distributionRoutes);
 app.use('/api/simulation', simulationRoutes);
 
-// Google OAuth routes
+// auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('http://localhost:3000'); // replace with your frontend in production
-  }
-);
+    res.redirect('http://localhost:3000');
+  });
 
 app.get('/auth/user', (req, res) => {
   res.send(req.user || null);
@@ -97,21 +108,19 @@ app.get('/auth/user', (req, res) => {
 
 app.get('/auth/logout', (req, res) => {
   req.logout(() => {
-    res.redirect('http://localhost:3000'); // replace with your frontend in production
+    res.redirect('http://localhost:3000');
   });
 });
 
-// Scrape data on server start
-const scrapeCapitalGains = require('./scrapers/capital_gains');
-const scrapeStandardDeductions = require('./scrapers/standardDeductions');
-const scrapeRMDUniformTable = require('./scrapers/rmdscraper');
+ const scrapeCapitalGains = require('./scrapers/capital_gains');
+ const scrapeStandardDeductions = require('./scrapers/standardDeductions');
+ const scrapeRMDUniformTable = require('./scrapers/rmdscraper'); 
+ 
+ scrapeCapitalGains();       
+ scrapeStandardDeductions(); 
+ scrapeRMDUniformTable();
+ 
 
-scrapeCapitalGains();
-scrapeStandardDeductions();
-scrapeRMDUniformTable();
-
-// Dynamic PORT for Render
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

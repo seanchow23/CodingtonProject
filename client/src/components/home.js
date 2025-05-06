@@ -5,6 +5,7 @@ import Scenario from "./scenario.js";
 import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import Login from "./login.js";
 import UserProfile from "./user_profile.js";
+import ImportScenario from './ImportScenario.js';
 
 
 import CreateScenario from "./create_scenario";
@@ -80,7 +81,9 @@ function Home() {
             <Route path="/simulation/:id" element={<SimulationPage/>} />
             <Route path="/chart-test" element={<ChartTest />} />
             <Route path="/explore/:id" element={<OneDExplorePage />} />
-          </Routes>
+            <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />
+
+        </Routes>
         </main>
 
     </div>

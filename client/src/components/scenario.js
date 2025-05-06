@@ -7,7 +7,10 @@ import Investment from "./investment";
 import InvestmentType from "./investment_type";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getScenario } from "../api/scenarioApi";
-
+const exportScenario = () => {
+    // Directly trigger a file download by creating a link to the export endpoint
+    window.open(`${process.env.REACT_APP_API_URL}/api/scenarios/export/${scenario._id}`, '_blank');
+  };
 export default function Scenario() {
     const location = useLocation()
     const navigate = useNavigate();
@@ -136,6 +139,8 @@ export default function Scenario() {
                 <button className="edit-button" onClick={createInvestment}>Add Investment</button>
                 <button className="edit-button" onClick={createEvent}>Add Event Series</button>
                 <button className="edit-button" onClick={runSimulation}>Run Simulation</button>
+                <button className="edit-button" onClick={exportScenario}>Export YAML</button>
+
             </div>
         </div>
     );
