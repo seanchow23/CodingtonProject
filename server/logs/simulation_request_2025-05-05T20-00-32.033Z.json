@@ -1,0 +1,105 @@
+{
+  "_id": "6818501595588538665443d7",
+  "user": null,
+  "name": "New Job",
+  "married": false,
+  "birthYearUser": 2000,
+  "birthYearSpouse": 2000,
+  "lifeExpectancyUser": {
+    "_id": "6818501595588538665443d1",
+    "type": "fixed",
+    "value1": 52,
+    "value2": 0,
+    "__v": 0
+  },
+  "lifeExpectancySpouse": {
+    "_id": "6818501595588538665443d3",
+    "type": "fixed",
+    "value1": 0,
+    "value2": 0,
+    "__v": 0
+  },
+  "investments": [
+    {
+      "_id": "6818501595588538665443ce",
+      "investmentType": {
+        "_id": "6818501595588538665443cc",
+        "name": "Cash",
+        "description": "",
+        "expectedAnnualReturn": "6818501595588538665443c8",
+        "expenseRatio": 0,
+        "expectedAnnualIncome": "6818501595588538665443ca",
+        "taxability": false,
+        "__v": 0
+      },
+      "value": 0,
+      "baseValue": 0,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    }
+  ],
+  "investmentTypes": [
+    {
+      "_id": "6818501595588538665443cc",
+      "name": "Cash",
+      "description": "",
+      "expectedAnnualReturn": {
+        "_id": "6818501595588538665443c8",
+        "type": "fixed",
+        "value1": 0,
+        "value2": 0,
+        "__v": 0
+      },
+      "expenseRatio": 0,
+      "expectedAnnualIncome": {
+        "_id": "6818501595588538665443ca",
+        "type": "fixed",
+        "value1": 0,
+        "value2": 0,
+        "__v": 0
+      },
+      "taxability": false,
+      "__v": 0
+    }
+  ],
+  "events": [],
+  "inflation": {
+    "_id": "6818501595588538665443d5",
+    "type": "fixed",
+    "value1": 0,
+    "value2": 0,
+    "__v": 0
+  },
+  "annualLimit": 100000,
+  "spendingStrategy": [],
+  "withdrawalStrategy": [
+    {
+      "_id": "6818501595588538665443ce",
+      "investmentType": {
+        "_id": "6818501595588538665443cc",
+        "name": "Cash",
+        "description": "",
+        "expectedAnnualReturn": "6818501595588538665443c8",
+        "expenseRatio": 0,
+        "expectedAnnualIncome": "6818501595588538665443ca",
+        "taxability": false,
+        "__v": 0
+      },
+      "value": 0,
+      "baseValue": 0,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    }
+  ],
+  "rmd": [],
+  "rothStrategy": [],
+  "rothYears": [
+    2025,
+    2077
+  ],
+  "rothOptimizer": false,
+  "sharing": "",
+  "financialGoal": 100000000,
+  "state": "Alabama",
+  "__v": 0
+}
