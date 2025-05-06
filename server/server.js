@@ -102,7 +102,7 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect(process.env.NODE_ENV === 'production' ? 'https://client-e30cuvxps-denny-lins-projects.vercel.app' : 'http://localhost:3000');
+    res.redirect(process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'http://localhost:3000');
   });
 
 app.get('/auth/user', (req, res) => {
@@ -111,7 +111,7 @@ app.get('/auth/user', (req, res) => {
 
 app.get('/auth/logout', (req, res) => {
   req.logout(() => {
-    res.redirect(process.env.NODE_ENV === 'production' ? 'https://client-e30cuvxps-denny-lins-projects.vercel.app' : 'http://localhost:3000');
+    res.redirect(process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'http://localhost:3000');
   });
 });
 
