@@ -99,7 +99,7 @@ function Home() {
           <Route path="/scenario/edit_investment_type/:id" element={<EditInvestmentTypes scenarios={scenarios} />} />
           <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios} />} />
           <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios} />} />
-          <Route path="/simulation/:id" element={<SimulationPage user={username}/>} />
+          <Route path="/simulation/:id" element={<SimulationPage />} />
           <Route path="/explore/:id" element={<OneDExplorePage />} />
           <Route path="/explore2/:id" element={<TwoDExplorePage />} />
           <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />

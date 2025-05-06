@@ -137,6 +137,7 @@ export default function SimulationPage({ user }) {
 
 const handleRunSimulations = async (scenario = originalScenario, handleMessage = setMessage) => {
   try {
+    // Fetch state tax data
     const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tax/state`);
     const data = await res.json();
     const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
@@ -147,25 +148,64 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
     console.error('Error fetching state tax data:', err);
   }
 
-  const tasks = [];
-  for (let i = 0; i < formData.num; i++) {
-    tasks.push(runSimulation(structuredClone(scenario)));
-  }
+  try {
+    console.log("Starting simulation with scenario:", originalScenario);
 
-    try {
-      const results = await Promise.all(tasks);
-      setLine(results.map(r => r[0]));
-      setShade1(results.map(r => r[1][0]));
-      setShade2(results.map(r => r[1][1]));
-      setShade3(results.map(r => r[1][2]));
-      setShade4(results.map(r => r[1][3]));
-      setShade5(results.map(r => r[1][4]));
-      setBar(results.map(r => r[2]));
-      setHasRun(true);
-    } catch (error) {
-      console.error('Error running simulations:', error);
+    // Clone scenario
+    const scenarioToUse = structuredClone(originalScenario);
+
+    // Ensure a Cash investment exists
+    const hasCash = scenarioToUse.investments.some(
+      inv => inv.investmentType?.name === "Cash"
+    );
+
+    if (!hasCash) {
+      let cashType = scenarioToUse.investmentTypes.find(type => type.name === "Cash");
+
+      if (!cashType) {
+        cashType = {
+          _id: "temp_cash_type_id",
+          name: "Cash",
+          description: "Auto-created Cash account",
+          expectedAnnualReturn: { type: "fixed", value1: 0, value2: 0 },
+          expenseRatio: 0,
+          expectedAnnualIncome: { type: "fixed", value1: 0, value2: 0 },
+          taxability: false
+        };
+        scenarioToUse.investmentTypes.push(cashType);
+      }
+
+      const cashInvestment = {
+        _id: "temp_cash_investment_id",
+        investmentType: cashType,
+        value: 0,
+        baseValue: 0,
+        taxStatus: "non-retirement"
+      };
+
+      scenarioToUse.investments.push(cashInvestment);
+      console.log("Added Cash investment to scenario:", cashInvestment);
     }
-  };
+
+    // Run the simulations
+    const tasks = [];
+    for (let i = 0; i < formData.num; i++) {
+      tasks.push(runSimulation(structuredClone(scenarioToUse), seed, user));
+    }
+
+    const results = await Promise.all(tasks);
+    setLine(results.map(r => r[0]));
+    setShade1(results.map(r => r[1][0]));
+    setShade2(results.map(r => r[1][1]));
+    setShade3(results.map(r => r[1][2]));
+    setShade4(results.map(r => r[1][3]));
+    setShade5(results.map(r => r[1][4]));
+    setBar(results.map(r => r[2]));
+    setHasRun(true);
+  } catch (error) {
+    console.error('Error running simulations:', error);
+  }
+};
 
   const param1Label = twoDParams?.param1?.label || 'Parameter 1';
   const param2Label = twoDParams?.param2?.label || 'Parameter 2';

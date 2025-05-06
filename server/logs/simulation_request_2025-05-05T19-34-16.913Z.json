@@ -1,0 +1,598 @@
+{
+  "_id": "6818f429474a19795fa48fb1",
+  "name": "Retirement Planning Scenario",
+  "married": true,
+  "birthYearUser": 1985,
+  "birthYearSpouse": 1987,
+  "lifeExpectancyUser": {
+    "_id": "6818f429474a19795fa48f5d",
+    "type": "fixed",
+    "value1": 80,
+    "value2": 0,
+    "__v": 0
+  },
+  "lifeExpectancySpouse": {
+    "_id": "6818f429474a19795fa48f5f",
+    "type": "normal",
+    "value1": 82,
+    "value2": 3,
+    "__v": 0
+  },
+  "investments": [
+    {
+      "_id": "6818f429474a19795fa48f75",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f67",
+        "name": "cash",
+        "description": "cash",
+        "expectedAnnualReturn": "6818f429474a19795fa48f63",
+        "expenseRatio": 0,
+        "expectedAnnualIncome": "6818f429474a19795fa48f65",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 100,
+      "baseValue": 100,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f77",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 10000,
+      "baseValue": 10000,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f79",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f73",
+        "name": "tax-exempt bonds",
+        "description": "NY tax-exempt bonds",
+        "expectedAnnualReturn": "6818f429474a19795fa48f6f",
+        "expenseRatio": 0.004,
+        "expectedAnnualIncome": "6818f429474a19795fa48f71",
+        "taxability": false,
+        "__v": 0
+      },
+      "value": 2000,
+      "baseValue": 2000,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f7b",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 10000,
+      "baseValue": 10000,
+      "taxStatus": "pre-tax retirement",
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f7d",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 2000,
+      "baseValue": 2000,
+      "taxStatus": "after-tax retirement",
+      "__v": 0
+    }
+  ],
+  "investmentTypes": [
+    {
+      "_id": "6818f429474a19795fa48f67",
+      "name": "cash",
+      "description": "cash",
+      "expectedAnnualReturn": {
+        "_id": "6818f429474a19795fa48f63",
+        "type": "fixed",
+        "value1": 0,
+        "value2": 0,
+        "__v": 0
+      },
+      "expenseRatio": 0,
+      "expectedAnnualIncome": {
+        "_id": "6818f429474a19795fa48f65",
+        "type": "fixed",
+        "value1": 0,
+        "value2": 0,
+        "__v": 0
+      },
+      "taxability": true,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f6d",
+      "name": "S&P 500",
+      "description": "S&P 500 index fund",
+      "expectedAnnualReturn": {
+        "_id": "6818f429474a19795fa48f69",
+        "type": "normal",
+        "value1": 0.06,
+        "value2": 0.02,
+        "__v": 0
+      },
+      "expenseRatio": 0.001,
+      "expectedAnnualIncome": {
+        "_id": "6818f429474a19795fa48f6b",
+        "type": "normal",
+        "value1": 0.01,
+        "value2": 0.005,
+        "__v": 0
+      },
+      "taxability": true,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f73",
+      "name": "tax-exempt bonds",
+      "description": "NY tax-exempt bonds",
+      "expectedAnnualReturn": {
+        "_id": "6818f429474a19795fa48f6f",
+        "type": "fixed",
+        "value1": 0,
+        "value2": 0,
+        "__v": 0
+      },
+      "expenseRatio": 0.004,
+      "expectedAnnualIncome": {
+        "_id": "6818f429474a19795fa48f71",
+        "type": "normal",
+        "value1": 0.03,
+        "value2": 0.01,
+        "__v": 0
+      },
+      "taxability": false,
+      "__v": 0
+    }
+  ],
+  "events": [
+    {
+      "_id": "6818f429474a19795fa48f83",
+      "name": "salary",
+      "description": "",
+      "startYear": {
+        "_id": "6818f429474a19795fa48f7f",
+        "type": "fixed",
+        "value1": 2025,
+        "value2": 0,
+        "__v": 0
+      },
+      "duration": {
+        "_id": "6818f429474a19795fa48f81",
+        "type": "fixed",
+        "value1": 40,
+        "value2": 0,
+        "__v": 0
+      },
+      "type": "income",
+      "amount": 75000,
+      "change": 1250,
+      "inflation": false,
+      "ss": false,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f89",
+      "name": "food",
+      "description": "",
+      "startYear": {
+        "_id": "6818f429474a19795fa48f85",
+        "type": "starts-with",
+        "value1": 0,
+        "value2": 0,
+        "event": {
+          "_id": "6818f429474a19795fa48f83",
+          "name": "salary",
+          "description": "",
+          "startYear": "6818f429474a19795fa48f7f",
+          "duration": "6818f429474a19795fa48f81",
+          "type": "income",
+          "amount": 75000,
+          "change": 1250,
+          "inflation": false,
+          "ss": false,
+          "__v": 0
+        },
+        "__v": 0
+      },
+      "duration": {
+        "_id": "6818f429474a19795fa48f87",
+        "type": "fixed",
+        "value1": 200,
+        "value2": 0,
+        "__v": 0
+      },
+      "type": "expense",
+      "amount": 5000,
+      "change": 0.02,
+      "inflation": true,
+      "discretionary": false,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f8f",
+      "name": "vacation",
+      "description": "",
+      "startYear": {
+        "_id": "6818f429474a19795fa48f8b",
+        "type": "starts-with",
+        "value1": 0,
+        "value2": 0,
+        "event": {
+          "_id": "6818f429474a19795fa48f83",
+          "name": "salary",
+          "description": "",
+          "startYear": "6818f429474a19795fa48f7f",
+          "duration": "6818f429474a19795fa48f81",
+          "type": "income",
+          "amount": 75000,
+          "change": 1250,
+          "inflation": false,
+          "ss": false,
+          "__v": 0
+        },
+        "__v": 0
+      },
+      "duration": {
+        "_id": "6818f429474a19795fa48f8d",
+        "type": "fixed",
+        "value1": 40,
+        "value2": 0,
+        "__v": 0
+      },
+      "type": "expense",
+      "amount": 1200,
+      "change": 0,
+      "inflation": true,
+      "discretionary": true,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f95",
+      "name": "streaming services",
+      "description": "",
+      "startYear": {
+        "_id": "6818f429474a19795fa48f91",
+        "type": "starts-with",
+        "value1": 0,
+        "value2": 0,
+        "event": {
+          "_id": "6818f429474a19795fa48f83",
+          "name": "salary",
+          "description": "",
+          "startYear": "6818f429474a19795fa48f7f",
+          "duration": "6818f429474a19795fa48f81",
+          "type": "income",
+          "amount": 75000,
+          "change": 1250,
+          "inflation": false,
+          "ss": false,
+          "__v": 0
+        },
+        "__v": 0
+      },
+      "duration": {
+        "_id": "6818f429474a19795fa48f93",
+        "type": "fixed",
+        "value1": 40,
+        "value2": 0,
+        "__v": 0
+      },
+      "type": "expense",
+      "amount": 500,
+      "change": 0,
+      "inflation": true,
+      "discretionary": true,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f9f",
+      "name": "my investments",
+      "description": "",
+      "startYear": {
+        "_id": "6818f429474a19795fa48f97",
+        "type": "uniform",
+        "value1": 2025,
+        "value2": 2030,
+        "__v": 0
+      },
+      "duration": {
+        "_id": "6818f429474a19795fa48f99",
+        "type": "fixed",
+        "value1": 10,
+        "value2": 0,
+        "__v": 0
+      },
+      "type": "invest",
+      "allocations": [
+        {
+          "_id": "6818f429474a19795fa48f9b",
+          "investment": {
+            "_id": "6818f429474a19795fa48f77",
+            "investmentType": {
+              "_id": "6818f429474a19795fa48f6d",
+              "name": "S&P 500",
+              "description": "S&P 500 index fund",
+              "expectedAnnualReturn": "6818f429474a19795fa48f69",
+              "expenseRatio": 0.001,
+              "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+              "taxability": true,
+              "__v": 0
+            },
+            "value": 10000,
+            "baseValue": 10000,
+            "taxStatus": "non-retirement",
+            "__v": 0
+          },
+          "percentage": 60,
+          "finalPercentage": 80,
+          "glide": 0,
+          "__v": 0
+        },
+        {
+          "_id": "6818f429474a19795fa48f9d",
+          "investment": {
+            "_id": "6818f429474a19795fa48f7d",
+            "investmentType": {
+              "_id": "6818f429474a19795fa48f6d",
+              "name": "S&P 500",
+              "description": "S&P 500 index fund",
+              "expectedAnnualReturn": "6818f429474a19795fa48f69",
+              "expenseRatio": 0.001,
+              "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+              "taxability": true,
+              "__v": 0
+            },
+            "value": 2000,
+            "baseValue": 2000,
+            "taxStatus": "after-tax retirement",
+            "__v": 0
+          },
+          "percentage": 40,
+          "finalPercentage": 20,
+          "glide": 0,
+          "__v": 0
+        }
+      ],
+      "max": 1000,
+      "glide": true,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48fa9",
+      "name": "rebalance",
+      "description": "",
+      "startYear": {
+        "_id": "6818f429474a19795fa48fa1",
+        "type": "uniform",
+        "value1": 2025,
+        "value2": 2030,
+        "__v": 0
+      },
+      "duration": {
+        "_id": "6818f429474a19795fa48fa3",
+        "type": "fixed",
+        "value1": 10,
+        "value2": 0,
+        "__v": 0
+      },
+      "type": "rebalance",
+      "allocations": [
+        {
+          "_id": "6818f429474a19795fa48fa5",
+          "investment": {
+            "_id": "6818f429474a19795fa48f77",
+            "investmentType": {
+              "_id": "6818f429474a19795fa48f6d",
+              "name": "S&P 500",
+              "description": "S&P 500 index fund",
+              "expectedAnnualReturn": "6818f429474a19795fa48f69",
+              "expenseRatio": 0.001,
+              "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+              "taxability": true,
+              "__v": 0
+            },
+            "value": 10000,
+            "baseValue": 10000,
+            "taxStatus": "non-retirement",
+            "__v": 0
+          },
+          "percentage": 70,
+          "finalPercentage": 70,
+          "glide": 0,
+          "__v": 0
+        },
+        {
+          "_id": "6818f429474a19795fa48fa7",
+          "investment": {
+            "_id": "6818f429474a19795fa48f79",
+            "investmentType": {
+              "_id": "6818f429474a19795fa48f73",
+              "name": "tax-exempt bonds",
+              "description": "NY tax-exempt bonds",
+              "expectedAnnualReturn": "6818f429474a19795fa48f6f",
+              "expenseRatio": 0.004,
+              "expectedAnnualIncome": "6818f429474a19795fa48f71",
+              "taxability": false,
+              "__v": 0
+            },
+            "value": 2000,
+            "baseValue": 2000,
+            "taxStatus": "non-retirement",
+            "__v": 0
+          },
+          "percentage": 30,
+          "finalPercentage": 30,
+          "glide": 0,
+          "__v": 0
+        }
+      ],
+      "glide": false,
+      "__v": 0
+    }
+  ],
+  "inflation": {
+    "_id": "6818f429474a19795fa48f61",
+    "type": "fixed",
+    "value1": 0.03,
+    "value2": 0,
+    "__v": 0
+  },
+  "annualLimit": 7000,
+  "spendingStrategy": [
+    {
+      "_id": "6818f429474a19795fa48f8f",
+      "name": "vacation",
+      "description": "",
+      "startYear": "6818f429474a19795fa48f8b",
+      "duration": "6818f429474a19795fa48f8d",
+      "type": "expense",
+      "amount": 1200,
+      "change": 0,
+      "inflation": true,
+      "discretionary": true,
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f95",
+      "name": "streaming services",
+      "description": "",
+      "startYear": "6818f429474a19795fa48f91",
+      "duration": "6818f429474a19795fa48f93",
+      "type": "expense",
+      "amount": 500,
+      "change": 0,
+      "inflation": true,
+      "discretionary": true,
+      "__v": 0
+    }
+  ],
+  "withdrawalStrategy": [
+    {
+      "_id": "6818f429474a19795fa48f77",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 10000,
+      "baseValue": 10000,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f79",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f73",
+        "name": "tax-exempt bonds",
+        "description": "NY tax-exempt bonds",
+        "expectedAnnualReturn": "6818f429474a19795fa48f6f",
+        "expenseRatio": 0.004,
+        "expectedAnnualIncome": "6818f429474a19795fa48f71",
+        "taxability": false,
+        "__v": 0
+      },
+      "value": 2000,
+      "baseValue": 2000,
+      "taxStatus": "non-retirement",
+      "__v": 0
+    },
+    {
+      "_id": "6818f429474a19795fa48f7d",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 2000,
+      "baseValue": 2000,
+      "taxStatus": "after-tax retirement",
+      "__v": 0
+    }
+  ],
+  "rmd": [
+    {
+      "_id": "6818f429474a19795fa48f7b",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 10000,
+      "baseValue": 10000,
+      "taxStatus": "pre-tax retirement",
+      "__v": 0
+    }
+  ],
+  "rothStrategy": [
+    {
+      "_id": "6818f429474a19795fa48f7b",
+      "investmentType": {
+        "_id": "6818f429474a19795fa48f6d",
+        "name": "S&P 500",
+        "description": "S&P 500 index fund",
+        "expectedAnnualReturn": "6818f429474a19795fa48f69",
+        "expenseRatio": 0.001,
+        "expectedAnnualIncome": "6818f429474a19795fa48f6b",
+        "taxability": true,
+        "__v": 0
+      },
+      "value": 10000,
+      "baseValue": 10000,
+      "taxStatus": "pre-tax retirement",
+      "__v": 0
+    }
+  ],
+  "rothYears": [
+    2050,
+    2060
+  ],
+  "rothOptimizer": true,
+  "sharing": "",
+  "financialGoal": 10000,
+  "state": "NY",
+  "__v": 0
+}
