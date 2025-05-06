@@ -5,11 +5,12 @@ const API = axios.create({
   withCredentials: true, // needed if you're using sessions/cookies
 });
 
-export async function runSimulation(scenario, seed = null) {
+export async function runSimulation(scenario, seed = null, user = null) {
   try {
     const response = await API.post('/simulation', {
       scenario,
-      seed
+      seed,
+      user
     });
 
     const data = response.data;
