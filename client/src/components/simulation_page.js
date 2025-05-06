@@ -137,6 +137,83 @@ export default function SimulationPage({ user }) {
 
 const handleRunSimulations = async (scenario = originalScenario, handleMessage = setMessage) => {
   try {
+
+      console.log("Starting simulation with scenario:", originalScenario);
+      
+      // Create a deep clone of the scenario to avoid modifying the original
+      const scenarioToUse = structuredClone(originalScenario);
+      
+      // Check if we have a Cash investment
+      const hasCash = scenarioToUse.investments.some(
+        inv => inv.investmentType && inv.investmentType.name === "Cash"
+      );
+      
+      console.log("Cash investment found:", hasCash);
+      
+      // If no Cash investment found, create one
+      if (!hasCash) {
+        console.log("Creating Cash investment");
+        
+        // Find or create Cash investment type
+        let cashType = scenarioToUse.investmentTypes.find(type => type.name === "Cash");
+        
+        if (!cashType) {
+          // Create a new Cash investment type
+          cashType = {
+            _id: "temp_cash_type_id",  // Temporary ID
+            name: "Cash",
+            description: "Auto-created Cash account",
+            expectedAnnualReturn: {
+              type: "fixed",
+              value1: 0,
+              value2: 0
+            },
+            expenseRatio: 0,
+            expectedAnnualIncome: {
+              type: "fixed",
+              value1: 0,
+              value2: 0
+            },
+            taxability: false
+          };
+          scenarioToUse.investmentTypes.push(cashType);
+        }
+        
+        // Create Cash investment
+        const cashInvestment = {
+          _id: "temp_cash_investment_id",  // Temporary ID
+          investmentType: cashType,
+          value: 0,
+          baseValue: 0,
+          taxStatus: "non-retirement"
+        };
+        
+        scenarioToUse.investments.push(cashInvestment);
+        console.log("Added Cash investment to scenario:", cashInvestment);
+      }
+      
+      // Run the simulations with the fixed scenario
+      const tasks = [];
+      for (let i = 0; i < formData.num; i++) {
+        console.log("Running simulation", i+1, "of", formData.num);
+        tasks.push(runSimulation(structuredClone(scenarioToUse)));
+      }
+  
+      const results = await Promise.all(tasks);
+
+
+
+ // Check if we have a Cash investment
+ const cashInvestment = originalScenario.investments.find(
+  inv => inv.investmentType && inv.investmentType.name === "Cash"
+);
+ 
+console.log("Cash investment found:", !!cashInvestment);
+
+// Check distribution structures
+console.log("Life expectancy:", originalScenario.lifeExpectancyUser);
+console.log("Inflation:", originalScenario.inflation);
+
     const res = await fetch('http://localhost:5000/api/tax/state');
     const data = await res.json();
     const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
