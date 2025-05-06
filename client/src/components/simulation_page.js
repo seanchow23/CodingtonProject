@@ -135,12 +135,29 @@ export default function SimulationPage({ user }) {
     }
   };
 
+  const stateAbbrevToKey = {
+    AL: "alabama", AK: "alaska", AZ: "arizona", AR: "arkansas", CA: "california",
+    CO: "colorado", CT: "connecticut", DE: "delaware", FL: "florida", GA: "georgia",
+    HI: "hawaii", ID: "idaho", IL: "illinois", IN: "indiana", IA: "iowa",
+    KS: "kansas", KY: "kentucky", LA: "louisiana", ME: "maine", MD: "maryland",
+    MA: "massachusetts", MI: "michigan", MN: "minnesota", MS: "mississippi", MO: "missouri",
+    MT: "montana", NE: "nebraska", NV: "nevada", NH: "new_hampshire", NJ: "new_jersey",
+    NM: "new_mexico", NY: "new_york", NC: "north_carolina", ND: "north_dakota", OH: "ohio",
+    OK: "oklahoma", OR: "oregon", PA: "pennsylvania", RI: "rhode_island", SC: "south_carolina",
+    SD: "south_dakota", TN: "tennessee", TX: "texas", UT: "utah", VT: "vermont",
+    VA: "virginia", WA: "washington", WV: "west_virginia", WI: "wisconsin", WY: "wyoming"
+  };
+  
+  const getStateKeyFromAbbreviation = (abbrev) => {
+    return stateAbbrevToKey[abbrev?.toUpperCase()] || null;
+  };
+
 const handleRunSimulations = async (scenario = originalScenario, handleMessage = setMessage) => {
   try {
     // Fetch state tax data
     const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tax/state`);
     const data = await res.json();
-    const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+    const stateKey = getStateKeyFromAbbreviation(scenario.state);
     if (!data[stateKey]) {
       handleMessage(`Warning: No tax data found for ${scenario.state}, simulation will ignore state tax!`);
     }
