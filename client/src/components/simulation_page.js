@@ -9,7 +9,7 @@ import InputField from "./input_field";
 import MultiLineProbabilityChart from './multi_line_probability';
 import MultiLineMedianInvestmentChart from './multi_line_median';
 import { runSimulation } from '../api/simulationApi';
-
+import DebugConsole from './DebugConsole';
 export default function SimulationPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -135,6 +135,8 @@ export default function SimulationPage() {
       {!hasRun ? (
         <div>
           <h2>Enter number of simulations</h2>
+          {/* <DebugConsole scenario={originalScenario} /> */}
+
           <input
             type="number"
             name="num"

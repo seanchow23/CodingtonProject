@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 
-const Expense = ({ event }) => {
+const Expense = ({ event, canEdit }) => {
     const navigate = useNavigate();
     const editEvent = () => {navigate(`/scenario/edit_event/${event._id}`, { state: { event } });};
 
@@ -21,7 +21,7 @@ const Expense = ({ event }) => {
             <p>Expected Annual Change: ${Number(event.change).toFixed(2)}</p>
             {event.inflation && <p>Inflation Adjusted</p>}
             {event.discretionary && <p>Discretionary Expense</p>}
-            <button className="edit-button" onClick={editEvent}>Edit</button>
+            <button className="edit-button" onClick={editEvent} disabled={!canEdit}>Edit</button>
         </div>
     );
 };
