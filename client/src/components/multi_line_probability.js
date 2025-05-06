@@ -1,15 +1,13 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 
-export default function MultiLineProbabilityChart({ simulationsList = [], parameterValues = [] }) {
+export default function MultiLineProbabilityChart({ simulationsList = [], parameterValues = [], paramLabel }) {
   const startYear = 2025;
 
-  // Guard clause if no data
   if (!Array.isArray(simulationsList) || simulationsList.length === 0) {
     return <div>No simulation results available for multi-line chart.</div>;
   }
 
-  // Determine the maximum simulation length
   const numYears = Math.max(
     ...simulationsList.map(simulations =>
       simulations[0] ? simulations[0].length : 0
@@ -17,7 +15,6 @@ export default function MultiLineProbabilityChart({ simulationsList = [], parame
   );
   const years = Array.from({ length: numYears }, (_, i) => startYear + i);
 
-  // Create one trace per parameter value
   const traces = simulationsList.map((simulations, i) => {
     const probabilitiesPerYear = years.map((_, yearIndex) => {
       const activeSimulations = simulations.filter(sim => sim.length > yearIndex);
@@ -32,7 +29,7 @@ export default function MultiLineProbabilityChart({ simulationsList = [], parame
       y: probabilitiesPerYear,
       type: 'scatter',
       mode: 'lines+markers',
-      name: `Param = ${parameterValues[i]}`,
+      name: `${paramLabel} = ${parameterValues[i]}`,
     };
   });
 

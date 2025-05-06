@@ -20,6 +20,7 @@ import SimulationPage from "./simulation_page.js";
 import OneDExplorePage from './oneDExplorePage.js';
 import * as userApi from "../api/userApi";
 import * as scenarioApi from "../api/scenarioApi";
+import TwoDExplorePage from "./twoDExplorePage.js";
 
 function Home() {
   const [scenarios, setScenarios] = useState([]);
@@ -79,8 +80,8 @@ function Home() {
             <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios}/>} />
             <Route path="/simulation/:id" element={<SimulationPage/>} />
             <Route path="/explore/:id" element={<OneDExplorePage />} />
+            <Route path="/explore2/:id" element={<TwoDExplorePage />} />
             <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />
-
         </Routes>
         </main>
 

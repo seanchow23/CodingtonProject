@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Line_Chart from './line_chart';
 import Shaded_Chart from './shaded_chart';
-import UnifiedStackedFinanceChart from './stacked_chart'; 
-import ScenarioList from './scenario_list';
-import InputField from "./input_field";
+import UnifiedStackedFinanceChart from './stacked_chart';
+import InputField from './input_field';
 import MultiLineProbabilityChart from './multi_line_probability';
 import MultiLineMedianInvestmentChart from './multi_line_median';
+import OneDLineSummaryChart from './oneD_line_summary';
 import { runSimulation } from '../api/simulationApi';
+import TwoDSurfacePlot from './twoD_surface_plot';
+import TwoDContourPlot from './twoD_contour_plot';
 
 export default function SimulationPage() {
   const location = useLocation();
@@ -16,7 +18,9 @@ export default function SimulationPage() {
   const {
     scenario: originalScenario,
     oneDResults,
-    oneDParam
+    oneDParam,
+    twoDResults,
+    twoDParams
   } = location.state || {};
 
   const [formData, setFormData] = useState({
@@ -52,12 +56,15 @@ export default function SimulationPage() {
     });
   }
 
-  const [hasRun, setHasRun] = useState(false); // ✅ moved up here
-  const [baseScenario] = useState(() => structuredClone(originalScenario)); // locked base
-  const [editedScenarios, setEditedScenarios] = useState([]);
+  const [hasRun, setHasRun] = useState(false);
   const [multiLineProbData, setMultiLineProbData] = useState([]);
   const [multiLineInvestData, setMultiLineInvestData] = useState([]);
+  const [finalProbabilities, setFinalProbabilities] = useState([]);
+  const [finalInvestments, setFinalInvestments] = useState([]);
+  const [final2DProbabilities, setFinal2DProbabilities] = useState([]);
+  const [final2DInvestments, setFinal2DInvestments] = useState([]);
 
+  const [baseScenario] = useState(() => structuredClone(originalScenario));
   const [line, setLine] = useState([]);
   const [shade1, setShade1] = useState([]);
   const [shade2, setShade2] = useState([]);
@@ -67,100 +74,120 @@ export default function SimulationPage() {
   const [bar, setBar] = useState([]);
 
   useEffect(() => {
-    if (oneDResults) {
-      setEditedScenarios(oneDResults.map(s => structuredClone(s)));
-    }
-  }, [oneDResults]);
-
-  useEffect(() => {
     if (hasRun && oneDResults && oneDParam) {
-      simulateProbabilityEdited(oneDResults).then(setMultiLineProbData);
-      simulateInvestmentSeries(oneDResults).then(setMultiLineInvestData);
+      simulateEditedScenarios(oneDResults).then(data => {
+        setMultiLineProbData(data.map(d => d.probRuns));
+        setMultiLineInvestData(data.map(d => d.investRuns));
+        setFinalProbabilities(data.map(d => d.finalProb));
+        setFinalInvestments(data.map(d => d.finalMedianInvest));
+      });
     }
   }, [hasRun, oneDResults, oneDParam, formData.num]);
 
-  async function simulateProbabilityEdited(scenarios) {
-    const allResults = await Promise.all(
-      scenarios.map(async (scenario) => {
-        const runs = [];
+  useEffect(() => {
+    if (hasRun && twoDResults && twoDParams) {
+      Promise.all(
+        twoDResults.map(async (row) =>
+          Promise.all(row.map(async (scenario) => {
+            const results = await Promise.all(
+              Array.from({ length: formData.num }, () => runSimulation(structuredClone(scenario)))
+            );
+            const finalProbs = results.map(r => r[0].at(-1)).filter(Boolean);
+            const finalInvests = results.map(r => r[1][0].at(-1)).filter(Boolean);
+            return {
+              prob: average(finalProbs),
+              invest: median(finalInvests)
+            };
+          }))
+        )
+      ).then(rows => {
+        setFinal2DProbabilities(rows.map(row => row.map(cell => cell.prob)));
+        setFinal2DInvestments(rows.map(row => row.map(cell => cell.invest)));
+      });
+    }
+  }, [hasRun, twoDResults, twoDParams, formData.num]);
+
+  async function simulateEditedScenarios(scenarios) {
+    return await Promise.all(
+      scenarios.map(async scenario => {
+        const probRuns = [];
+        const investRuns = [];
+
         for (let i = 0; i < formData.num; i++) {
-          runs.push(runSimulation(structuredClone(scenario)));
+          const result = await runSimulation(structuredClone(scenario));
+          probRuns.push(result[0]);
+          investRuns.push(result[1][0]);
         }
-        const results = await Promise.all(runs);
-        return results.map((r) => r[0]); // true/false arrays
+
+        const finalProb = probRuns.map(run => run.at(-1)).filter(Boolean);
+        const finalMedianInvest = investRuns.map(years => years.at(-1)).filter(Boolean);
+
+        return {
+          probRuns,
+          investRuns,
+          finalProb: average(finalProb),
+          finalMedianInvest: median(finalMedianInvest)
+        };
       })
     );
-    return allResults;
   }
 
-  async function simulateInvestmentSeries(scenarios) {
-    const allResults = await Promise.all(
-      scenarios.map(async (scenario) => {
-        const runs = [];
-        for (let i = 0; i < formData.num; i++) {
-          runs.push(runSimulation(structuredClone(scenario)));
-        }
-        const results = await Promise.all(runs);
-        return results.map((r) => r[1][0]); // total investments per year
-      })
-    );
-    return allResults;
+  function average(arr) {
+    if (!arr.length) return 0;
+    return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+  }
+
+  function median(arr) {
+    if (!arr.length) return 0;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[mid - 1] + sorted[mid]) / 2
+      : sorted[mid];
   }
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
-  const handleRunSimulations = async (scenario, handle) => {
-    try {
-      const res = await fetch('http://localhost:5000/api/tax/state');
-      const data = await res.json();
-      const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
-      if (!data[stateKey]) {
-        handle(`Warning: No tax data found for ${scenario.state}, simulation will ignore state tax!`)
-      }
-    } catch (err) {
-      console.error('Error fetching state tax data:', err);
+const handleRunSimulations = async (scenario = originalScenario, handleMessage = setMessage) => {
+  try {
+    const res = await fetch('http://localhost:5000/api/tax/state');
+    const data = await res.json();
+    const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+    if (!data[stateKey]) {
+      handleMessage(`Warning: No tax data found for ${scenario.state}, simulation will ignore state tax!`);
     }
-    const newLine = [];
-    const newShade1 = [];
-    const newShade2 = [];
-    const newShade3 = [];
-    const newShade4 = [];
-    const newShade5 = [];
-    const newBar = [];
+  } catch (err) {
+    console.error('Error fetching state tax data:', err);
+  }
+
+  const tasks = [];
+  for (let i = 0; i < formData.num; i++) {
+    tasks.push(runSimulation(structuredClone(scenario)));
+  }
 
     try {
-      const tasks = [];
-      for (let i = 0; i < formData.num; i++) {
-        tasks.push(runSimulation(structuredClone(originalScenario)));
-      }
-
       const results = await Promise.all(tasks);
-
-      results.forEach((simResult) => {
-        newLine.push(simResult[0]);
-        newShade1.push(simResult[1][0]);
-        newShade2.push(simResult[1][1]);
-        newShade3.push(simResult[1][2]);
-        newShade4.push(simResult[1][3]);
-        newShade5.push(simResult[1][4]);
-        newBar.push(simResult[2]);
-      });
-
-      setLine(newLine);
-      setShade1(newShade1);
-      setShade2(newShade2);
-      setShade3(newShade3);
-      setShade4(newShade4);
-      setShade5(newShade5);
-      setBar(newBar);
+      setLine(results.map(r => r[0]));
+      setShade1(results.map(r => r[1][0]));
+      setShade2(results.map(r => r[1][1]));
+      setShade3(results.map(r => r[1][2]));
+      setShade4(results.map(r => r[1][3]));
+      setShade5(results.map(r => r[1][4]));
+      setBar(results.map(r => r[2]));
       setHasRun(true);
     } catch (error) {
-      console.error('Error running simulations in parallel:', error);
+      console.error('Error running simulations:', error);
     }
   };
+
+  const param1Label = twoDParams?.param1?.label || 'Parameter 1';
+  const param2Label = twoDParams?.param2?.label || 'Parameter 2';
+
+  const probTitle2D = `Final Probability of Success (${param1Label} vs ${param2Label})`;
+  const investTitle2D = `Final Median Investments (${param1Label} vs ${param2Label})`;
 
   return (
     <div>
@@ -208,31 +235,91 @@ export default function SimulationPage() {
           <InputField id="median" type="checkbox" checked={formData.median} onChange={handleInputChange}>Use Median</InputField>
           <UnifiedStackedFinanceChart data={bar} median={formData.median} />
 
-          <button
-            onClick={() =>
-              navigate(`/explore/${baseScenario._id}`, {
-                state: { scenario: structuredClone(baseScenario) }
-              })
-            }
-            style={{ marginTop: '30px', padding: '10px 20px', fontSize: '16px' }}
-          >
+          <button onClick={() => navigate(`/explore/${baseScenario._id}`, { state: { scenario: structuredClone(baseScenario) } })}>
             One-Dimensional Parameter Exploration
           </button>
 
           {oneDResults && oneDParam && (
             <>
-              {multiLineProbData.length > 0 && (
-                <MultiLineProbabilityChart
-                  simulationsList={multiLineProbData}
-                  parameterValues={oneDParam.values}
-                />
-              )}
-              {multiLineInvestData.length > 0 && (
-                <MultiLineMedianInvestmentChart
-                  investmentRuns={multiLineInvestData}
-                  paramValues={oneDParam.values}
-                />
-              )}
+              <MultiLineProbabilityChart
+                simulationsList={multiLineProbData}
+                parameterValues={oneDParam.values}
+                paramLabel={oneDParam.keyLabel}
+              />
+              <MultiLineMedianInvestmentChart
+                investmentRuns={multiLineInvestData}
+                paramValues={oneDParam.values}
+                paramLabel={oneDParam.keyLabel}
+              />
+              <OneDLineSummaryChart
+                paramValues={oneDParam.values}
+                yValues={finalProbabilities}
+                label="Final Probability of Success"
+                yAxisTitle="% Success"
+                paramLabel={oneDParam.keyLabel}
+              />
+              <OneDLineSummaryChart
+                paramValues={oneDParam.values}
+                yValues={finalInvestments}
+                label="Final Median Total Investments"
+                yAxisTitle="Dollars"
+                paramLabel={oneDParam.keyLabel}
+              />
+            </>
+          )}
+
+          <button onClick={() => navigate(`/explore2/${baseScenario._id}`, { state: { scenario: structuredClone(baseScenario) } })}>
+            Two-Dimensional Parameter Exploration
+          </button>
+
+          {twoDResults && twoDParams && final2DProbabilities.length > 0 && (
+            <>
+              <div><h4>Final Probability of Success Surface plot (2D Exploration)</h4></div>
+              <TwoDSurfacePlot
+                zData={final2DProbabilities}
+                xLabels={twoDParams.param1.values}
+                yLabels={twoDParams.param2.values}
+                title={probTitle2D}
+                zLabel="% Success"
+                xLabel={param1Label}
+                yLabel={param2Label}
+              />
+              <div><h4>Final Probability of Success Contour plot (2D Exploration)</h4></div>
+              <TwoDContourPlot
+                zData={final2DProbabilities}
+                xLabels={twoDParams.param1.values}
+                yLabels={twoDParams.param2.values}
+                title={`Contour: ${probTitle2D}`}
+                zLabel="% Success"
+                xLabel={param1Label}
+                yLabel={param2Label}
+              />
+            </>
+          )}
+
+          {twoDResults && twoDParams && final2DInvestments.length > 0 && (
+            <>
+
+              <div><h4>Total Investment Surface plot (2D Exploration)</h4></div>
+              <TwoDSurfacePlot
+                zData={final2DInvestments}
+                xLabels={twoDParams.param1.values}
+                yLabels={twoDParams.param2.values}
+                title={investTitle2D}
+                zLabel="Dollars"
+                xLabel={param1Label}
+                yLabel={param2Label}
+              />
+              <div><h4>Total Investment Contour plot (2D Exploration)</h4></div>
+              <TwoDContourPlot
+                zData={final2DInvestments}
+                xLabels={twoDParams.param1.values}
+                yLabels={twoDParams.param2.values}
+                title={`Contour: ${investTitle2D}`}
+                zLabel="Dollars"
+                xLabel={param1Label}
+                yLabel={param2Label}
+              />
             </>
           )}
         </div>
