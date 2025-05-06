@@ -235,7 +235,7 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
           <InputField id="median" type="checkbox" checked={formData.median} onChange={handleInputChange}>Use Median</InputField>
           <UnifiedStackedFinanceChart data={bar} median={formData.median} />
 
-          <button onClick={() => navigate(`/explore/${baseScenario._id}`, { state: { scenario: structuredClone(baseScenario) } })}>
+          <button className="edit-button" onClick={() => navigate(`/explore/${baseScenario._id}`, { state: { scenario: structuredClone(baseScenario) } })}>
             One-Dimensional Parameter Exploration
           </button>
 
@@ -268,7 +268,7 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
             </>
           )}
 
-          <button onClick={() => navigate(`/explore2/${baseScenario._id}`, { state: { scenario: structuredClone(baseScenario) } })}>
+          <button className="edit-button" onClick={() => navigate(`/explore2/${baseScenario._id}`, { state: { scenario: structuredClone(baseScenario) } })}>
             Two-Dimensional Parameter Exploration
           </button>
 
