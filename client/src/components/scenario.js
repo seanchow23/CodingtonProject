@@ -185,6 +185,34 @@ export default function Scenario() {
         </div>
       </div>
 
+      <h2>Strategies</h2>
+      <div className="scenario_strategies">
+        <h3>Spending Strategy</h3>
+        <ul className="list_event_series">
+          {scenario.spendingStrategy.map(event => (
+            <Expense key={event._id} event={event}/>
+          ))}
+        </ul>
+        <h3>Withdrawal Strategy</h3>
+        <ul className="list_event_series">
+          {scenario.withdrawalStrategy.map(investment => (
+              <Investment key={investment._id} investment={investment}/>
+          ))}
+        </ul>
+        <h3>RMD</h3>
+        <ul className="list_event_series">
+          {scenario.rmd.map(investment => (
+              <Investment key={investment._id} investment={investment}/>
+          ))}
+        </ul>  
+        {scenario.rothOptimizer && <h3>Roth Optimizer Strategy</h3>}
+        {scenario.rothOptimizer && <ul className="list_event_series">
+          {scenario.rothStrategy.map(investment => (
+              <Investment key={investment._id} investment={investment}/>
+          ))}
+        </ul>} 
+      </div>
+
       <div className="button_div">
         <button className="edit-button" onClick={createInvestmentType} disabled={!canEdit}>Add Investment Type</button>
         <button className="edit-button" onClick={createInvestment} disabled={!canEdit}>Add Investment</button>

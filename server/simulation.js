@@ -21,11 +21,29 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     var state_tax = [];
     var state_tax_married = [];
 
+    const stateAbbrevToKey = {
+        AL: "alabama", AK: "alaska", AZ: "arizona", AR: "arkansas", CA: "california",
+        CO: "colorado", CT: "connecticut", DE: "delaware", FL: "florida", GA: "georgia",
+        HI: "hawaii", ID: "idaho", IL: "illinois", IN: "indiana", IA: "iowa",
+        KS: "kansas", KY: "kentucky", LA: "louisiana", ME: "maine", MD: "maryland",
+        MA: "massachusetts", MI: "michigan", MN: "minnesota", MS: "mississippi", MO: "missouri",
+        MT: "montana", NE: "nebraska", NV: "nevada", NH: "new_hampshire", NJ: "new_jersey",
+        NM: "new_mexico", NY: "new_york", NC: "north_carolina", ND: "north_dakota", OH: "ohio",
+        OK: "oklahoma", OR: "oregon", PA: "pennsylvania", RI: "rhode_island", SC: "south_carolina",
+        SD: "south_dakota", TN: "tennessee", TX: "texas", UT: "utah", VT: "vermont",
+        VA: "virginia", WA: "washington", WV: "west_virginia", WI: "wisconsin", WY: "wyoming"
+    };
+      
+    const getStateKeyFromAbbreviation = (abbrev) => {
+        return stateAbbrevToKey[abbrev?.toUpperCase()] || null;
+    };
+    
+
     try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tax/state`);
         const stateTaxData = await response.json();
 
-        const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
+        const stateKey = getStateKeyFromAbbreviation(scenario.state);
         const stateData = stateTaxData[stateKey];
 
         if (stateData && stateData.filing_statuses) {
@@ -121,6 +139,14 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     console.log('new fed brack for married',federal_brackets_married);
     // END TAXES
 
+    // Keep only one cash investment
+    scenario.investments = scenario.investments.filter((investment, index, self) => {
+        if (investment.investmentType.name.toLowerCase() === 'cash') {
+          return self.findIndex(i => i.investmentType.name.toLowerCase() === 'cash') === index;
+        }
+        return true;
+    });
+
     const rng = seed !== null ? mulberry32(seed) : Math.random;
 
     let user_life_expectancy = 0;
@@ -178,14 +204,14 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     if (maxIterations <= 0) {throw new Error("Circular or unresolved event dependency detected.");}
 
     // Extract Events and Strategies
-    const CashInvestment = scenario.investments.find(investment => (investment.investmentType.name === "Cash"))
+    const CashInvestment = scenario.investments.find(investment => (investment?.investmentType?.name?.toLowerCase() === "cash"))
     const IncomeEvents = scenario.events.filter(event => event.type === 'income');
     const ExpenseEvents = scenario.events.filter(event => event.type === 'expense');
     const Investments = scenario.investments;
 
     // Glide Calculation
     for (const glideEvent of scenario.events.filter(event => event.type === 'invest' || event.type === 'rebalance').filter(event => event.glide)) {
-        const allocations = glideEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+        const allocations = glideEvent.allocations.filter(allocation => (allocation.investment?.investmentType?.name?.toLowerCase() !== "cash"));
         allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
         const totalPercentage = allocations.reduce((percentage, allocation) => percentage + allocation.finalPercentage, 0);
         if (totalPercentage === 0) {
@@ -521,7 +547,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         // Run Invest
         const InvestEvent = scenario.events.find(event => event.type === 'invest' && event.startYear.value1 <= year && event.duration.value1 > 0);
         if (InvestEvent) {
-            const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+            const allocations = InvestEvent.allocations.filter(allocation => (allocation.investment?.investmentType?.name?.toLowerCase() !== "cash"));
             allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
             
             // Ensure 100% total for Invest Event
@@ -572,7 +598,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         
         const RebalanceEvent = scenario.events.find(event => event.type === 'rebalance' && event.startYear.value1 <= year && event.duration.value1 > 0);
         if (RebalanceEvent) {
-            const allocations = RebalanceEvent.allocations.filter(allocation => (allocation.investment.investmentType.name !== "Cash"));
+            const allocations = RebalanceEvent.allocations.filter(allocation => (allocation.investment?.investmentType?.name?.toLowerCase() !== "cash"));
             allocations.map(allocation => allocation.investment = Investments.find(investment => allocation.investment._id === investment._id));
             
             // Ensure 100% total percentage for Rebalance Event
@@ -697,6 +723,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     }
 
     if (csvLogger) { csvLogger.flush(Investments.map(inv => inv.investmentType.name)); }
+    if (eventLogger) { eventLogger.flush(); }
 
     return output;
 }
