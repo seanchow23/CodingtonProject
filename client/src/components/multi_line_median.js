@@ -1,9 +1,9 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
 
-export default function MultiLineMedianInvestmentChart({ investmentRuns, paramValues }) {
+export default function MultiLineMedianInvestmentChart({ investmentRuns, paramValues, paramLabel }) {
   const startYear = 2025;
-  console.log(investmentRuns);
+
   const numYears = Math.max(...investmentRuns.map(run =>
     Math.max(...run.map(sim => sim.length))
   ));
@@ -27,21 +27,23 @@ export default function MultiLineMedianInvestmentChart({ investmentRuns, paramVa
       y: medians,
       type: 'scatter',
       mode: 'lines+markers',
-      name: `Param = ${paramValues[i]}`
+      name: `${paramLabel} = ${paramValues[i]}`,
     };
   });
 
   return (
-    <Plot
-      data={traces}
-      layout={{
-        title: 'Median Total Investment vs. Time',
-        xaxis: { title: 'Year' },
-        yaxis: { title: 'Median Investment ($)' },
-        margin: { t: 40, l: 60, r: 30, b: 50 },
-      }}
-      style={{ width: '100%', height: '400px' }}
-      config={{ responsive: true }}
-    />
+    <div style={{ marginTop: '40px' }}>
+      <h4>Median Investment Over Time (1D Exploration)</h4>
+      <Plot
+        data={traces}
+        layout={{
+          xaxis: { title: 'Year' },
+          yaxis: { title: 'Median Total Investment ($)' },
+          margin: { t: 40, l: 60, r: 30, b: 50 },
+        }}
+        style={{ width: '100%', height: '450px' }}
+        config={{ responsive: true }}
+      />
+    </div>
   );
 }

@@ -17,27 +17,44 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         fedRes.json()
     ]);
 
-    // Getting state taxes
+    // State Taxes
+    var state_tax = [];
+    var state_tax_married = [];
+
     try {
         const response = await fetch('http://localhost:5000/api/tax/state');
         const stateTaxData = await response.json();
-    
+
         const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
         const stateData = stateTaxData[stateKey];
-    
+
         if (stateData && stateData.filing_statuses) {
-          const filingStatus = scenario.married ? 'married' : 'single';
-          const brackets = stateData.filing_statuses[filingStatus];
-    
-          const stateTax = brackets.map(({ min, max, rate }) => ({
-            min,
-            max,
-            percentage: rate * 100
-          }));
-    
-          console.log(`State tax brackets for ${scenario.state}:`, stateTax);
+            const singleBrackets = stateData.filing_statuses['single'];
+            const marriedBrackets = stateData.filing_statuses['married'];
+
+            if (singleBrackets) {
+                state_tax = singleBrackets.map(({ min, max, rate }) => ({
+                    min,
+                    max,
+                    percentage: rate * 100
+                }));
+                console.log(`State tax brackets for single filers in ${scenario.state}:`, state_tax);
+            } else {
+                console.warn(`No tax brackets found for single filers in state: ${scenario.state}`);
+            }
+
+            if (marriedBrackets) {
+                state_tax_married = marriedBrackets.map(({ min, max, rate }) => ({
+                    min,
+                    max,
+                    percentage: rate * 100
+                }));
+                console.log(`State tax brackets for married filers in ${scenario.state}:`, state_tax_married);
+            } else {
+                console.warn(`No tax brackets found for married filers in state: ${scenario.state}`);
+            }
         } else {
-          console.warn(`No tax brackets found for state: ${scenario.state}`);
+            console.warn(`No tax data found for state: ${scenario.state}`);
         }
     } catch (error) {
         console.error('Error fetching state tax data:', error);
@@ -68,7 +85,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     }
     capital_gains[capital_gains.length - 1].max = Infinity;
 
-    const capital_gains_married = gainsData["married"]
+    var capital_gains_married = gainsData["married"]
         .map(br => ({ ...br }))
         .sort((a, b) => a.percentage - b.percentage);
     for (let i = 0; i < capital_gains_married.length - 1; i++) {
@@ -126,8 +143,13 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     var prev_curYearGains = 0;
     var prev_curYearEarlyWithdrawals = 0;
     var prev_federal_brackets = federal_brackets;
+    var prev_federal_brackets_married = federal_brackets_married;
     var prev_federal_deductions = federal_deductions;
+    var prev_federal_deductions_married = federal_deductions_married;
     var prev_capital_gains = capital_gains;
+    var prev_capital_gains_married = capital_gains_married;
+    var prev_state_tax = state_tax;
+    var prev_state_tax_married = state_tax_married;
 
     // Randomness in Event Duration/Start Year
     let unresolved = scenario.events.filter(event => ["starts-with", "starts-after"].includes(event.startYear.type));   
@@ -279,7 +301,9 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         // Run Optimizer if enabled
         if (scenario.rothOptimizer && year >= Number(scenario.rothYears[0]) && year <= Number(scenario.rothYears[1])) {
             const curYearFedTaxableIncome = curYearIncome - 0.15 * curYearSS;
-            const tax_bracket = federal_brackets.find(bracket => bracket.max > curYearFedTaxableIncome - federal_deductions);
+            let tax_bracket;
+            if (scenario.married) { tax_bracket = federal_brackets_married.find(bracket => bracket.max > curYearFedTaxableIncome - federal_deductions_married); }
+            else { tax_bracket = federal_brackets.find(bracket => bracket.max > curYearFedTaxableIncome - federal_deductions); }
             var rc = tax_bracket.max - (curYearFedTaxableIncome - federal_deductions);
             const rothStrategy = scenario.rothStrategy;
             rothStrategy.map(inv => inv = Investments.find(investment => inv._id === investment._id));
@@ -327,8 +351,10 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
 
         // Calculate taxes
         var federal_tax = 0;
-        for (const bracket of prev_federal_brackets) {
-            const taxable_income = Math.max(0, prev_curYearIncome - prev_federal_deductions);
+        const tax_bracket = scenario.married ? prev_federal_brackets_married : prev_federal_brackets;
+        const tax_deduction = scenario.married ? prev_federal_deductions_married : prev_federal_deductions;
+        for (const bracket of tax_bracket) {
+            const taxable_income = Math.max(0, prev_curYearIncome - (0.15 * prev_curYearSS) - tax_deduction);
             if (taxable_income > bracket.max) { federal_tax += (bracket.max - bracket.min) * (bracket.percentage / 100); }
             else { 
                 federal_tax += (taxable_income - bracket.min) * (bracket.percentage / 100); 
@@ -337,7 +363,8 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         }
 
         var capital_gains_tax = 0;
-        for (const bracket of prev_capital_gains) {
+        const gains_bracket = scenario.married ? prev_capital_gains_married : prev_capital_gains;
+        for (const bracket of gains_bracket) {
             const taxable_income = prev_curYearGains;
             if (taxable_income > bracket.max) { capital_gains_tax += (bracket.max - bracket.min) * (bracket.percentage / 100); }
             else { 
@@ -349,11 +376,42 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
 
         var early_withdrawal_tax = curYearEarlyWithdrawals * 0.1;
 
+        var state_taxes = 0;
+        const state_bracket = scenario.married ? prev_state_tax_married :  prev_state_tax;
+        for (const bracket of state_bracket) {
+            const taxable_income = Math.max(0, prev_curYearIncome - 0.15 * prev_curYearSS);
+            if (taxable_income > bracket.max) { state_taxes += (bracket.max - bracket.min) * (bracket.percentage / 100); }
+            else { 
+                state_taxes += (taxable_income - bracket.min) * (bracket.percentage / 100); 
+                break;
+            }
+        }
+        if (state_bracket.length > 0 && Math.max(0, prev_curYearIncome - 0.15 * prev_curYearSS) > state_bracket[state_bracket.length - 1].max) {
+            const last_bracket = state_bracket[state_bracket.length - 1];
+            state_taxes += (Math.max(0, prev_curYearIncome - 0.15 * prev_curYearSS) - last_bracket.max) * (last_bracket.percentage / 100);
+        }
+        for (const bracket of state_bracket) {
+            const taxable_income = prev_curYearGains;
+            if (taxable_income > bracket.max) { state_taxes += (bracket.max - bracket.min) * (bracket.percentage / 100); }
+            else { 
+                state_taxes += (taxable_income - bracket.min) * (bracket.percentage / 100); 
+                break;
+            }
+        }
+        if (state_bracket.length > 0 && prev_curYearGains > state_bracket[state_bracket.length - 1].max) {
+            const last_bracket = state_bracket[state_bracket.length - 1];
+            state_taxes += (prev_curYearGains - last_bracket.max) * (last_bracket.percentage / 100);
+        }
+
         if (eventLogger) {
             if (federal_tax > 0) { eventLogger.logEvent(year, "Tax", federal_tax, "Federal Income"); }
             if (capital_gains_tax > 0) { eventLogger.logEvent(year, "Tax", capital_gains_tax, "Capital Gains"); }
             if (early_withdrawal_tax > 0) { eventLogger.logEvent(year, "Tax", early_withdrawal_tax, "Early Withdrawal"); }
+            if (state_taxes > 0) { eventLogger.logEvent(year, "Tax", state_taxes, "State Tax"); }
         }
+
+        // Check if spouse is alive
+        if (scenario.married && spouse_life_expectancy <= 0) { scenario.married = false; }
 
         // Run Non-Discretionary Expense Events
         var non_discretionary = 0;
@@ -368,7 +426,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
             }
         }
 
-        const payment = federal_tax + capital_gains_tax + early_withdrawal_tax + non_discretionary;
+        const payment = federal_tax + capital_gains_tax + early_withdrawal_tax + non_discretionary + state_taxes;
 
         // Pay Expense and Tax, Perform Withdrawals, Invest Extra Cash
         var withdrawal_amount = payment - CashInvestment.value;
@@ -572,14 +630,36 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
         // Adjust for inflation
         inflation = 1 + Number(inflation) / 100;
         prev_federal_brackets = federal_brackets;
+        prev_federal_brackets_married = federal_brackets_married;
         prev_federal_deductions = federal_deductions;
+        prev_federal_deductions_married = federal_deductions_married;
         prev_capital_gains = capital_gains;
+        prev_capital_gains_married = capital_gains_married;
+        prev_state_tax = state_tax;
+        prev_state_tax_married = state_tax_married;
         for (const bracket of federal_brackets) {
             bracket.min = bracket.min * inflation;
             bracket.max = bracket.max * inflation;
         }
+        for (const bracket of federal_brackets_married) {
+            bracket.min = bracket.min * inflation;
+            bracket.max = bracket.max * inflation;
+        }
         federal_deductions = federal_deductions * inflation;
+        federal_deductions_married = federal_deductions_married * inflation;
         for (const bracket of capital_gains) {
+            bracket.min = bracket.min * inflation;
+            bracket.max = bracket.max * inflation;
+        }
+        for (const bracket of capital_gains_married) {
+            bracket.min = bracket.min * inflation;
+            bracket.max = bracket.max * inflation;
+        }
+        for (const bracket of state_tax) {
+            bracket.min = bracket.min * inflation;
+            bracket.max = bracket.max * inflation;
+        }
+        for (const bracket of state_tax_married) {
             bracket.min = bracket.min * inflation;
             bracket.max = bracket.max * inflation;
         }
@@ -588,6 +668,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
 
         // Subtract Life Expectancy
         life++;
+        spouse_life_expectancy--;
 
         // Keep track of previous values
         prev_curYearIncome = curYearIncome;

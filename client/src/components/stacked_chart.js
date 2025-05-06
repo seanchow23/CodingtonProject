@@ -225,6 +225,7 @@ export default function UnifiedStackedFinanceChart({ data, median }) {
   return (
     <div>
       {/* Investments */}
+      <h4>Total of Investments</h4>
       <Plot
         data={makeTraces(investmentData)}
         layout={{
@@ -241,6 +242,7 @@ export default function UnifiedStackedFinanceChart({ data, median }) {
       />
 
       {/* Income */}
+      <h4>Total of Incomes</h4>
       <Plot
         data={makeTraces(incomeData)}
         layout={{
@@ -257,6 +259,7 @@ export default function UnifiedStackedFinanceChart({ data, median }) {
       />
 
       {/* Expenses */}
+      <h4>Total of Expenses</h4>
       <Plot
         data={makeTraces(expenseData)}
         layout={{

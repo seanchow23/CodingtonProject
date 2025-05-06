@@ -21,6 +21,7 @@ import ChartTest from "./chart_test.js";
 import OneDExplorePage from './oneDExplorePage.js';
 import * as userApi from "../api/userApi";
 import * as scenarioApi from "../api/scenarioApi";
+import TwoDExplorePage from "./twoDExplorePage.js";
 
 function Home() {
   const [scenarios, setScenarios] = useState([]);
