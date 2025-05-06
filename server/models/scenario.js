@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
 
+
 /* this schema was originally prompted from chatgpt but had to be cut down and edited to be more concise */
 
+
 const scenarioSchema = new mongoose.Schema({
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User', immutable: true },      
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'User', immutable: true },    
+    sharedRead: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    sharedWrite: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],  
     name: { type: String, required: true },
     married: { type: Boolean, required: true },
     birthYearUser: { type: Number, required: true },
@@ -26,4 +30,6 @@ const scenarioSchema = new mongoose.Schema({
     state: { type: String, required: true },
 });
 
+
 module.exports = mongoose.model('Scenario', scenarioSchema);
+

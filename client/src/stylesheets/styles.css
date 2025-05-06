@@ -1,208 +1,141 @@
+/* Reset & base styling */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f3f4f6; /* Light gray background */
-  }
-  
-  /* Navbar */
-  .navbar {
-    background-color: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .navbar-title {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #1f2937; /* gray-800 */
-  }
-  
-  .navbar-buttons {
-    display: flex;
-    gap: 16px;
-  }
-  
-  .navbar-button {
-    background: none;
-    border: none;
-    font-weight: 500;
-    color: #4b5563; /* gray-600 */
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
-  .navbar-button:hover {
-    color: #2563eb; /* blue-600 */
-  }
-  
-  /* Home Page */
-  .home-container {
-    min-height: 100vh;
-    background-color: #f3f4f6;
-  }
-  
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #e6f0fa; /* Light blue background */
+  color: #1f2937;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #1e3a8a; /* Dark blue */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.navbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.navbar-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.navbar-button {
+  background: none;
+  border: none;
+  font-weight: 500;
+  color: #dbeafe; /* light blue text */
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.navbar-button:hover {
+  color: #93c5fd; /* lighter blue */
+  text-decoration: underline;
+}
+
+/* Main layout */
+.home-container {
+  min-height: 100vh;
+  background-color: #e6f0fa;
+}
+
+.home-main {
+  padding: 32px 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Header section */
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.home-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+/* Buttons */
+.create-button,
+.import-button {
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.create-button:hover,
+.import-button:hover {
+  background-color: #1d4ed8;
+}
+
+.import-button {
+  margin-left: 12px;
+}
+
+/* Scenario cards */
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.scenario-card {
+  background-color: #ffffff;
+  padding: 20px 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scenario-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  background-color: #dbeafe; /* softer blue on hover */
+}
+
+.scenario-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+/* Responsive tweaks */
+@media (max-width: 640px) {
   .home-main {
-    padding: 24px;
-    max-width: 960px;
-    margin: 0 auto;
-  }
-  
-  .home-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  
-  .home-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  
-  .create-button {
-    background-color: #2563eb;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  
-  .create-button:hover {
-    background-color: #1e40af;
-  }
-  
-  /* Scenarios */
-  .scenario-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .scenario-card {
-    background-color: #ffffff;
     padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
-  
-  .scenario-card:hover {
-    background-color: #e0f2fe; /* light blue */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .scenario-name {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1f2937;
-  }
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f3f4f6; /* Light gray background */
-  }
-  
-  /* Navbar */
-  .navbar {
-    background-color: #ffffff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .navbar-title {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #1f2937; /* gray-800 */
-  }
-  
-  .navbar-buttons {
-    display: flex;
-    gap: 16px;
-  }
-  
-  .navbar-button {
-    background: none;
-    border: none;
-    font-weight: 500;
-    color: #4b5563; /* gray-600 */
-    cursor: pointer;
-    font-size: 1rem;
-  }
-  
-  .navbar-button:hover {
-    color: #2563eb; /* blue-600 */
-  }
-  
-  /* Home Page */
-  .home-container {
-    min-height: 100vh;
-    background-color: #f3f4f6;
-  }
-  
-  .home-main {
-    padding: 24px;
-    max-width: 960px;
-    margin: 0 auto;
-  }
-  
+
   .home-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  
-  .home-title {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-  
-  .create-button {
-    background-color: #2563eb;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  
-  .create-button:hover {
-    background-color: #1e40af;
-  }
-  
-  /* Scenarios */
-  .scenario-list {
-    display: flex;
     flex-direction: column;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 12px;
   }
-  
-  .scenario-card {
-    background-color: #ffffff;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+
+  .create-button,
+  .import-button {
+    width: 100%;
   }
-  
-  .scenario-card:hover {
-    background-color: #e0f2fe; /* light blue */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .scenario-name {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #1f2937;
-  }
+}
