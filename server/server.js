@@ -5,11 +5,13 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const app = require('./app');  // This imports app with all routes
 
+// Scrapers
 require('./scrapers/taxscraper');
 require('./scrapers/standardDeductions');
 require('./scrapers/capital_gains');
 require('./scrapers/rmdscraper');
 
+// Routes
 const userRoutes = require('./routes/user');
 const scenarioRoutes = require('./routes/scenario');
 const simulationRoutes = require('./routes/simulationRoutes');
@@ -25,9 +27,11 @@ const distributionRoutes = require('./routes/distribution');
 const scenarioExportRoutes = require('./routes/exportScenario');
 const scenarioImportRoutes = require('./routes/scenarioImport');
 
+// Add routes
 app.use('/api/scenarios/export', scenarioExportRoutes);
 app.use('/api/scenarios/import', scenarioImportRoutes);
 
+// Auth and Models
 require('dotenv').config();
 require('./auth');
 require('./models/user');
@@ -37,20 +41,21 @@ require('./models/investmentType');
 require('./models/event');
 require('./models/expense');
 
-const PORT = 5000; // use 5000 for targeting Google OAuth callback
+// Server Port
+const PORT = 5000;  // Use 5000 for targeting Google OAuth callback
 const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
-// set up connection to MongoDB
+// MongoDB Connection
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use(express.json());
 
-// enable CORS to allow client (frontend) to talk to server
+// Enable CORS to allow client (frontend) to talk to server
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.CLIENT_URL  // Vercel frontend URL
@@ -58,18 +63,21 @@ app.use(cors({
   credentials: true
 }));
 
-// set up session middleware
+// Handle preflight requests (CORS)
+app.options('*', cors());
+
+// Session Middleware
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false
 }));
 
-// initialize Passport
+// Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// use user routes
+// Use routes
 app.use('/api/users', userRoutes);
 app.use('/api/scenarios', scenarioRoutes);
 app.use('/api/investment-types', investmentTypeRoutes);
@@ -82,10 +90,10 @@ app.use('/api/invest', investRoutes);
 app.use('/api/rebalance', rebalanceRoutes);
 app.use('/api/distributions', distributionRoutes);
 app.use('/api/simulation', simulationRoutes);
-app.use('api/scenarios/import', scenarioImportRoutes);
+app.use('/api/scenarios/import', scenarioImportRoutes);
 app.use('/api/scenarios/export', scenarioExportRoutes);
 
-// auth routes
+// Google Auth Routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
@@ -93,6 +101,7 @@ app.get('/auth/google/callback',
     res.redirect(process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'http://localhost:3000');
   });
 
+// User Auth Routes
 app.get('/auth/user', (req, res) => {
   res.send(req.user || null);
 });
@@ -103,14 +112,16 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
+// Scraping
 const scrapeCapitalGains = require('./scrapers/capital_gains');
 const scrapeStandardDeductions = require('./scrapers/standardDeductions');
 const scrapeRMDUniformTable = require('./scrapers/rmdscraper');
 
-scrapeCapitalGains();       
-scrapeStandardDeductions(); 
+scrapeCapitalGains();
+scrapeStandardDeductions();
 scrapeRMDUniformTable();
 
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
