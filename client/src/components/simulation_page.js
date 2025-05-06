@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import simulation from './simulation'; // fallback simulation logic
 import Line_Chart from './line_chart';
 import Shaded_Chart from './shaded_chart';
 import UnifiedStackedFinanceChart from './stacked_chart'; 
@@ -52,11 +51,6 @@ export default function SimulationPage() {
       return series;
     });
   }
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({...formData, [name]: type === "checkbox" ? checked : value});
-  };
 
   const [hasRun, setHasRun] = useState(false); // ✅ moved up here
   const [baseScenario] = useState(() => structuredClone(originalScenario)); // locked base
@@ -192,7 +186,7 @@ export default function SimulationPage() {
             onChange={handleInputChange}
             style={{ width: '100px', marginRight: '10px' }}
           />
-          <button onClick={handleRunSimulations}>Run Simulations</button>
+          <button onClick={() => handleRunSimulations(originalScenario, setMessage)}>Run Simulations</button>
         </div>
       ) : (
         <div>
@@ -243,6 +237,31 @@ export default function SimulationPage() {
           )}
         </div>
       )}
+      <div style={{ 
+          backgroundColor: '#fff3cd', 
+          color: '#856404', 
+          padding: '10px 15px', 
+          border: '1px solid #ffeeba', 
+          borderRadius: '4px',
+          fontWeight: 'bold',
+          marginTop: '10px'
+      }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>ASSUMPTIONS, LIMITATIONS, SIMPLIFICATIONS</div>
+          <ul style={{ fontWeight: 'normal', margin: 0, paddingLeft: '20px' }}>
+              <li>Start Year is 2025</li>
+              <li>Increase in investment value is shown the next year</li>
+              <li>Events that start after another event begin the year after that event ends</li>
+              <li>The same state tax bracket is used for both income and capital gains calculation</li>
+              <li>Only 85% of social security income is counted as taxable</li>
+              <li>Simulation only considers single or married taxes</li>
+              <li>Early withdrawal tax is 10%; all withdrawals before age 59 are considered early</li>
+              <li>Gliding for events is done linearly</li>
+              <li>Simulation automatically normalizes all percentages to 100%</li>
+              <li>RMD starts at age 74; any age above 120 uses the RMD for age 120</li>
+              <li>The graph shows investments by type, condensed by similar types</li>
+              <li>Simulations that terminate early are excluded from future success probability</li>
+          </ul>
+      </div>
     </div>
   );
 }
