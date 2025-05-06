@@ -2,20 +2,15 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 const mongoose = require('mongoose');
-const multer = require('multer');
 const app = require('./app');  // This imports app with all routes
 
-require('./scrapers/taxscraper'); // assuming taxscraper exports a function too
-require('./scrapers/standardDeductions'); // assuming taxscraper exports a function too
-require('./scrapers/capital_gains'); // assuming taxscraper exports a function too
-require('./scrapers/rmdscraper'); // assuming taxscraper exports a function too
+require('./scrapers/taxscraper');
+require('./scrapers/standardDeductions');
+require('./scrapers/capital_gains');
+require('./scrapers/rmdscraper');
 
-
-
-const userRoutes = require('./routes/user'); 
+const userRoutes = require('./routes/user');
 const scenarioRoutes = require('./routes/scenario');
 const simulationRoutes = require('./routes/simulationRoutes');
 const investmentTypeRoutes = require('./routes/investmentType');
@@ -26,9 +21,7 @@ const expenseRoutes = require('./routes/expense');
 const incomeRoutes = require('./routes/income');
 const investRoutes = require('./routes/invest');
 const rebalanceRoutes = require('./routes/rebalance');
-const distributionRoutes = require('./routes/distribution');// server/server.js
-// Add these lines after your other route declarations
-
+const distributionRoutes = require('./routes/distribution');
 const scenarioExportRoutes = require('./routes/exportScenario');
 const scenarioImportRoutes = require('./routes/scenarioImport');
 
@@ -36,17 +29,15 @@ app.use('/api/scenarios/export', scenarioExportRoutes);
 app.use('/api/scenarios/import', scenarioImportRoutes);
 
 require('dotenv').config();
-require('./auth'); // auth config file
-
+require('./auth');
 require('./models/user');
 require('./models/scenario');
 require('./models/investment');
 require('./models/investmentType');
 require('./models/event');
-require('./models/expense'); 
+require('./models/expense');
 
 const PORT = 5000; // use 5000 for targeting Google OAuth callback
-
 const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 // set up connection to MongoDB
@@ -57,13 +48,13 @@ mongoose.connect(uri, {
 .then(() => console.log("MongoDB connected"))
 .catch((err) => console.error("MongoDB connection error:", err));
 
-
 app.use(express.json());
-
 
 // enable CORS to allow client (frontend) to talk to server
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.CLIENT_URL  // Vercel frontend URL
+    : 'http://localhost:3000',  // Localhost for development
   credentials: true
 }));
 
@@ -73,8 +64,6 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
-
-
 
 // initialize Passport
 app.use(passport.initialize());
@@ -98,7 +87,6 @@ app.use('/api/scenarios/export', scenarioExportRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
@@ -115,14 +103,13 @@ app.get('/auth/logout', (req, res) => {
   });
 });
 
- const scrapeCapitalGains = require('./scrapers/capital_gains');
- const scrapeStandardDeductions = require('./scrapers/standardDeductions');
- const scrapeRMDUniformTable = require('./scrapers/rmdscraper'); 
- 
- scrapeCapitalGains();       
- scrapeStandardDeductions(); 
- scrapeRMDUniformTable();
- 
+const scrapeCapitalGains = require('./scrapers/capital_gains');
+const scrapeStandardDeductions = require('./scrapers/standardDeductions');
+const scrapeRMDUniformTable = require('./scrapers/rmdscraper');
+
+scrapeCapitalGains();       
+scrapeStandardDeductions(); 
+scrapeRMDUniformTable();
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
