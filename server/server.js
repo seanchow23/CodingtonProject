@@ -63,7 +63,7 @@ app.use(express.json());
 
 // enable CORS to allow client (frontend) to talk to server
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? 'https://client-e30cuvxps-denny-lins-projects.vercel.app' : 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : 'http://localhost:3000',
   credentials: true
 }));
 
