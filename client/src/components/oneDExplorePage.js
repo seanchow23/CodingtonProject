@@ -86,12 +86,20 @@ export default function OneDExplorePage() {
     const scenarios = [];
     const values = [];
 
-    for (let val = lower; val <= upper; val += step) {
+    if (paramType === 'rothOptimizer') {
       const updated = structuredClone(originalScenario);
-      applyParameterChange(updated, paramType, val);
+      applyParameterChange(updated, paramType, lower);  // lower is 0 or 1
       scenarios.push(updated);
-      values.push(val);
+      values.push(lower);
+    } else {
+      for (let val = lower; val <= upper; val += step) {
+        const updated = structuredClone(originalScenario);
+        applyParameterChange(updated, paramType, val);
+        scenarios.push(updated);
+        values.push(val);
+      }
     }
+    const selectedLabel = parameterOptions.find(opt => opt.value === paramType)?.label || paramType;
 
     navigate(`/simulation/${originalScenario._id}`, {
       state: {
@@ -99,6 +107,7 @@ export default function OneDExplorePage() {
         oneDResults: scenarios,
         oneDParam: {
           key: paramType,
+          keyLabel: selectedLabel,
           values
         }
       }

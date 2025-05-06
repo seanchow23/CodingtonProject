@@ -20,6 +20,7 @@ import ChartTest from "./chart_test.js"
 import OneDExplorePage from './oneDExplorePage.js';
 import * as userApi from "../api/userApi";
 import * as scenarioApi from "../api/scenarioApi";
+import TwoDExplorePage from "./twoDExplorePage.js";
 
 function Home() {
   const [scenarios, setScenarios] = useState([]);
@@ -80,6 +81,7 @@ function Home() {
             <Route path="/simulation/:id" element={<SimulationPage/>} />
             <Route path="/chart-test" element={<ChartTest />} />
             <Route path="/explore/:id" element={<OneDExplorePage />} />
+            <Route path="/explore2/:id" element={<TwoDExplorePage />} />
           </Routes>
         </main>
 
