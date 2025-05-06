@@ -21,7 +21,7 @@ export default function UserProfile() {
     try {
       console.log("📤 Uploading file:", file.name);
   
-      const res = await fetch('http://localhost:5000/api/tax/upload-state-yaml', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tax/upload-state-yaml`, {
         method: 'POST',
         body: formData,
       });

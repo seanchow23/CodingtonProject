@@ -30,7 +30,7 @@ const ImportScenario = ({ setScenarios }) => {
     try {
       // Send the file to the backend for import
       const response = await axios.post(
-        'http://localhost:5000/api/scenarios/import',
+        `${process.env.REACT_APP_API_URL}/api/scenarios/import`,
         formData,
         {
           headers: {
@@ -50,7 +50,7 @@ const ImportScenario = ({ setScenarios }) => {
       
       // Save to local storage if user is not logged in
       try {
-        const user = await axios.get('http://localhost:5000/auth/user', { 
+        const user = await axios.get(`${process.env.REACT_APP_API_URL}/auth/user`, { 
           withCredentials: true 
         });
         

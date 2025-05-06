@@ -3,10 +3,10 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     // TAXES
     // 1) Fetch all four endpoints in parallel
     const [dedRes, rmdRes, gainsRes, fedRes, ] = await Promise.all([
-        fetch('http://localhost:5000/api/tax/deductions'),
-        fetch('http://localhost:5000/api/tax/rmd-table'),
-        fetch('http://localhost:5000/api/tax/capital-gains'),
-        fetch('http://localhost:5000/api/tax/federal'),
+        fetch(`${process.env.REACT_APP_API_URL}/api/tax/deductions`),
+        fetch(`${process.env.REACT_APP_API_URL}/api/tax/rmd-table`),
+        fetch(`${process.env.REACT_APP_API_URL}/api/tax/capital-gains`),
+        fetch(`${process.env.REACT_APP_API_URL}/api/tax/federal`),
     ]);
 
     // 2) Parse JSON
@@ -22,7 +22,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     var state_tax_married = [];
 
     try {
-        const response = await fetch('http://localhost:5000/api/tax/state');
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tax/state`);
         const stateTaxData = await response.json();
 
         const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');

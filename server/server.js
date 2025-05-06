@@ -62,7 +62,7 @@ app.use(express.json());
 
 // enable CORS to allow client (frontend) to talk to server
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' ? 'https://client-e30cuvxps-denny-lins-projects.vercel.app' : 'http://localhost:3000',
   credentials: true
 }));
 
@@ -92,6 +92,8 @@ app.use('/api/invest', investRoutes);
 app.use('/api/rebalance', rebalanceRoutes);
 app.use('/api/distributions', distributionRoutes);
 app.use('/api/simulation', simulationRoutes);
+app.use('api/scenarios/import', scenarioImportRoutes);
+app.use('/api/scenarios/export', scenarioExportRoutes);
 
 // auth routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -99,7 +101,7 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
-    res.redirect('http://localhost:3000');
+    res.redirect(process.env.NODE_ENV === 'production' ? 'https://client-e30cuvxps-denny-lins-projects.vercel.app' : 'http://localhost:3000');
   });
 
 app.get('/auth/user', (req, res) => {
@@ -108,7 +110,7 @@ app.get('/auth/user', (req, res) => {
 
 app.get('/auth/logout', (req, res) => {
   req.logout(() => {
-    res.redirect('http://localhost:3000');
+    res.redirect(process.env.NODE_ENV === 'production' ? 'https://client-e30cuvxps-denny-lins-projects.vercel.app' : 'http://localhost:3000');
   });
 });
 

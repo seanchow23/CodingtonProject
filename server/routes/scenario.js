@@ -601,6 +601,7 @@ router.get('/:id', async (req, res) => {
           })
         )
     );
+    console.log(scenario);
 
     if (!scenario) return res.status(404).json({ error: 'Scenario not found' });
     res.json(scenario);

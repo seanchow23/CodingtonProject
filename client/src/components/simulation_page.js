@@ -153,7 +153,7 @@ export default function SimulationPage() {
 
 const handleRunSimulations = async (scenario = originalScenario, handleMessage = setMessage) => {
   try {
-    const res = await fetch('http://localhost:5000/api/tax/state');
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/tax/state`);
     const data = await res.json();
     const stateKey = scenario.state.toLowerCase().replace(/\s/g, '_');
     if (!data[stateKey]) {
