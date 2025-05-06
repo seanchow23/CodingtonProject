@@ -26,7 +26,7 @@ function getLogFilenames(user) {
 
   return {
     csv: path.join(dir, `${base}.csv`),
-    log: path.join(dir, `${base}.log`)
+    log: path.join(dir, `${base}.log`),
   };
 }
 
@@ -56,6 +56,7 @@ class CsvLogger {
 class EventLogger {
   constructor(filename) {
     this.filename = filename;
+    this.events = [];
 
     // Ensure directory exists
     const dir = path.dirname(filename);
@@ -68,8 +69,15 @@ class EventLogger {
   }
 
   logEvent(year, type, amount, name) {
-    const line = `Year: ${year}, Type: ${type}, Amount: ${amount}, Name: ${name}\n`;
-    fs.appendFileSync(this.filename, line);
+    this.events.push(`Year: ${year}, Type: ${type}, Amount: ${amount}, Name: ${name}`);
+  }
+
+  flush() {
+    if (this.events.length > 0) {
+      const eventsData = this.events.join('\n') + '\n';
+      fs.writeFileSync(this.filename, eventsData);
+      this.events = [];
+    }
   }
 }
 
