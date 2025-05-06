@@ -269,8 +269,8 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
               <div><h4>Final Probability of Success Surface plot (2D Exploration)</h4></div>
               <TwoDSurfacePlot
                 zData={final2DProbabilities}
-                xLabels={twoDParams.param1.values}
-                yLabels={twoDParams.param2.values}
+                xLabels={twoDParams.param2.values}
+                yLabels={twoDParams.param1.values}
                 title={probTitle2D}
                 zLabel="% Success"
                 xLabel={param1Label}
@@ -279,8 +279,8 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
               <div><h4>Final Probability of Success Contour plot (2D Exploration)</h4></div>
               <TwoDContourPlot
                 zData={final2DProbabilities}
-                xLabels={twoDParams.param1.values}
-                yLabels={twoDParams.param2.values}
+                xLabels={twoDParams.param2.values}
+                yLabels={twoDParams.param1.values}
                 title={`Contour: ${probTitle2D}`}
                 zLabel="% Success"
                 xLabel={param1Label}
@@ -295,8 +295,8 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
               <div><h4>Total Investment Surface plot (2D Exploration)</h4></div>
               <TwoDSurfacePlot
                 zData={final2DInvestments}
-                xLabels={twoDParams.param1.values}
-                yLabels={twoDParams.param2.values}
+                xLabels={twoDParams.param2.values}
+                yLabels={twoDParams.param1.values}
                 title={investTitle2D}
                 zLabel="Dollars"
                 xLabel={param1Label}
@@ -305,8 +305,8 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
               <div><h4>Total Investment Contour plot (2D Exploration)</h4></div>
               <TwoDContourPlot
                 zData={final2DInvestments}
-                xLabels={twoDParams.param1.values}
-                yLabels={twoDParams.param2.values}
+                xLabels={twoDParams.param2.values}
+                yLabels={twoDParams.param1.values}
                 title={`Contour: ${investTitle2D}`}
                 zLabel="Dollars"
                 xLabel={param1Label}
