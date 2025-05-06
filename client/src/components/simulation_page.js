@@ -11,7 +11,7 @@ import { runSimulation } from '../api/simulationApi';
 import TwoDSurfacePlot from './twoD_surface_plot';
 import TwoDContourPlot from './twoD_contour_plot';
 
-export default function SimulationPage() {
+export default function SimulationPage({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -34,27 +34,7 @@ export default function SimulationPage() {
   });
   
   const [message, setMessage] = useState("");
-  
-  function simulateProbabilityEdited(scenarios) {
-    return scenarios.map((scenario) => {
-      const runs = [];
-      for (let i = 0; i < formData.num; i++) {
-        runs.push(simulation({ scenario: structuredClone(scenario) })[0]); // probability array
-      }
-      return runs;
-    });
-  }
-
-  function simulateInvestmentSeries(scenarios) {
-    return scenarios.map((scenario) => {
-      const series = [];
-      for (let i = 0; i < formData.num; i++) {
-        const sim = simulation({ scenario: structuredClone(scenario) });
-        series.push(sim[1][0]);  // assuming [1][0] = total investments per year
-      }
-      return series;
-    });
-  }
+  const [seed, setSeed] = useState(null);
 
   const [hasRun, setHasRun] = useState(false);
   const [multiLineProbData, setMultiLineProbData] = useState([]);
@@ -90,7 +70,7 @@ export default function SimulationPage() {
         twoDResults.map(async (row) =>
           Promise.all(row.map(async (scenario) => {
             const results = await Promise.all(
-              Array.from({ length: formData.num }, () => runSimulation(structuredClone(scenario)))
+              Array.from({ length: formData.num }, () => runSimulation(structuredClone(scenario), seed, user))
             );
             const finalProbs = results.map(r => r[0].at(-1)).filter(Boolean);
             const finalInvests = results.map(r => r[1][0].at(-1)).filter(Boolean);
@@ -148,7 +128,11 @@ export default function SimulationPage() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    if (name === 'seed') {
+      setSeed(value);
+    } else {
+      setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    }
   };
 
 const handleRunSimulations = async (scenario = originalScenario, handleMessage = setMessage) => {
@@ -205,8 +189,6 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
       {!hasRun ? (
         <div>
           <h2>Enter number of simulations</h2>
-          {/* <DebugConsole scenario={originalScenario} /> */}
-
           <input
             type="number"
             name="num"
@@ -215,7 +197,15 @@ const handleRunSimulations = async (scenario = originalScenario, handleMessage =
             onChange={handleInputChange}
             style={{ width: '100px', marginRight: '10px' }}
           />
-          <button onClick={() => handleRunSimulations(originalScenario, setMessage)}>Run Simulations</button>
+          <button className="edit-button" onClick={() => handleRunSimulations(originalScenario, setMessage)}>Run Simulations</button>
+          <h4>Set Simulation Seed</h4>
+          <input
+            type="number"
+            name="seed"
+            value={seed || ''}
+            onChange={handleInputChange}
+            style={{ width: '100px', marginRight: '10px' }}
+          />
         </div>
       ) : (
         <div>

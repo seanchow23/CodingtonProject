@@ -198,6 +198,11 @@ export default function Scenario() {
                     ))}
                 </ul>  
                 {scenario.rothOptimizer && <h3>Roth Optimizer Strategy</h3>}
+                {scenario.rothOptimizer && <ul className="list_event_series">
+                    {scenario.rothStrategy.map(investment => (
+                        <Investment key={investment._id} investment={investment} canEdit={canEdit}/>
+                    ))}
+                </ul>}
             </div>
       <div className="button_div">
         <button className="edit-button" onClick={createInvestmentType} disabled={!canEdit}>Add Investment Type</button>
