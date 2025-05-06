@@ -15,8 +15,13 @@ const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
 
+
+
+
+
 // Setup multer for temporary file storage
 const upload = multer({ dest: 'uploads/' });
+
 
 // Route for importing a YAML scenario
 router.post('/import', upload.single('yamlFile'), async (req, res) => {
@@ -108,6 +113,7 @@ router.post('/import', upload.single('yamlFile'), async (req, res) => {
     res.status(500).json({ error: 'Failed to import scenario: ' + error.message });
   }
 });
+
 
 // Export route for downloading a scenario as YAML
 router.get('/export/:id', async (req, res) => {
@@ -496,6 +502,87 @@ function convertToYamlFormat(scenario) {
 //   }
 // });
 
+
+
+
+function hasAccess(userId, scenario) {
+  if (!userId || !scenario) return { owner: false, canRead: false, canWrite: false };
+
+
+  const isOwner = scenario.user?.equals(userId);
+  const canRead = scenario.sharedRead?.some(u => u.equals(userId));
+  const canWrite = scenario.sharedWrite?.some(u => u.equals(userId));
+
+
+  return { owner: isOwner, canRead, canWrite };
+}
+
+
+// POST /api/scenarios/:id/share
+router.post('/:id/share', async (req, res) => {
+  try {
+    const { email, access } = req.body;
+    console.log("From share route:", email, "and", access);
+    const scenarioId = req.params.id;
+
+
+    if (!['read', 'write'].includes(access)) {
+      return res.status(400).json({ error: 'Invalid access type. Use "read" or "write".' });
+    }
+
+
+    const targetUser = await User.findOne({ email });
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found with provided email.' });
+    }
+
+
+    const scenario = await Scenario.findById(scenarioId);
+    if (!scenario) {
+      return res.status(404).json({ error: 'Scenario not found.' });
+    }
+
+
+    // Add to sharedScenarios if not already present
+    if (!targetUser.sharedScenarios.includes(scenario._id)) {
+      targetUser.sharedScenarios.push(scenario._id);
+      await targetUser.save();
+    }
+
+
+    const userIdStr = targetUser._id.toString();
+    //const inRead = scenario.sharedRead.map(id => id.toString()).includes(userIdStr);
+    //const inWrite = scenario.sharedWrite.map(id => id.toString()).includes(userIdStr);
+
+
+    // Remove from both if present
+    scenario.sharedRead = scenario.sharedRead.filter(id => id.toString() !== userIdStr);
+    scenario.sharedWrite = scenario.sharedWrite.filter(id => id.toString() !== userIdStr);
+
+
+    // Add to the correct array
+    if (access === 'read') {
+      scenario.sharedRead.push(targetUser._id);
+    } else {
+      scenario.sharedWrite.push(targetUser._id);
+    }
+
+
+    await scenario.save();
+
+
+    res.status(200).json({ message: `Scenario shared with ${targetUser.email} as ${access} access.` });
+
+
+  } catch (err) {
+    console.error("Error sharing scenario:", err);
+    res.status(500).json({ error: 'Failed to share scenario.' });
+  }
+});
+
+
+
+
 // ----------------------------------------------------
 // POST /api/scenarios
 // Create a new scenario (user is optional; if logged in, associate it with the user)
@@ -504,8 +591,10 @@ router.post('/', async (req, res) => {
   try {
     const user = req.user; // This will be set by your auth middleware (Passport, JWT, etc.)
 
+
     // Create a new scenario
     const newScenario = new Scenario(req.body);
+
 
     // If the user is logged in, associate the scenario with the user
     if (user) {
@@ -514,8 +603,10 @@ router.post('/', async (req, res) => {
       await user.save();
     }
 
+
     // Save the scenario to the database
     const savedScenario = await newScenario.save();
+
 
     res.status(201).json(savedScenario); // Return the saved scenario
   } catch (err) {
@@ -523,6 +614,7 @@ router.post('/', async (req, res) => {
     res.status(400).json({ error: 'Error creating scenario' });
   }
 });
+
 
 // ----------------------------------------------------
 // GET /api/scenarios/:id
@@ -537,6 +629,7 @@ router.get('/unpopulated/:id', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 router.get('/:id', async (req, res) => {
   try {
@@ -584,7 +677,10 @@ router.get('/:id', async (req, res) => {
     .populate('lifeExpectancyUser')
     .populate('lifeExpectancySpouse')
     .populate('inflation')
-    .populate('user');
+    .populate('user') 
+    .populate('sharedRead', '_id email username')
+    .populate('sharedWrite', '_id email username');
+
 
     await Promise.all(
       scenario.events
@@ -602,12 +698,14 @@ router.get('/:id', async (req, res) => {
         )
     );
 
+
     if (!scenario) return res.status(404).json({ error: 'Scenario not found' });
     res.json(scenario);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // ----------------------------------------------------
 // PUT /api/scenarios/:id
@@ -616,21 +714,25 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const updatedScenario = await Scenario.findByIdAndUpdate(
-      req.params.id, 
-      { $set: req.body }, 
+      req.params.id,
+      { $set: req.body },
       { new: true } // This returns the updated document
     );
+
 
     if (!updatedScenario) {
       return res.status(404).json({ error: 'Scenario not found' });
     }
 
+
     res.json({ success: true, updatedScenario });
+
 
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // ----------------------------------------------------
 // DELETE /api/scenarios/:id
@@ -646,6 +748,18 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+
+router.delete('/cleanup/anonymous', async (req, res) => {
+  try {
+    const result = await Scenario.deleteMany({ user: null });
+    res.json({ message: `Deleted ${result.deletedCount} anonymous scenario(s).` });
+  } catch (err) {
+    console.error("Error deleting anonymous scenarios:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ----------------------------------------------------
 // GET /api/scenarios
 // Get all scenarios (admin/debugging only; use /users/:id/scenarios in real use)
@@ -659,4 +773,8 @@ router.get('/', async (req, res) => {
   }
 });
 
+
 module.exports = router;
+
+
+

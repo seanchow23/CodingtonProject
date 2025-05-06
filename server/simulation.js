@@ -702,7 +702,7 @@ async function simulation({ scenario, seed = null, csvLogger = null, eventLogger
     return output;
 }
 
-function sampleNormal(mean, sd) {
+function sampleNormal(mean, sd, rng = Math.random) {
     let u = 0, v = 0;
     while (u === 0) u = rng();
     while (v === 0) v = rng();

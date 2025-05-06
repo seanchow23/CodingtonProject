@@ -163,10 +163,7 @@ function ensureDistribution(scenario, propName) {
  * Run a simulation with a given scenario and seed
  * Preprocesses the scenario to prevent common simulation failures
  */
-export async function runSimulation(scenario, seed = null) {
-  baseURL: `${process.env.REACT_APP_API_URL}/api`,
-  withCredentials: true, // needed if you're using sessions/cookies
-});
+
 
 export async function runSimulation(scenario, seed = null, user = null) {
   try {
@@ -175,9 +172,7 @@ export async function runSimulation(scenario, seed = null, user = null) {
     
     console.log("Running simulation with processed scenario:", processedScenario.name);
     
-    const response = await API.post('/api/simulation', {
-      scenario: processedScenario,
-      seed
+
     const response = await API.post('/simulation', {
       scenario,
       seed,
