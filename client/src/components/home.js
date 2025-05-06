@@ -17,7 +17,6 @@ import EditInvestmentTypes from "./edit_investment_types.js";
 import EditInvestments from "./edit_investments.js";
 import EditEvent from "./event_series/edit_event.js";
 import SimulationPage from "./simulation_page.js";
-import ChartTest from "./chart_test.js";
 import OneDExplorePage from './oneDExplorePage.js';
 import * as userApi from "../api/userApi";
 import * as scenarioApi from "../api/scenarioApi";
@@ -146,7 +145,6 @@ function Home() {
           <Route path="/scenario/edit_investment/:id" element={<EditInvestments scenarios={scenarios} />} />
           <Route path="/scenario/edit_event/:id" element={<EditEvent scenarios={scenarios} />} />
           <Route path="/simulation/:id" element={<SimulationPage />} />
-          <Route path="/chart-test" element={<ChartTest />} />
           <Route path="/explore/:id" element={<OneDExplorePage />} />
           <Route path="/import-scenario" element={<ImportScenario setScenarios={setScenarios} />} />
         </Routes>
